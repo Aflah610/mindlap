@@ -287,14 +287,6 @@ p {
   margin-top: 2rem;
 }
 
-.hero-visual-container {
-  flex: 1;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .glow-blob {
   position: absolute;
   top: 50%;
@@ -307,15 +299,37 @@ p {
   animation: pulse 8s infinite alternate;
 }
 
-.glass-card-img {
+.text-center {
+  text-align: center;
   width: 100%;
-  max-width: 450px;
-  height: auto;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  border: 1px solid var(--glass-border);
-  position: relative;
-  z-index: 2;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.center-buttons {
+  justify-content: center;
+}
+
+.center-hero {
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-landscape {
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  line-height: 0;
+  z-index: 5;
+}
+
+.wave-svg {
+  width: 100%;
+  height: clamp(100px, 20vw, 250px);
 }
 
 /* Cards Grid (Services) */
@@ -613,32 +627,46 @@ p {
     display: none; /* simple mobile approach */
   }
   
+  .hero {
+    padding: 7rem 1rem 3rem;
+  }
+
   .hero-container {
-    flex-direction: column-reverse;
+    flex-direction: column;
     text-align: center;
     gap: 2rem;
   }
-
-  .hero-content {
-    text-align: center;
-  }
   
   .hero-buttons {
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .hero-buttons .btn {
+    width: 100%;
   }
   
   .about-grid, .contact-grid {
     grid-template-columns: 1fr;
+    gap: 2.5rem;
   }
   
-  h1 { font-size: 2.5rem; }
-  h2 { font-size: 2rem; }
+  h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.8rem; }
   
-  .glass-card-img {
-    max-width: 300px;
+  .section {
+    padding: 4rem 1.5rem;
   }
-  
+
   .footer-container {
     flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+  
+  .footer-links {
+    flex-direction: column;
+    gap: 1rem;
   }
 }

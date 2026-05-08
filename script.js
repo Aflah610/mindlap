@@ -46,4 +46,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const fadeElements = document.querySelectorAll('.fade-up');
   fadeElements.forEach(el => observer.observe(el));
+
+  // Contact Form Handler
+  const contactForm = document.querySelector('.contact-form');
+  if (contactForm) {
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const name = contactForm.querySelector('input[type="text"]').value;
+      const email = contactForm.querySelector('input[type="email"]').value;
+      const message = contactForm.querySelector('textarea').value;
+      const sendBtn = contactForm.querySelector('button');
+      
+      const originalText = sendBtn.textContent;
+      sendBtn.textContent = 'Sending...';
+      sendBtn.disabled = true;
+
+      fetch("https://formsubmit.co/ajax/mindlapofficial@gmail.com", {
+          method: "POST",
+          headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+              name: name,
+              email: email,
+              message: message,
+              _subject: `Mindlap Inquiry from ${name}`
+          })
+      })
+      .then(response => response.json())
+      .then(data => {
+          sendBtn.textContent = 'Message Sent Successfully!';
+          sendBtn.style.backgroundColor = '#25D366'; // Success green
+          contactForm.reset();
+          
+          setTimeout(() => {
+              sendBtn.textContent = originalText;
+              sendBtn.style.backgroundColor = '';
+              sendBtn.disabled = false;
+          }, 4000);
+      })
+      .catch(error => {
+          console.error(error);
+          sendBtn.textContent = 'Error! Please try again.';
+          sendBtn.style.backgroundColor = '#ef4444'; // Error red
+          
+          setTimeout(() => {
+              sendBtn.textContent = originalText;
+              sendBtn.style.backgroundColor = '';
+              sendBtn.disabled = false;
+          }, 4000);
+      });
+    });
+  }
 });
