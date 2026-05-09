@@ -629,10 +629,28 @@ p {
   padding: 2rem 0 0;
   border-top: 1px solid var(--glass-border);
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
   color: var(--text-muted);
   margin-top: 3rem;
+}
+
+.legal-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.legal-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.legal-links a:hover {
+  color: var(--text-main);
 }
 
 /* Animations */
@@ -711,5 +729,11 @@ p {
   .footer-minimal-links {
     gap: 1rem;
     flex-direction: column;
+  }
+
+  .minimal-footer .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
   }
 }
