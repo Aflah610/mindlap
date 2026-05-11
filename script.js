@@ -1,4 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Custom Cursor Logic
+  const cursorDot = document.getElementById('cursor-dot');
+  const cursorOutline = document.getElementById('cursor-outline');
+
+  if (cursorDot && cursorOutline) {
+    window.addEventListener('mousemove', (e) => {
+      const posX = e.clientX;
+      const posY = e.clientY;
+
+      // Update dot position immediately
+      cursorDot.style.left = `${posX}px`;
+      cursorDot.style.top = `${posY}px`;
+
+      // Update outline position with a slight delay for smooth effect
+      cursorOutline.animate({
+        left: `${posX}px`,
+        top: `${posY}px`
+      }, { duration: 500, fill: "forwards" });
+    });
+
+    // Add hover effects for links and buttons
+    const interactiveElements = document.querySelectorAll('a, button, .btn, .card');
+    interactiveElements.forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursorOutline.classList.add('hover');
+      });
+      el.addEventListener('mouseleave', () => {
+        cursorOutline.classList.remove('hover');
+      });
+    });
+  }
+
   // Theme Toggle Logic
   const themeToggle = document.getElementById('themeToggle');
   const currentTheme = localStorage.getItem('theme') || 'dark';
