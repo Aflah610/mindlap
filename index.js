@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Sajitha KT',
                 role: 'Consultant Psychologist',
                 preview: 'Specializes in Stress & Anxiety Management, Behavior Modification, and Remedial Training.',
-                img: 'assets/sajitha.jpg',
+                img: 'assets/sajitha.png',
                 profileUrl: 'sajitha.html',
                 waText: 'Hello Mindlap, I completed the self-check (Burnout/Work stress) and would like to book a session with Sajitha KT.'
             };
@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: 'Sajitha KT',
                     role: 'Consultant Psychologist',
                     preview: 'Specializes in Behavior Modification, Stress & Anxiety Management, and Remedial Training.',
-                    img: 'assets/sajitha.jpg',
+                    img: 'assets/sajitha.png',
                     profileUrl: 'sajitha.html',
                     waText: 'Hello Mindlap, I completed the self-check (Personal Growth) and would like to book a session with Sajitha KT.'
                 };
