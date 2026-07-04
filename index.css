@@ -2417,3 +2417,63 @@ body.lightbox-open {
     }
 }
 
+/* Floating Contact Actions */
+.floating-contact-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.floating-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+}
+
+.floating-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    color: var(--white) !important;
+}
+
+.btn-call {
+    background-color: var(--primary-color);
+}
+
+.btn-whatsapp {
+    background-color: #25D366;
+}
+
+.floating-icon {
+    width: 26px;
+    height: 26px;
+}
+
+/* Adjust position on small screen if there's any bottom navigation or safety zones */
+@media (max-width: 576px) {
+    .floating-contact-container {
+        bottom: 16px;
+        right: 16px;
+        gap: 10px;
+    }
+    .floating-btn {
+        width: 48px;
+        height: 48px;
+    }
+    .floating-icon {
+        width: 22px;
+        height: 22px;
+    }
+}
+
