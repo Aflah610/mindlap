@@ -148,26 +148,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Matching Logic based on Areas of Focus & Styles
         if (focus === 'work') {
-            // Professional Burnout / Stress Management matches Kaveri KP
+            // Professional Burnout / Stress Management matches Sajitha KT
             recommendation = "You seem to be experiencing indicators of workplace burnout or performance stress. Professional guidance can help you rebuild healthy routines, establish strong boundaries, and adapt your response to stress.";
             matchedTherapist = {
-                name: 'Kaveri KP',
+                name: 'Sajitha KT',
                 role: 'Consultant Psychologist',
-                preview: 'Specializes in Anxiety & Stress Management, Emotional Regulation, and Self-esteem.',
-                img: 'assets/kaveri.jpg',
-                profileUrl: 'kaveri.html',
-                waText: 'Hello Mindlap, I completed the self-check (Burnout/Work stress) and would like to book a session with Kaveri KP.'
+                preview: 'Specializes in Stress & Anxiety Management, Behavior Modification, and Remedial Training.',
+                img: 'assets/sajitha.jpg',
+                profileUrl: 'sajitha.html',
+                waText: 'Hello Mindlap, I completed the self-check (Burnout/Work stress) and would like to book a session with Sajitha KT.'
             };
         } else if (focus === 'relationship') {
-            // Relationship/interpersonal dynamics matches Kaveri KP
+            // Relationship/interpersonal dynamics matches Sneha
             recommendation = "You are currently working through relationship or interpersonal stress. Developing clear communication patterns, boundary definition, and emotional regulation supports a healthy relational space.";
             matchedTherapist = {
-                name: 'Kaveri KP',
+                name: 'Sneha',
                 role: 'Consultant Psychologist',
-                preview: 'Specializes in Relationship Concerns, Emotional Regulation, and Self-esteem.',
-                img: 'assets/kaveri.jpg',
-                profileUrl: 'kaveri.html',
-                waText: 'Hello Mindlap, I completed the self-check (Relationship/Interpersonal) and would like to book a session with Kaveri KP.'
+                preview: 'Specializes in Family & Couple Therapy, Anxiety & Stress Management, and Trauma-Informed Care.',
+                img: 'assets/sneha.jpg',
+                profileUrl: 'sneha.html',
+                waText: 'Hello Mindlap, I completed the self-check (Relationship/Interpersonal) and would like to book a session with Sneha.'
             };
         } else if (focus === 'trauma') {
             // Past experience and emotional healing matches Anasooya Pramod
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 waText: 'Hello Mindlap, I completed the self-check (Trauma/Emotional Healing) and would like to book a session with Anasooya Pramod.'
             };
         } else { // focus === 'personal' or default
-            // Self-esteem and personal growth matches Anasooya Pramod or Kaveri
+            // Self-esteem and personal growth matches Anasooya Pramod or Sajitha KT
             if (anxiety === 'often' || anxiety === 'constantly') {
                 recommendation = "You have indicated a high frequency of feeling overwhelmed. Focus areas involving grounding techniques, mindfulness, and cognitive tools will be highly beneficial in reducing stress levels.";
                 matchedTherapist = {
@@ -195,12 +195,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 recommendation = "You seem interested in internal growth, boosting self-worth, and establishing emotional balance. Setting tailored personal goals can help you align actions with your core values.";
                 matchedTherapist = {
-                    name: 'Kaveri KP',
+                    name: 'Sajitha KT',
                     role: 'Consultant Psychologist',
-                    preview: 'Specializes in Personal Growth, Self-esteem, and Emotional Regulation.',
-                    img: 'assets/kaveri.jpg',
-                    profileUrl: 'kaveri.html',
-                    waText: 'Hello Mindlap, I completed the self-check (Personal Growth) and would like to book a session with Kaveri KP.'
+                    preview: 'Specializes in Behavior Modification, Stress & Anxiety Management, and Remedial Training.',
+                    img: 'assets/sajitha.jpg',
+                    profileUrl: 'sajitha.html',
+                    waText: 'Hello Mindlap, I completed the self-check (Personal Growth) and would like to book a session with Sajitha KT.'
                 };
             }
         }
