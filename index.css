@@ -1929,12 +1929,22 @@ body.lightbox-open {
 }
 
 @media (max-width: 768px) {
-    .logo-area {
-        flex: none;
+    .nav-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
+
+    .logo-area {
+        order: 2;
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
     .nav-actions {
-        flex: none;
-        margin-right: 16px;
+        display: contents;
     }
     
     section {
@@ -1964,7 +1974,18 @@ body.lightbox-open {
 
     /* Mobile Nav Menu */
     .mobile-nav-toggle {
-        display: flex;
+        display: flex !important;
+        order: 1;
+        flex: 1 0 0;
+        justify-content: flex-start;
+        align-items: center;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+
+    .mobile-nav-toggle .bar {
+        width: 24px !important;
     }
     
     .nav-links {
@@ -1995,7 +2016,25 @@ body.lightbox-open {
 
     
     .nav-actions .btn-book {
-        display: none; /* Hide top bar book on mobile screen */
+        display: inline-flex !important;
+        order: 3;
+        flex: 1 0 0;
+        justify-content: flex-end;
+        align-items: center;
+        background: transparent !important;
+        border: none !important;
+        color: var(--primary-color) !important;
+        font-weight: 700 !important;
+        font-size: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .nav-actions .btn-book::before {
+        content: "Book";
+        font-size: 0.95rem;
     }
     
     .feeling-grid {
