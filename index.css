@@ -2455,6 +2455,11 @@ body.lightbox-open {
 }
 
 @media (max-width: 768px) {
+    .profile-body {
+        padding-top: 100px;
+        padding-bottom: 50px;
+    }
+
     .profile-content-grid {
         grid-template-columns: 1fr;
         gap: 24px;
@@ -2478,6 +2483,53 @@ body.lightbox-open {
     
     .profile-cta-banner h3 {
         font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-body {
+        padding-top: 90px;
+        padding-bottom: 40px;
+    }
+    
+    .profile-hero-card {
+        padding: 24px 16px;
+        margin-bottom: 24px;
+    }
+    
+    .profile-hero-img {
+        max-width: 220px;
+    }
+    
+    .profile-hero-info h1 {
+        font-size: 1.8rem;
+    }
+    
+    .profile-hero-role {
+        font-size: 1.05rem;
+        margin-bottom: 12px;
+    }
+    
+    .profile-hero-edu {
+        font-size: 0.9rem;
+        margin-bottom: 16px;
+    }
+    
+    .profile-card {
+        padding: 24px 16px;
+    }
+    
+    .profile-cta-banner {
+        padding: 28px 16px;
+    }
+    
+    .profile-cta-banner h3 {
+        font-size: 1.35rem;
+    }
+    
+    .profile-cta-banner p {
+        font-size: 0.95rem;
+        margin-bottom: 20px;
     }
 }
 
