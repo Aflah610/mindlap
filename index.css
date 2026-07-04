@@ -1100,6 +1100,7 @@ section {
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--bg-lavender);
+    background-color: var(--bg-lavender);
 }
 
 .rec-details h5 {
@@ -2163,6 +2164,7 @@ body.lightbox-open {
     border-radius: var(--radius-lg);
     border: 4px solid var(--white);
     box-shadow: var(--shadow-soft);
+    background-color: var(--bg-lavender);
 }
 
 .profile-hero-info {

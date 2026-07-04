@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Anasooya Pramod',
                 role: 'Consultant Psychologist',
                 preview: 'Specializes in Trauma-Informed Care, Mindfulness, and Mental Well-being.',
-                img: 'assets/anasooya.jpg',
+                img: 'assets/anasooya.png',
                 profileUrl: 'anasooya.html',
                 waText: 'Hello Mindlap, I completed the self-check (Trauma/Emotional Healing) and would like to book a session with Anasooya Pramod.'
             };
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: 'Anasooya Pramod',
                     role: 'Consultant Psychologist',
                     preview: 'Specializes in Stress & Anxiety Support, Mindfulness, and Resilience.',
-                    img: 'assets/anasooya.jpg',
+                    img: 'assets/anasooya.png',
                     profileUrl: 'anasooya.html',
                     waText: 'Hello Mindlap, I completed the self-check (Anxiety Support) and would like to book a session with Anasooya Pramod.'
                 };
