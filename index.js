@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Sneha',
                 role: 'Consultant Psychologist',
                 preview: 'Specializes in Family & Couple Therapy, Anxiety & Stress Management, and Trauma-Informed Care.',
-                img: 'assets/sneha.jpg',
+                img: 'assets/sneha.png',
                 profileUrl: 'sneha.html',
                 waText: 'Hello Mindlap, I completed the self-check (Relationship/Interpersonal) and would like to book a session with Sneha.'
             };
