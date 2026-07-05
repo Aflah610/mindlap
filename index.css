@@ -2481,22 +2481,25 @@ body.lightbox-open {
 /* Responsiveness for Profile Pages */
 @media (max-width: 992px) {
     .profile-hero-grid {
-        grid-template-columns: 1fr;
-        gap: 32px;
-        text-align: center;
+        grid-template-columns: 1fr 1.3fr;
+        gap: 24px;
+        text-align: left;
+        align-items: center;
     }
     
     .profile-hero-media {
-        order: -1;
+        order: initial;
     }
     
     .profile-hero-tags {
-        justify-content: center;
+        justify-content: flex-start;
     }
     
     .profile-hero-img {
-        max-width: 280px;
+        max-width: 100%;
         aspect-ratio: 1 / 1;
+        width: 100%;
+        border-radius: var(--radius-lg);
     }
 }
 
@@ -2539,26 +2542,37 @@ body.lightbox-open {
     }
     
     .profile-hero-card {
-        padding: 24px 16px;
+        padding: 16px;
         margin-bottom: 24px;
     }
     
+    .profile-hero-grid {
+        grid-template-columns: 1fr 1.35fr;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    
     .profile-hero-img {
-        max-width: 220px;
+        max-width: 100%;
+        aspect-ratio: 1 / 1;
+        width: 100%;
+        border-width: 2px;
+        border-radius: var(--radius-md);
     }
     
     .profile-hero-info h1 {
-        font-size: 1.8rem;
+        font-size: 1.45rem;
+        margin-bottom: 4px;
     }
     
     .profile-hero-role {
-        font-size: 1.05rem;
-        margin-bottom: 12px;
+        font-size: 0.82rem;
+        margin-bottom: 8px;
     }
     
     .profile-hero-edu {
-        font-size: 0.9rem;
-        margin-bottom: 16px;
+        font-size: 0.78rem !important;
+        margin-bottom: 0px;
     }
     
     .profile-card {
@@ -2640,6 +2654,127 @@ body.lightbox-open {
     .float-icon {
         width: 20px;
         height: 20px;
+    }
+}
+
+/* --- 7. NEW PSYCHOLOGIST BIO PAGE OPTIMIZATIONS --- */
+.profile-hero-edu-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.profile-edu-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--bg-lavender);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-edu-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.profile-hero-edu {
+    margin-bottom: 0 !important;
+    font-size: 0.92rem !important;
+    line-height: 1.45 !important;
+}
+
+.profile-card h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px !important;
+}
+
+.profile-header-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--bg-lavender);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-header-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.cta-heart-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -58px auto 20px; /* Overlaps top border of the banner */
+    border: 3px solid var(--white);
+    box-shadow: var(--shadow-soft);
+    position: relative;
+    z-index: 2;
+}
+
+.cta-heart-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--white);
+    stroke: var(--white);
+}
+
+@media (max-width: 480px) {
+    .profile-hero-edu-container {
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    
+    .profile-edu-icon {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .profile-edu-icon svg {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .profile-card h2 {
+        gap: 8px;
+        font-size: 1.3rem !important;
+    }
+    
+    .profile-header-icon {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .profile-header-icon svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .cta-heart-icon {
+        width: 40px;
+        height: 40px;
+        margin: -48px auto 16px;
+    }
+    
+    .cta-heart-icon svg {
+        width: 16px;
+        height: 16px;
     }
 }
 
