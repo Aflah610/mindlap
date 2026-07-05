@@ -1865,7 +1865,7 @@ body.lightbox-open {
     .hero-container {
         grid-template-columns: 1fr;
         text-align: center;
-        gap: 48px;
+        gap: 40px;
     }
     
     .hero-subtitle {
@@ -1878,7 +1878,7 @@ body.lightbox-open {
     }
     
     .hero-media {
-        order: -1;
+        order: 2;
     }
     
     .hero-image-wrapper {
@@ -1887,8 +1887,8 @@ body.lightbox-open {
     }
 
     .title-divider {
-        justify-content: center;
-        margin: 0 auto 24px auto;
+        justify-content: flex-start;
+        margin: 0 0 24px 0;
     }
 
     .indicator-1 {
@@ -1933,11 +1933,14 @@ body.lightbox-open {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        position: relative;
     }
 
     .logo-area {
-        order: 2;
-        flex: 0 0 auto;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 5;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -1956,7 +1959,7 @@ body.lightbox-open {
     }
     
     .hero-title {
-        font-size: 2rem;
+        font-size: 2.6rem;
     }
 
     .hero-section {
@@ -1976,16 +1979,32 @@ body.lightbox-open {
     .mobile-nav-toggle {
         display: flex !important;
         order: 1;
-        flex: 1 0 0;
-        justify-content: flex-start;
+        flex: 0 0 auto;
+        flex-direction: column;
+        justify-content: space-between;
         align-items: center;
         background: transparent;
         border: none;
         padding: 0;
+        width: 20px;
+        height: 20px;
+        margin-left: -12px; /* Close to left side */
+        z-index: 10;
+        cursor: pointer;
     }
 
     .mobile-nav-toggle .bar {
-        width: 24px !important;
+        width: 6px !important;
+        height: 6px !important;
+        background-color: var(--text-main);
+        border-radius: 50% !important;
+        transition: var(--transition-smooth);
+    }
+    
+    .mobile-nav-toggle.active .bar {
+        width: 20px !important;
+        height: 2px !important;
+        border-radius: 2px !important;
     }
     
     .nav-links {
@@ -2016,25 +2035,11 @@ body.lightbox-open {
 
     
     .nav-actions .btn-book {
-        display: inline-flex !important;
-        order: 3;
-        flex: 1 0 0;
-        justify-content: flex-end;
-        align-items: center;
-        background: transparent !important;
-        border: none !important;
-        color: var(--primary-color) !important;
-        font-weight: 700 !important;
-        font-size: 0 !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        display: none !important;
     }
     
     .nav-actions .btn-book::before {
-        content: "Book";
-        font-size: 0.95rem;
+        display: none !important;
     }
     
     .feeling-grid {
@@ -2095,7 +2100,7 @@ body.lightbox-open {
     }
 
     .hero-image-wrapper {
-        max-width: 280px;
+        max-width: 340px;
         margin: 0 auto;
     }
 
@@ -2104,7 +2109,7 @@ body.lightbox-open {
     }
     
     .hero-title {
-        font-size: 1.8rem;
+        font-size: 2.4rem;
     }
 
     .logo-img {
@@ -2123,6 +2128,8 @@ body.lightbox-open {
     
     .hero-actions .btn {
         width: 100%;
+        padding: 12px 24px;
+        font-size: 0.95rem;
     }
     
     .indicators-grid {
@@ -2609,7 +2616,7 @@ body.lightbox-open {
 }
 
 .btn-phone {
-    background-color: #1A1A1A;
+    background-color: var(--primary-color);
     color: #ffffff;
 }
 

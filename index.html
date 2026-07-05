@@ -5,8 +5,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Mindlap - Where minds find comfort. Connect with certified therapists online in a comfortable, confidential, and judgment-free environment.">
-    <title>Mindlap | Where minds find comfort</title>
+        content="Connect with certified therapists online at Mindlap. Get personalized counseling for anxiety, stress management, relationships, and trauma-informed care in a confidential environment.">
+    <title>Mindlap | Online Therapy & Counseling for Anxiety, Stress & Growth</title>
+
+    <link rel="canonical" href="https://mindlap.site/">
+    <link rel="icon" type="image/webp" href="assets/logo.webp">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- LCP Image Preload -->
+    <link rel="preload" href="assets/hero-illustration.webp" as="image" fetchpriority="high">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mindlap.site/">
+    <meta property="og:title" content="Mindlap | Online Therapy & Counseling for Anxiety, Stress & Growth">
+    <meta property="og:description" content="Connect with certified therapists online at Mindlap. Get personalized counseling for anxiety, stress management, relationships, and trauma-informed care in a confidential environment.">
+    <meta property="og:image" content="https://mindlap.site/assets/logo.webp">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://mindlap.site/">
+    <meta property="twitter:title" content="Mindlap | Online Therapy & Counseling for Anxiety, Stress & Growth">
+    <meta property="twitter:description" content="Connect with certified therapists online at Mindlap. Get personalized counseling for anxiety, stress management, relationships, and trauma-informed care in a confidential environment.">
+    <meta property="twitter:image" content="https://mindlap.site/assets/logo.webp">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +37,106 @@
         rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index.css?v=2.1">
+    <link rel="stylesheet" href="index.css?v=3.2">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://mindlap.site/#website",
+          "url": "https://mindlap.site/",
+          "name": "Mindlap",
+          "description": "Where minds find comfort - Online Therapy & Counseling"
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://mindlap.site/#organization",
+          "name": "Mindlap",
+          "url": "https://mindlap.site/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://mindlap.site/assets/logo.webp"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+91-8590991552",
+            "contactType": "customer service",
+            "email": "mindlapofficial@gmail.com"
+          }
+        },
+        {
+          "@type": ["MedicalBusiness", "Psychologist"],
+          "@id": "https://mindlap.site/#medicalbusiness",
+          "name": "Mindlap",
+          "url": "https://mindlap.site/",
+          "logo": "https://mindlap.site/assets/logo.webp",
+          "image": "https://mindlap.site/assets/logo.webp",
+          "telephone": "+91-8590991552",
+          "email": "mindlapofficial@gmail.com",
+          "priceRange": "$$",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Calicut",
+            "addressRegion": "Kerala",
+            "addressCountry": "IN"
+          },
+          "areaServed": {
+            "@type": "Country",
+            "name": "India"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://mindlap.site/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How do I choose the right therapist?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You can read the profiles of each of our therapists above, focusing on their Areas of Focus and Therapeutic Styles. You can also take our quick 2-minute Self-Assessment Check which automatically matches you with the specialist best suited for your goals."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is my session details and privacy completely secure?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Absolutely. Confidentiality is our highest priority. All data, consultation notes, and conversational details are 100% confidential and only shared between you and your licensed therapist."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is the duration of one therapy session?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A standard individual therapy session lasts for 50 to 60 minutes. This provides enough time to discuss your goals, review progress, and walk away with actionable insights."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I join the online session?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Once you book a session on WhatsApp, our coordination team will share a secure Google Meet or Zoom link. You can join directly from any desktop browser or smartphone in a quiet, private space."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Are the therapists licensed professionals?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, all therapists at Mindlap hold advanced postgraduate degrees in Applied Psychology or Clinical Social Work, with extensive field training and verification of credentials."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 
 <body>
@@ -25,7 +145,7 @@
     <header class="navbar-header" id="navbar">
         <div class="nav-container">
             <a href="#" class="logo-area">
-                <img src="assets/logo.png?v=1.8" alt="Mindlap Logo" id="nav-logo" class="logo-img">
+                <img src="assets/logo.webp" alt="Mindlap - Online Therapy & Counseling" id="nav-logo" class="logo-img" width="160" height="48">
             </a>
 
             <nav class="nav-links" id="nav-menu">
@@ -39,7 +159,7 @@
             <div class="nav-actions">
                 <a href="https://wa.me/918590991552?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session."
                     target="_blank" class="btn btn-primary btn-book">Book Session</a>
-                <button class="mobile-nav-toggle" id="mobile-toggle" aria-label="Toggle menu">
+                <button class="mobile-nav-toggle" id="mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
                     <span class="bar"></span>
                     <span class="bar"></span>
                     <span class="bar"></span>
@@ -57,10 +177,6 @@
         <div class="container hero-container">
             <div class="hero-content">
                 <h1 class="hero-title">Where minds <br><span class="text-gradient">find comfort</span></h1>
-                <div class="title-divider">
-                    <span class="divider-line"></span>
-                    <span class="divider-dot"></span>
-                </div>
                 <p class="hero-subtitle">Connect with certified therapists online in a comfortable, confidential, and
                     judgment-free environment.</p>
                 <div class="hero-actions">
@@ -72,8 +188,8 @@
             <div class="hero-media">
                 <div class="hero-image-wrapper">
                     <!-- Hero Illustration Image -->
-                    <img src="assets/hero-illustration.png?v=1.8" alt="Mindlap Therapy Illustration"
-                        class="hero-illustration">
+                    <img src="assets/hero-illustration.webp" alt="Mindlap - Online Mental Wellness Illustration"
+                        class="hero-illustration" width="460" height="460" fetchpriority="high">
                 </div>
             </div>
         </div>
@@ -103,20 +219,20 @@
                 <!-- Therapist 1: Sneha -->
                 <div class="therapist-card">
                     <div class="therapist-img-container">
-                        <a href="sneha.html"><img src="assets/sneha.jpg" alt="Sneha"
-                                class="therapist-img"></a>
+                        <a href="sneha.html"><img src="assets/sneha.webp" alt="Sneha - Consultant Psychologist at Mindlap"
+                                class="therapist-img" width="360" height="360" loading="lazy"></a>
                         <div class="avail-tag"><span class="dot-green"></span> Available Today</div>
                     </div>
                     <div class="therapist-meta">
                         <h3 class="therapist-name"><a href="sneha.html" class="therapist-name-link">Sneha</a></h3>
                         <p class="therapist-title">Consultant Psychologist</p>
-
+ 
                         <div class="therapist-stats">
                             <span class="stat-badge">CBT • DBT</span>
                         </div>
-
+ 
                         <p class="therapist-preview">Focuses on Family & Couple Therapy, Anxiety & Stress Management, and Trauma-Informed Care.</p>
-
+ 
                         <div class="therapist-actions">
                             <a href="sneha.html" class="btn btn-outline btn-sm btn-profile">View Profile</a>
                             <a href="https://wa.me/918590991552?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session%20with%20Sneha."
@@ -124,24 +240,24 @@
                         </div>
                     </div>
                 </div>
-
+ 
                 <!-- Therapist 2: Sajitha KT -->
                 <div class="therapist-card">
                     <div class="therapist-img-container">
-                        <a href="sajitha.html"><img src="assets/sajitha.jpg" alt="Sajitha KT"
-                                class="therapist-img"></a>
+                        <a href="sajitha.html"><img src="assets/sajitha.webp" alt="Sajitha KT - Consultant Psychologist at Mindlap"
+                                class="therapist-img" width="360" height="360" loading="lazy"></a>
                         <div class="avail-tag"><span class="dot-green"></span> Available Today</div>
                     </div>
                     <div class="therapist-meta">
                         <h3 class="therapist-name"><a href="sajitha.html" class="therapist-name-link">Sajitha KT</a></h3>
                         <p class="therapist-title">Consultant Psychologist</p>
-
+ 
                         <div class="therapist-stats">
                             <span class="stat-badge">CBT • ACT • DBT</span>
                         </div>
-
+ 
                         <p class="therapist-preview">Focuses on Behavior Modification, Trauma Therapy, Remedial Training, and Stress & Anxiety Management.</p>
-
+ 
                         <div class="therapist-actions">
                             <a href="sajitha.html" class="btn btn-outline btn-sm btn-profile">View Profile</a>
                             <a href="https://wa.me/918590991552?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session%20with%20Sajitha%20KT."
@@ -149,26 +265,26 @@
                         </div>
                     </div>
                 </div>
-
+ 
                 <!-- Therapist 2: Anasooya Pramod -->
                 <div class="therapist-card">
                     <div class="therapist-img-container">
-                        <a href="anasooya.html"><img src="assets/anasooya.jpg" alt="Anasooya Pramod"
-                                class="therapist-img"></a>
+                        <a href="anasooya.html"><img src="assets/anasooya.webp" alt="Anasooya Pramod - Consultant Psychologist at Mindlap"
+                                class="therapist-img" width="360" height="360" loading="lazy"></a>
                         <div class="avail-tag"><span class="dot-green"></span> Available Today</div>
                     </div>
                     <div class="therapist-meta">
                         <h3 class="therapist-name"><a href="anasooya.html" class="therapist-name-link">Anasooya
                                 Pramod</a></h3>
                         <p class="therapist-title">Consultant Psychologist</p>
-
+ 
                         <div class="therapist-stats">
                             <span class="stat-badge">CBT • ACT • SFBT • DBT</span>
                         </div>
-
+ 
                         <p class="therapist-preview">Focuses on Mental Well-being & Resilience, Stress & Anxiety
                             Support, Trauma-Informed Care, and Mindfulness & Self-Awareness.</p>
-
+ 
                         <div class="therapist-actions">
                             <a href="anasooya.html" class="btn btn-outline btn-sm btn-profile">View Profile</a>
                             <a href="https://wa.me/918590991552?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session%20with%20Anasooya%20Pramod."
@@ -176,19 +292,19 @@
                         </div>
                     </div>
                 </div>
-
+ 
             </div>
         </div>
     </section>
-
+ 
     <!-- Why Choose Mindlap & Interactive Self-Assessment Section -->
     <section class="split-interactive-section" id="self-check">
         <div class="container split-grid">
-
+ 
             <!-- Left Panel: Mindfulness Illustration -->
             <div class="why-choose-media" id="about">
-                <img src="assets/why-choose.png" alt="Mindlap Mindfulness and Meditation Illustration"
-                    class="why-choose-img">
+                <img src="assets/why-choose.webp" alt="Mindlap Mindfulness and Meditation Illustration"
+                    class="why-choose-img" width="560" height="560" loading="lazy">
             </div>
 
             <!-- Right Panel: Interactive Self-Assessment Quiz -->
@@ -302,78 +418,78 @@
             <div class="testimonials-grid">
                 <!-- Original Set of 12 Images -->
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.13 PM (1).jpeg" alt="Client image 1" class="testimonial-image" data-index="0" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.13 PM (1).webp" alt="Mindlap Client Review 1" class="testimonial-image" data-index="0" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.13 PM.jpeg" alt="Client image 2" class="testimonial-image" data-index="1" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.13 PM.webp" alt="Mindlap Client Review 2" class="testimonial-image" data-index="1" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.14 PM (1).jpeg" alt="Client image 3" class="testimonial-image" data-index="2" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.14 PM (1).webp" alt="Mindlap Client Review 3" class="testimonial-image" data-index="2" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.14 PM.jpeg" alt="Client image 4" class="testimonial-image" data-index="3" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.14 PM.webp" alt="Mindlap Client Review 4" class="testimonial-image" data-index="3" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM (1).jpeg" alt="Client image 5" class="testimonial-image" data-index="4" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM (1).webp" alt="Mindlap Client Review 5" class="testimonial-image" data-index="4" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM (2).jpeg" alt="Client image 6" class="testimonial-image" data-index="5" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM (2).webp" alt="Mindlap Client Review 6" class="testimonial-image" data-index="5" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM.jpeg" alt="Client image 7" class="testimonial-image" data-index="6" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM.webp" alt="Mindlap Client Review 7" class="testimonial-image" data-index="6" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM (1).jpeg" alt="Client image 8" class="testimonial-image" data-index="7" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM (1).webp" alt="Mindlap Client Review 8" class="testimonial-image" data-index="7" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM (2).jpeg" alt="Client image 9" class="testimonial-image" data-index="8" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM (2).webp" alt="Mindlap Client Review 9" class="testimonial-image" data-index="8" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM.jpeg" alt="Client image 10" class="testimonial-image" data-index="9" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM.webp" alt="Mindlap Client Review 10" class="testimonial-image" data-index="9" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.17 PM (1).jpeg" alt="Client image 11" class="testimonial-image" data-index="10" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.17 PM (1).webp" alt="Mindlap Client Review 11" class="testimonial-image" data-index="10" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.17 PM.jpeg" alt="Client image 12" class="testimonial-image" data-index="11" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.17 PM.webp" alt="Mindlap Client Review 12" class="testimonial-image" data-index="11" width="240" height="320" loading="lazy" />
                 </div>
 
                 <!-- Duplicated Set for Seamless Infinite Loop -->
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.13 PM (1).jpeg" alt="Client image 1" class="testimonial-image" data-index="0" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.13 PM (1).webp" alt="Mindlap Client Review 1 (Loop)" class="testimonial-image" data-index="0" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.13 PM.jpeg" alt="Client image 2" class="testimonial-image" data-index="1" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.13 PM.webp" alt="Mindlap Client Review 2 (Loop)" class="testimonial-image" data-index="1" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.14 PM (1).jpeg" alt="Client image 3" class="testimonial-image" data-index="2" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.14 PM (1).webp" alt="Mindlap Client Review 3 (Loop)" class="testimonial-image" data-index="2" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.14 PM.jpeg" alt="Client image 4" class="testimonial-image" data-index="3" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.14 PM.webp" alt="Mindlap Client Review 4 (Loop)" class="testimonial-image" data-index="3" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM (1).jpeg" alt="Client image 5" class="testimonial-image" data-index="4" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM (1).webp" alt="Mindlap Client Review 5 (Loop)" class="testimonial-image" data-index="4" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM (2).jpeg" alt="Client image 6" class="testimonial-image" data-index="5" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM (2).webp" alt="Mindlap Client Review 6 (Loop)" class="testimonial-image" data-index="5" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM.jpeg" alt="Client image 7" class="testimonial-image" data-index="6" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.15 PM.webp" alt="Mindlap Client Review 7 (Loop)" class="testimonial-image" data-index="6" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM (1).jpeg" alt="Client image 8" class="testimonial-image" data-index="7" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM (1).webp" alt="Mindlap Client Review 8 (Loop)" class="testimonial-image" data-index="7" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM (2).jpeg" alt="Client image 9" class="testimonial-image" data-index="8" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM (2).webp" alt="Mindlap Client Review 9 (Loop)" class="testimonial-image" data-index="8" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM.jpeg" alt="Client image 10" class="testimonial-image" data-index="9" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.16 PM.webp" alt="Mindlap Client Review 10 (Loop)" class="testimonial-image" data-index="9" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.17 PM (1).jpeg" alt="Client image 11" class="testimonial-image" data-index="10" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.17 PM (1).webp" alt="Mindlap Client Review 11 (Loop)" class="testimonial-image" data-index="10" width="240" height="320" loading="lazy" />
                 </div>
                 <div class="testimonial-card">
-                    <img src="../mindlap_review/WhatsApp Image 2026-06-25 at 10.10.17 PM.jpeg" alt="Client image 12" class="testimonial-image" data-index="11" />
+                    <img src="mindlap_review/WhatsApp Image 2026-06-25 at 10.10.17 PM.webp" alt="Mindlap Client Review 12 (Loop)" class="testimonial-image" data-index="11" width="240" height="320" loading="lazy" />
                 </div>
             </div>
         </div>
@@ -465,7 +581,7 @@
     <footer class="footer-section" id="contact">
         <div class="container footer-grid">
             <div class="footer-brand">
-                <img src="assets/logo.jpg" alt="Mindlap Footer Logo" class="footer-logo">
+                <img src="assets/logo.webp" alt="Mindlap - Online Therapy Logo" class="footer-logo" width="160" height="48" loading="lazy">
                 <p class="brand-tagline">A safe and supportive space for healing, growth, and inner peace.</p>
                 <div class="social-icons">
                     <a href="https://www.instagram.com/_mind_lap" target="_blank" class="social-link" aria-label="Instagram">
@@ -520,8 +636,8 @@
                 <h4>Support</h4>
                 <ul class="footer-links">
                     <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms & Conditions</a></li>
                     <li><a href="#">Refund Policy</a></li>
                     <li><a href="#">Emergency Policy</a></li>
                 </ul>
@@ -609,7 +725,7 @@
     </div>
 
     <!-- Custom JS Script -->
-    <script src="index.js?v=2.2"></script>
+    <script src="index.js?v=3.3"></script>
 </body>
 
 </html>

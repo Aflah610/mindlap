@@ -20,32 +20,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const navMenu = document.getElementById('nav-menu');
     const navLinks = document.querySelectorAll('.nav-link');
 
-    mobileToggle.addEventListener('click', () => {
-        navMenu.classList.toggle('open');
-        mobileToggle.classList.toggle('active');
-        
-        // Animating hamburger bars
-        const bars = mobileToggle.querySelectorAll('.bar');
-        if (mobileToggle.classList.contains('active')) {
-            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-        } else {
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('open');
+            mobileToggle.classList.toggle('active');
+            
+            const isOpen = mobileToggle.classList.contains('active');
+            mobileToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            
+            // Animating hamburger bars
+            const bars = mobileToggle.querySelectorAll('.bar');
+            if (isOpen) {
+                bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
+                bars[1].style.opacity = '0';
+                bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
+            } else {
+                bars[0].style.transform = 'none';
+                bars[1].style.opacity = '1';
+                bars[2].style.transform = 'none';
+            }
+        });
+    }
 
     // Close menu when navigation link is clicked
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             navMenu.classList.remove('open');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
+            if (mobileToggle) {
+                mobileToggle.classList.remove('active');
+                mobileToggle.setAttribute('aria-expanded', 'false');
+                const bars = mobileToggle.querySelectorAll('.bar');
+                bars[0].style.transform = 'none';
+                bars[1].style.opacity = '1';
+                bars[2].style.transform = 'none';
+            }
             
             // Set active class
             navLinks.forEach(item => item.classList.remove('active'));
@@ -234,145 +242,149 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 6. TESTIMONIAL LIGHTBOX ---
-    const testimonialImages = document.querySelectorAll('.testimonial-image');
     const lightboxModal = document.getElementById('lightbox-modal');
-    const lightboxImg = document.getElementById('lightbox-img');
-    const lightboxClose = lightboxModal.querySelector('.lightbox-close');
-    const lightboxPrev = lightboxModal.querySelector('.lightbox-prev');
-    const lightboxNext = lightboxModal.querySelector('.lightbox-next');
-    const lightboxCounter = lightboxModal.querySelector('.lightbox-counter');
-    const testimonialsGrid = document.querySelector('.testimonials-grid');
+    if (lightboxModal) {
+        const testimonialImages = document.querySelectorAll('.testimonial-image');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxClose = lightboxModal.querySelector('.lightbox-close');
+        const lightboxPrev = lightboxModal.querySelector('.lightbox-prev');
+        const lightboxNext = lightboxModal.querySelector('.lightbox-next');
+        const lightboxCounter = lightboxModal.querySelector('.lightbox-counter');
+        const testimonialsGrid = document.querySelector('.testimonials-grid');
 
-    let currentImgIndex = 0;
-    const uniqueImageSources = [];
-    const uniqueImageAlts = [];
+        let currentImgIndex = 0;
+        const uniqueImageSources = [];
+        const uniqueImageAlts = [];
 
-    // Dynamically build arrays of unique images based on data-index attributes
-    testimonialImages.forEach(img => {
-        const indexVal = parseInt(img.getAttribute('data-index'), 10);
-        if (!isNaN(indexVal) && uniqueImageSources[indexVal] === undefined) {
-            uniqueImageSources[indexVal] = img.getAttribute('src');
-            uniqueImageAlts[indexVal] = img.getAttribute('alt') || `Client story ${indexVal + 1}`;
-        }
-    });
-
-    // Helper: Update lightbox image with a smooth cross-fade animation
-    function updateLightboxImage() {
-        const src = uniqueImageSources[currentImgIndex];
-        const alt = uniqueImageAlts[currentImgIndex];
-        
-        if (src) {
-            lightboxImg.classList.add('fade-out');
-            setTimeout(() => {
-                lightboxImg.setAttribute('src', src);
-                lightboxImg.setAttribute('alt', alt);
-                lightboxCounter.textContent = `Story ${currentImgIndex + 1} of ${uniqueImageSources.length}`;
-                lightboxImg.classList.remove('fade-out');
-            }, 150); // Matches the half-point of our CSS fade transition
-        }
-    }
-
-    // Open Lightbox
-    function openLightbox(index) {
-        currentImgIndex = index;
-        updateLightboxImage();
-        
-        lightboxModal.classList.add('active');
-        lightboxModal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('lightbox-open');
-        
-        // Pause carousel animation when viewing fullscreen
-        if (testimonialsGrid) {
-            testimonialsGrid.classList.add('paused');
-        }
-    }
-
-    // Close Lightbox
-    function closeLightbox() {
-        lightboxModal.classList.remove('active');
-        lightboxModal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('lightbox-open');
-        
-        // Resume carousel animation
-        if (testimonialsGrid) {
-            testimonialsGrid.classList.remove('paused');
-        }
-    }
-
-    // Navigate to next image (with loop wrap-around)
-    function showNextImage() {
-        currentImgIndex = (currentImgIndex + 1) % uniqueImageSources.length;
-        updateLightboxImage();
-    }
-
-    // Navigate to previous image (with loop wrap-around)
-    function showPrevImage() {
-        currentImgIndex = (currentImgIndex - 1 + uniqueImageSources.length) % uniqueImageSources.length;
-        updateLightboxImage();
-    }
-
-    // Add click listeners to all testimonial images
-    testimonialImages.forEach(img => {
-        // Change cursor to pointer inline as progressive enhancement
-        img.style.cursor = 'pointer';
-        img.addEventListener('click', () => {
+        // Dynamically build arrays of unique images based on data-index attributes
+        testimonialImages.forEach(img => {
             const indexVal = parseInt(img.getAttribute('data-index'), 10);
-            if (!isNaN(indexVal)) {
-                openLightbox(indexVal);
+            if (!isNaN(indexVal) && uniqueImageSources[indexVal] === undefined) {
+                uniqueImageSources[indexVal] = img.getAttribute('src');
+                uniqueImageAlts[indexVal] = img.getAttribute('alt') || `Client story ${indexVal + 1}`;
             }
         });
-    });
 
-    // Pause animation on mouse hover (robust JavaScript fallback)
-    if (testimonialsGrid) {
-        testimonialsGrid.addEventListener('mouseenter', () => {
-            testimonialsGrid.classList.add('paused');
-        });
-        testimonialsGrid.addEventListener('mouseleave', () => {
-            // Only resume if the lightbox is closed
-            if (!lightboxModal.classList.contains('active')) {
+        // Helper: Update lightbox image with a smooth cross-fade animation
+        function updateLightboxImage() {
+            const src = uniqueImageSources[currentImgIndex];
+            const alt = uniqueImageAlts[currentImgIndex];
+            
+            if (src && lightboxImg) {
+                lightboxImg.classList.add('fade-out');
+                setTimeout(() => {
+                    lightboxImg.setAttribute('src', src);
+                    lightboxImg.setAttribute('alt', alt);
+                    if (lightboxCounter) {
+                        lightboxCounter.textContent = `Story ${currentImgIndex + 1} of ${uniqueImageSources.length}`;
+                    }
+                    lightboxImg.classList.remove('fade-out');
+                }, 150); // Matches the half-point of our CSS fade transition
+            }
+        }
+
+        // Open Lightbox
+        function openLightbox(index) {
+            currentImgIndex = index;
+            updateLightboxImage();
+            
+            lightboxModal.classList.add('active');
+            lightboxModal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('lightbox-open');
+            
+            // Pause carousel animation when viewing fullscreen
+            if (testimonialsGrid) {
+                testimonialsGrid.classList.add('paused');
+            }
+        }
+
+        // Close Lightbox
+        function closeLightbox() {
+            lightboxModal.classList.remove('active');
+            lightboxModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('lightbox-open');
+            
+            // Resume carousel animation
+            if (testimonialsGrid) {
                 testimonialsGrid.classList.remove('paused');
             }
-        });
-    }
-
-    // Event listeners for closing and navigating
-    if (lightboxClose) {
-        lightboxClose.addEventListener('click', closeLightbox);
-    }
-
-    if (lightboxPrev) {
-        lightboxPrev.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showPrevImage();
-        });
-    }
-
-    if (lightboxNext) {
-        lightboxNext.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showNextImage();
-        });
-    }
-
-    // Close when clicking on the backdrop overlay outside the image wrapper
-    lightboxModal.addEventListener('click', (e) => {
-        if (e.target === lightboxModal) {
-            closeLightbox();
         }
-    });
 
-    // Keyboard Navigation support
-    document.addEventListener('keydown', (e) => {
-        if (!lightboxModal.classList.contains('active')) return;
-
-        if (e.key === 'Escape') {
-            closeLightbox();
-        } else if (e.key === 'ArrowRight') {
-            showNextImage();
-        } else if (e.key === 'ArrowLeft') {
-            showPrevImage();
+        // Navigate to next image (with loop wrap-around)
+        function showNextImage() {
+            currentImgIndex = (currentImgIndex + 1) % uniqueImageSources.length;
+            updateLightboxImage();
         }
-    });
+
+        // Navigate to previous image (with loop wrap-around)
+        function showPrevImage() {
+            currentImgIndex = (currentImgIndex - 1 + uniqueImageSources.length) % uniqueImageSources.length;
+            updateLightboxImage();
+        }
+
+        // Add click listeners to all testimonial images
+        testimonialImages.forEach(img => {
+            // Change cursor to pointer inline as progressive enhancement
+            img.style.cursor = 'pointer';
+            img.addEventListener('click', () => {
+                const indexVal = parseInt(img.getAttribute('data-index'), 10);
+                if (!isNaN(indexVal)) {
+                    openLightbox(indexVal);
+                }
+            });
+        });
+
+        // Pause animation on mouse hover (robust JavaScript fallback)
+        if (testimonialsGrid) {
+            testimonialsGrid.addEventListener('mouseenter', () => {
+                testimonialsGrid.classList.add('paused');
+            });
+            testimonialsGrid.addEventListener('mouseleave', () => {
+                // Only resume if the lightbox is closed
+                if (!lightboxModal.classList.contains('active')) {
+                    testimonialsGrid.classList.remove('paused');
+                }
+            });
+        }
+
+        // Event listeners for closing and navigating
+        if (lightboxClose) {
+            lightboxClose.addEventListener('click', closeLightbox);
+        }
+
+        if (lightboxPrev) {
+            lightboxPrev.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showPrevImage();
+            });
+        }
+
+        if (lightboxNext) {
+            lightboxNext.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showNextImage();
+            });
+        }
+
+        // Close when clicking on the backdrop overlay outside the image wrapper
+        lightboxModal.addEventListener('click', (e) => {
+            if (e.target === lightboxModal) {
+                closeLightbox();
+            }
+        });
+
+        // Keyboard Navigation support
+        document.addEventListener('keydown', (e) => {
+            if (!lightboxModal.classList.contains('active')) return;
+
+            if (e.key === 'Escape') {
+                closeLightbox();
+            } else if (e.key === 'ArrowRight') {
+                showNextImage();
+            } else if (e.key === 'ArrowLeft') {
+                showPrevImage();
+            }
+        });
+    }
 
 });
