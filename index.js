@@ -167,15 +167,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 waText: 'Hello Mindlap, I completed the self-check (Burnout/Work stress) and would like to book a session with Sajitha KT.'
             };
         } else if (focus === 'relationship') {
-            // Relationship/interpersonal dynamics matches Sneha
+            // Relationship/interpersonal dynamics matches Anasooya Pramod
             recommendation = "You are currently working through relationship or interpersonal stress. Developing clear communication patterns, boundary definition, and emotional regulation supports a healthy relational space.";
             matchedTherapist = {
-                name: 'Sneha',
+                name: 'Anasooya Pramod',
                 role: 'Consultant Psychologist',
-                preview: 'Specializes in Family & Couple Therapy, Anxiety & Stress Management, and Trauma-Informed Care.',
-                img: 'assets/sneha.jpg',
-                profileUrl: 'sneha.html',
-                waText: 'Hello Mindlap, I completed the self-check (Relationship/Interpersonal) and would like to book a session with Sneha.'
+                preview: 'Specializes in Trauma-Informed Care, Mindfulness, and Mental Well-being.',
+                img: 'assets/anasooya.jpg',
+                profileUrl: 'anasooya.html',
+                waText: 'Hello Mindlap, I completed the self-check (Relationship/Interpersonal) and would like to book a session with Anasooya Pramod.'
             };
         } else if (focus === 'trauma') {
             // Past experience and emotional healing matches Anasooya Pramod
