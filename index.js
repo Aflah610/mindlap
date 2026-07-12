@@ -189,28 +189,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 waText: 'Hello Mindlap, I completed the self-check (Trauma/Emotional Healing) and would like to book a session with Anasooya Pramod.'
             };
         } else { // focus === 'personal' or default
-            // Self-esteem and personal growth matches Anasooya Pramod or Sajitha KT
-            if (anxiety === 'often' || anxiety === 'constantly') {
-                recommendation = "You have indicated a high frequency of feeling overwhelmed. Focus areas involving grounding techniques, mindfulness, and cognitive tools will be highly beneficial in reducing stress levels.";
-                matchedTherapist = {
-                    name: 'Anasooya Pramod',
-                    role: 'Consultant Psychologist',
-                    preview: 'Specializes in Stress & Anxiety Support, Mindfulness, and Resilience.',
-                    img: 'assets/anasooya.jpg',
-                    profileUrl: 'anasooya.html',
-                    waText: 'Hello Mindlap, I completed the self-check (Anxiety Support) and would like to book a session with Anasooya Pramod.'
-                };
-            } else {
-                recommendation = "You seem interested in internal growth, boosting self-worth, and establishing emotional balance. Setting tailored personal goals can help you align actions with your core values.";
-                matchedTherapist = {
-                    name: 'Sajitha KT',
-                    role: 'Consultant Psychologist',
-                    preview: 'Specializes in Behavior Modification, Stress & Anxiety Management, and Remedial Training.',
-                    img: 'assets/sajitha.jpg',
-                    profileUrl: 'sajitha.html',
-                    waText: 'Hello Mindlap, I completed the self-check (Personal Growth) and would like to book a session with Sajitha KT.'
-                };
-            }
+            // Self-esteem and personal growth matches Sajitha KT
+            recommendation = "You seem interested in internal growth, boosting self-worth, and establishing emotional balance. Setting tailored personal goals can help you align actions with your core values.";
+            matchedTherapist = {
+                name: 'Sajitha KT',
+                role: 'Consultant Psychologist',
+                preview: 'Specializes in Behavior Modification, Stress & Anxiety Management, and Remedial Training.',
+                img: 'assets/sajitha.jpg',
+                profileUrl: 'sajitha.html',
+                waText: 'Hello Mindlap, I completed the self-check (Personal Growth) and would like to book a session with Sajitha KT.'
+            };
         }
 
         // Render result text
