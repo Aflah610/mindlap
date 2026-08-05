@@ -903,13 +903,13 @@ section {
     opacity: 0.7;
 }
 
-/* Inner photo circle — dark gradient makes black bg photos look premium */
+/* Inner photo circle — uses custom background image */
 .tc-avatar-inner {
     width: 88px;
     height: 88px;
     border-radius: 50%;
     overflow: hidden;
-    background: linear-gradient(155deg, #130826 0%, #2e1460 55%, #4A2E80 100%);
+    background: url('assets/background .jpeg') center center / cover no-repeat;
     position: relative;
     z-index: 1;
     box-shadow: 0 0 0 2px rgba(142, 102, 222, 0.3), 0 4px 16px rgba(74, 46, 128, 0.25);
@@ -922,7 +922,7 @@ section {
     object-fit: cover;
     object-position: center 35%;
     display: block;
-    mix-blend-mode: lighten; /* black pixels reveal the purple gradient behind */
+    mix-blend-mode: multiply; /* black pixels become transparent, revealing background image */
 }
 
 /* -- Divider -- */
