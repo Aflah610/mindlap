@@ -779,11 +779,11 @@ section {
    ------------------------------------------------------------- */
 .therapists-section {
     background-color: var(--bg-calm);
-    padding: 30px 0 20px 0;
+    padding: 48px 0 40px 0;
 }
 
 .therapists-section .section-header {
-    margin-bottom: 16px;
+    margin-bottom: 32px;
 }
 
 .therapists-section .section-title {
@@ -795,128 +795,255 @@ section {
     font-size: 0.9rem;
 }
 
-.therapist-grid {
+/* ---- New 3-col therapist grid ---- */
+.therapist-grid-new {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-    max-width: 720px;
-    margin: 0 auto;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
 }
 
-.therapist-card {
-    background-color: var(--bg-white);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    box-shadow: var(--shadow-soft);
-    transition: var(--transition-smooth);
-    border: 1px solid rgba(142, 102, 222, 0.05);
+/* ---- TC Card ---- */
+.tc-card {
+    background: var(--bg-white);
+    border-radius: 18px;
+    border: 1px solid rgba(142, 102, 222, 0.10);
+    box-shadow: 0 4px 24px rgba(74, 46, 128, 0.06);
     display: flex;
     flex-direction: column;
-}
-
-.therapist-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-medium);
-    border-color: var(--border-light);
-}
-
-.therapist-img-container {
-    position: relative;
     overflow: hidden;
-    aspect-ratio: 1.1 / 1;
-    background-color: var(--bg-lavender);
-    border-bottom: 1px solid rgba(142, 102, 222, 0.08);
-}
-
-.therapist-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center 15%;
     transition: var(--transition-smooth);
 }
 
-.therapist-name-link {
-    color: var(--text-main);
-    transition: var(--transition-smooth);
+.tc-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 36px rgba(74, 46, 128, 0.12);
+    border-color: rgba(142, 102, 222, 0.22);
 }
 
-.therapist-name-link:hover {
-    color: var(--primary-color);
-}
-
-.therapist-card:hover .therapist-img {
-    transform: scale(1.02);
-}
-
-.avail-tag {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(4px);
-    font-size: 0.65rem;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: var(--radius-round);
+/* -- Top section: identity left, avatar right -- */
+.tc-top {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 18px 16px 20px;
+    gap: 12px;
+}
+
+.tc-identity {
+    display: flex;
+    flex-direction: column;
     gap: 4px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    flex: 1;
+    min-width: 0;
 }
 
-.therapist-meta {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
+.tc-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.2;
+    margin: 0;
 }
 
-.therapist-name {
-    font-size: 1.05rem;
-    margin-bottom: 1px;
-}
-
-.therapist-title {
+.tc-role {
     font-size: 0.78rem;
     color: var(--accent-color);
     font-weight: 600;
-    margin-bottom: 6px;
+    margin: 0;
 }
 
-.therapist-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-bottom: 6px;
-}
-
-.stat-badge {
+.tc-lang-badge {
+    display: inline-block;
     background-color: var(--bg-lavender);
     color: var(--primary-color);
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     font-weight: 600;
-    padding: 1px 5px;
+    padding: 3px 10px;
     border-radius: var(--radius-round);
+    margin-top: 4px;
+    width: fit-content;
 }
 
-.therapist-preview {
-    font-size: 0.75rem;
-    line-height: 1.35;
-    color: var(--text-muted);
-    margin-bottom: 10px;
+/* -- Avatar area -- */
+.tc-avatar-wrap {
+    position: relative;
+    width: 88px;
+    height: 88px;
+    flex-shrink: 0;
 }
 
-.therapist-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+.tc-avatar-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px dashed rgba(142, 102, 222, 0.35);
+    animation: tc-spin 18s linear infinite;
+}
+
+@keyframes tc-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.tc-avatar-placeholder {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--bg-lavender) 0%, rgba(142, 102, 222, 0.15) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.tc-avatar-placeholder svg {
+    width: 44px;
+    height: 44px;
+    color: var(--accent-color);
+    opacity: 0.7;
+}
+
+/* When an actual image is used instead */
+.tc-avatar-img {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+}
+
+/* -- Divider -- */
+.tc-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(142, 102, 222, 0.12), transparent);
+    margin: 0 20px;
+}
+
+/* -- Body: specializations + description -- */
+.tc-body {
+    padding: 14px 20px 12px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     gap: 8px;
+}
+
+.tc-specs-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent-color);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.tc-spec-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.tc-spec-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    padding-left: 2px;
+}
+
+.tc-spec-dot {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tc-spec-dot::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    flex-shrink: 0;
+}
+
+.tc-desc {
+    font-size: 0.76rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* -- Footer: price, language, button -- */
+.tc-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px 16px 20px;
+    border-top: 1px solid rgba(142, 102, 222, 0.07);
+    background: rgba(244, 238, 253, 0.3);
     margin-top: auto;
 }
 
-.therapist-actions .btn {
-    padding: 6px 10px;
-    font-size: 0.76rem;
+.tc-price-info,
+.tc-lang-info {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.tc-rupee-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--bg-lavender);
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.tc-globe-icon {
+    width: 26px;
+    height: 26px;
+    color: var(--accent-color);
+    opacity: 0.75;
+    flex-shrink: 0;
+}
+
+.tc-price-text,
+.tc-lang-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.tc-price-text strong,
+.tc-lang-text strong {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.tc-price-text small,
+.tc-lang-text small {
+    font-size: 0.63rem;
+    color: var(--text-light);
+}
+
+.tc-view-btn {
+    margin-left: auto;
+    padding: 8px 18px !important;
+    font-size: 0.76rem !important;
+    border-radius: var(--radius-round) !important;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 
@@ -1908,10 +2035,9 @@ body.lightbox-open {
         grid-template-columns: repeat(3, 1fr);
     }
     
-    .therapist-grid {
+    .therapist-grid-new {
         grid-template-columns: repeat(2, 1fr);
         gap: 16px;
-        max-width: 680px;
     }
     
     .split-grid {
@@ -2055,10 +2181,19 @@ body.lightbox-open {
         display: none;
     }
     
-    .therapist-grid {
+    .therapist-grid-new {
         grid-template-columns: 1fr;
-        max-width: 450px;
-        margin: 0 auto;
+    }
+
+    .tc-footer {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .tc-view-btn {
+        width: 100%;
+        text-align: center;
+        margin-left: 0;
     }
     
     .faq-trigger {
