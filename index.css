@@ -909,7 +909,7 @@ section {
     height: 88px;
     border-radius: 50%;
     object-fit: cover;
-    object-position: center top;
+    object-position: center 35%;
     display: block;
 }
 
