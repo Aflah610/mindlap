@@ -922,7 +922,7 @@ section {
     object-fit: cover;
     object-position: center 35%;
     display: block;
-    mix-blend-mode: multiply; /* black pixels become transparent, revealing background image */
+    mix-blend-mode: screen; /* screen mode: black pixels = transparent, person shows naturally */
 }
 
 /* -- Divider -- */
