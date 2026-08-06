@@ -920,7 +920,7 @@ section {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 35%;
+    object-position: center center;
     display: block;
     mix-blend-mode: screen; /* screen mode: black pixels = transparent, person shows naturally */
 }
@@ -1064,8 +1064,8 @@ section {
    ------------------------------------------------------------- */
 .split-interactive-section {
     background-color: var(--bg-white);
-    border-top: 1px solid rgba(142, 102, 222, 0.05);
-    border-bottom: 1px solid rgba(142, 102, 222, 0.05);
+    border-top: none;
+    border-bottom: none;
 }
 
 .split-grid {
@@ -1263,7 +1263,7 @@ section {
    TESTIMONIALS SECTION
    ------------------------------------------------------------- */
 .testimonials-section {
-    background-color: var(--bg-lavender);
+    background-color: var(--bg-white);
     position: relative;
     overflow: hidden;
 }
@@ -1277,7 +1277,7 @@ section {
     height: 100%;
     pointer-events: none;
     z-index: 2;
-    background: linear-gradient(to right, var(--bg-lavender), transparent);
+    background: linear-gradient(to right, var(--bg-white), transparent);
     transition: opacity var(--transition-smooth);
 }
 
