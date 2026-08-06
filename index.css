@@ -903,26 +903,27 @@ section {
     opacity: 0.7;
 }
 
-/* Inner photo circle — uses custom background image */
+/* Inner photo circle */
 .tc-avatar-inner {
     width: 88px;
     height: 88px;
     border-radius: 50%;
     overflow: hidden;
-    background: url('assets/background .jpeg') center center / cover no-repeat;
     position: relative;
     z-index: 1;
-    box-shadow: 0 0 0 2px rgba(142, 102, 222, 0.3), 0 4px 16px rgba(74, 46, 128, 0.25);
+    box-shadow: 0 0 0 2px rgba(142, 102, 222, 0.3), 0 4px 16px rgba(74, 46, 128, 0.15);
 }
 
-/* When an actual image is used instead */
+/* Avatar photo image */
 .tc-avatar-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center center;
     display: block;
-    mix-blend-mode: screen; /* screen mode: black pixels = transparent, person shows naturally */
+    mix-blend-mode: normal !important;
+    opacity: 1 !important;
+    filter: none !important;
 }
 
 /* -- Divider -- */
