@@ -38,6 +38,12 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="index-v5.css">
+    <link rel="stylesheet" href="index.css?v=5.0">
+    <!-- Critical override: fix avatar image blend mode regardless of CDN cache -->
+    <style>
+        .tc-avatar-img { mix-blend-mode: normal !important; opacity: 1 !important; filter: none !important; background: none !important; }
+        .tc-avatar-inner { background: none !important; }
+    </style>
 
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
