@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // Matching Logic based on Areas of Focus, Regulation & Anxiety
+        // Matching Logic based on Areas of Focus, Regulation & Anxiety (Balanced across 6 psychologists)
         if (focus === 'work') {
             recommendation = "You seem to be experiencing indicators of workplace burnout or performance stress. Professional guidance can help you rebuild healthy routines, establish strong boundaries, and adapt your response to stress.";
             if (regulation === 'hard') {
@@ -219,12 +219,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (anxiety === 'constantly' || anxiety === 'often') {
                 matchedTherapist = therapists.gouri;
             } else {
-                matchedTherapist = therapists.athira;
+                matchedTherapist = therapists.theresa;
             }
         } else if (focus === 'trauma') {
             recommendation = "Past emotional wounds or challenging experiences appear to be impacting your current state. Safe, gentle trauma-informed support can assist you in processing and restoring your resilience.";
             if (regulation === 'hard' || anxiety === 'constantly') {
-                matchedTherapist = therapists.gouri;
+                matchedTherapist = therapists.rashin;
             } else {
                 matchedTherapist = therapists.anasooya;
             }
