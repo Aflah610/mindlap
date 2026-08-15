@@ -153,52 +153,90 @@ document.addEventListener('DOMContentLoaded', () => {
         const focus = quizAnswers.focusArea;
         const sleep = quizAnswers.sleep;
         const anxiety = quizAnswers.anxiety;
+        const regulation = quizAnswers.regulation;
 
-        // Matching Logic based on Areas of Focus & Styles
-        if (focus === 'work') {
-            // Professional Burnout / Stress Management matches Sajitha KT
-            recommendation = "You seem to be experiencing indicators of workplace burnout or performance stress. Professional guidance can help you rebuild healthy routines, establish strong boundaries, and adapt your response to stress.";
-            matchedTherapist = {
-                name: 'Sajitha KT',
-                role: 'Consultant Psychologist',
-                preview: 'Specializes in Stress & Anxiety Management, Behavior Modification, and Remedial Training.',
-                img: 'assets/sajitha.jpg',
-                profileUrl: 'sajitha.html',
-                waText: 'Hello Mindlap, I completed the self-check (Burnout/Work stress) and would like to book a session with Sajitha KT.'
-            };
-        } else if (focus === 'relationship') {
-            // Relationship/interpersonal dynamics matches Anasooya Pramod
-            recommendation = "You are currently working through relationship or interpersonal stress. Developing clear communication patterns, boundary definition, and emotional regulation supports a healthy relational space.";
-            matchedTherapist = {
+        const therapists = {
+            anasooya: {
                 name: 'Anasooya Pramod',
                 role: 'Consultant Psychologist',
-                preview: 'Specializes in Trauma-Informed Care, Mindfulness, and Mental Well-being.',
-                img: 'assets/anasooya.jpg',
+                preview: 'Specializes in Trauma-Informed Care, Mindfulness & Self-Awareness, and Stress & Anxiety Support.',
+                img: 'assets/anasooya_bg.jpeg',
                 profileUrl: 'anasooya.html',
-                waText: 'Hello Mindlap, I completed the self-check (Relationship/Interpersonal) and would like to book a session with Anasooya Pramod.'
-            };
-        } else if (focus === 'trauma') {
-            // Past experience and emotional healing matches Anasooya Pramod
-            recommendation = "Past emotional wounds or challenging experiences appear to be impacting your current state. Safe, gentle trauma-informed support can assist you in processing and restoring your resilience.";
-            matchedTherapist = {
-                name: 'Anasooya Pramod',
+                waText: 'Hello Mindlap, I completed the self-check and would like to book a therapy session with Anasooya Pramod.'
+            },
+            gouri: {
+                name: 'Gouri Nandhana',
                 role: 'Consultant Psychologist',
-                preview: 'Specializes in Trauma-Informed Care, Mindfulness, and Mental Well-being.',
-                img: 'assets/anasooya.jpg',
-                profileUrl: 'anasooya.html',
-                waText: 'Hello Mindlap, I completed the self-check (Trauma/Emotional Healing) and would like to book a session with Anasooya Pramod.'
-            };
-        } else { // focus === 'personal' or default
-            // Self-esteem and personal growth matches Sajitha KT
-            recommendation = "You seem interested in internal growth, boosting self-worth, and establishing emotional balance. Setting tailored personal goals can help you align actions with your core values.";
-            matchedTherapist = {
+                preview: 'Specializes in Couples Therapy, Depression & Anxiety Management, and Trauma Recovery.',
+                img: 'assets/gouri_bg.jpeg',
+                profileUrl: 'gouri.html',
+                waText: 'Hello Mindlap, I completed the self-check and would like to book a therapy session with Gouri Nandhana.'
+            },
+            sajitha: {
                 name: 'Sajitha KT',
                 role: 'Consultant Psychologist',
                 preview: 'Specializes in Behavior Modification, Stress & Anxiety Management, and Remedial Training.',
-                img: 'assets/sajitha.jpg',
+                img: 'assets/sajitha_bg.jpeg',
                 profileUrl: 'sajitha.html',
-                waText: 'Hello Mindlap, I completed the self-check (Personal Growth) and would like to book a session with Sajitha KT.'
-            };
+                waText: 'Hello Mindlap, I completed the self-check and would like to book a therapy session with Sajitha KT.'
+            },
+            athira: {
+                name: 'Athira Asok',
+                role: 'Consultant Psychologist',
+                preview: 'Specializes in Couples Therapy, Stress Management, Depression & Anxiety, and Career Guidance.',
+                img: 'assets/athira_bg.jpeg',
+                profileUrl: 'athira.html',
+                waText: 'Hello Mindlap, I completed the self-check and would like to book a therapy session with Athira Asok.'
+            },
+            rashin: {
+                name: 'Rashin PK',
+                role: 'Consultant Psychologist',
+                preview: 'Specializes in Mood Disorders, Personality Disorders, Emotional Impulsiveness, and Couples Therapy.',
+                img: 'assets/rashin_bg.jpeg',
+                profileUrl: 'rashin.html',
+                waText: 'Hello Mindlap, I completed the self-check and would like to book a therapy session with Rashin PK.'
+            },
+            theresa: {
+                name: 'Theresa P Thomas',
+                role: 'Consultant Psychologist',
+                preview: 'Specializes in Stress & Anxiety Management, Behavioral Change, and Anger Regulation.',
+                img: 'assets/theresa_bg.jpeg',
+                profileUrl: 'theresa.html',
+                waText: 'Hello Mindlap, I completed the self-check and would like to book a therapy session with Theresa P Thomas.'
+            }
+        };
+
+        // Matching Logic based on Areas of Focus, Regulation & Anxiety
+        if (focus === 'work') {
+            recommendation = "You seem to be experiencing indicators of workplace burnout or performance stress. Professional guidance can help you rebuild healthy routines, establish strong boundaries, and adapt your response to stress.";
+            if (regulation === 'hard') {
+                matchedTherapist = therapists.sajitha;
+            } else {
+                matchedTherapist = therapists.athira;
+            }
+        } else if (focus === 'relationship') {
+            recommendation = "You are currently working through relationship or interpersonal stress. Developing clear communication patterns, boundary definition, and emotional regulation supports a healthy relational space.";
+            if (anxiety === 'constantly' || anxiety === 'often') {
+                matchedTherapist = therapists.gouri;
+            } else {
+                matchedTherapist = therapists.athira;
+            }
+        } else if (focus === 'trauma') {
+            recommendation = "Past emotional wounds or challenging experiences appear to be impacting your current state. Safe, gentle trauma-informed support can assist you in processing and restoring your resilience.";
+            if (regulation === 'hard' || anxiety === 'constantly') {
+                matchedTherapist = therapists.gouri;
+            } else {
+                matchedTherapist = therapists.anasooya;
+            }
+        } else { // focus === 'personal' or default
+            recommendation = "You seem interested in internal growth, boosting self-worth, and establishing emotional balance. Setting tailored personal goals can help you align actions with your core values.";
+            if (regulation === 'hard') {
+                matchedTherapist = therapists.rashin;
+            } else if (regulation === 'moderate') {
+                matchedTherapist = therapists.theresa;
+            } else {
+                matchedTherapist = therapists.anasooya;
+            }
         }
 
         // Render result text
