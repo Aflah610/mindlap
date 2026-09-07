@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
       sendBtn.textContent = 'Sending...';
       sendBtn.disabled = true;
 
-      fetch("https://formsubmit.co/ajax/mindlapofficial@gmail.com", {
+      fetch("https://formsubmit.co/ajax/Officialmindlap@gmail.com", {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
