@@ -1840,45 +1840,155 @@ section {
    CTA BOTTOM BANNER
    ------------------------------------------------------------- */
 .cta-banner {
-    padding: 80px 0;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
-    text-align: center;
-    color: var(--white);
+    padding: 90px 0 150px;
+    background: linear-gradient(160deg, #F7F2FE 0%, #EFE7FB 58%, #F4EEFD 100%);
     overflow: hidden;
 }
 
-.cta-glow {
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    background: var(--accent-color);
-    border-radius: 50%;
-    filter: blur(100px);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    opacity: 0.35;
-    z-index: 1;
+.cta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 48px;
 }
 
-.cta-container {
-    position: relative;
-    z-index: 2;
+.cta-content {
+    text-align: left;
+}
+
+.cta-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    color: var(--accent-color);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.cta-eyebrow::before {
+    content: '';
+    width: 42px;
+    height: 2px;
+    border-radius: 2px;
+    background-color: currentColor;
 }
 
 .cta-banner h2 {
-    font-size: 2.5rem;
-    color: var(--white);
-    margin-bottom: 12px;
+    font-size: 3rem;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
+    margin-bottom: 14px;
 }
 
 .cta-banner p {
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 1.15rem;
+    font-size: 1.12rem;
+    color: var(--text-muted);
     margin-bottom: 32px;
 }
 
+.cta-btn {
+    gap: 12px;
+}
 
+.cta-btn svg {
+    width: 18px;
+    height: 18px;
+    transition: var(--transition-smooth);
+}
+
+.cta-btn:hover svg {
+    transform: translateX(4px);
+}
+
+.cta-media {
+    display: flex;
+    justify-content: center;
+}
+
+.cta-illustration {
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+}
+
+/* Curve that carries the tint down into the white footer */
+.cta-wave {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    line-height: 0;
+    pointer-events: none;
+}
+
+.cta-wave svg {
+    display: block;
+    width: 100%;
+    height: 110px;
+}
+
+
+@media (max-width: 900px) {
+    .cta-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .cta-content {
+        text-align: center;
+    }
+
+    .cta-banner {
+        padding: 64px 0 110px;
+    }
+
+    .cta-banner h2 {
+        font-size: 2.1rem;
+    }
+
+    .cta-banner p {
+        font-size: 1.02rem;
+    }
+
+    .cta-illustration {
+        max-width: 400px;
+    }
+
+    .cta-wave svg {
+        height: 74px;
+    }
+}
+
+@media (max-width: 560px) {
+    .cta-banner {
+        padding: 52px 0 84px;
+    }
+
+    .cta-banner h2 {
+        font-size: 1.8rem;
+    }
+
+    .cta-eyebrow {
+        font-size: 0.68rem;
+        letter-spacing: 0.14em;
+    }
+
+    .cta-eyebrow::before {
+        width: 28px;
+    }
+
+    .cta-illustration {
+        max-width: 300px;
+    }
+
+    .cta-wave svg {
+        height: 54px;
+    }
+}
 /* -------------------------------------------------------------
    FOOTER SECTION
    ------------------------------------------------------------- */

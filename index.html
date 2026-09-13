@@ -40,7 +40,7 @@
         rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index.css?v=109">
+    <link rel="stylesheet" href="index.css?v=110">
     <!-- Fix avatar blend mode -->
     <style>
         .tc-avatar-img { mix-blend-mode: normal !important; opacity: 1 !important; filter: none !important; background: none !important; }
@@ -612,12 +612,27 @@
 
     <!-- Bottom CTA Banner -->
     <section class="cta-banner">
-        <div class="cta-glow"></div>
-        <div class="container cta-container">
-            <h2>Your mental health matters.</h2>
-            <p>Take the first step today towards inner peace and healing.</p>
-            <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session."
-                target="_blank" class="btn btn-white btn-lg">Book Your First Session</a>
+        <div class="container cta-grid">
+            <div class="cta-content">
+                <span class="cta-eyebrow">Where minds find comfort</span>
+                <h2>Your mental health <span class="text-gradient">matters.</span></h2>
+                <p>Take the first step today towards inner peace and healing.</p>
+                <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session."
+                    target="_blank" class="btn btn-primary btn-lg cta-btn">
+                    Book Your First Session
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+            </div>
+            <div class="cta-media">
+                <img src="assets/cta-illustration.webp"
+                    alt="A young woman sitting quietly beside her cat and a houseplant"
+                    class="cta-illustration" width="1000" height="553" loading="lazy">
+            </div>
+        </div>
+        <div class="cta-wave" aria-hidden="true">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path fill="var(--bg-white)" d="M0,52 C220,8 430,98 720,74 C1000,52 1215,98 1440,56 L1440,120 L0,120 Z"></path>
+            </svg>
         </div>
     </section>
 
