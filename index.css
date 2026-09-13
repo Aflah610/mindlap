@@ -1064,6 +1064,7 @@ section {
    SELF-ASSESSMENT SECTION
    ------------------------------------------------------------- */
 .self-check-section {
+    padding: 48px 0;
     background: linear-gradient(180deg, #FBF9FE 0%, #F5F1FD 100%);
     overflow: hidden;
 }
@@ -1125,13 +1126,13 @@ section {
 /* Intro */
 .assessment-intro {
     text-align: center;
-    margin-bottom: 44px;
+    margin-bottom: 24px;
 }
 
 .assessment-eyebrow {
     display: inline-block;
-    padding: 9px 22px;
-    margin-bottom: 22px;
+    padding: 8px 20px;
+    margin-bottom: 16px;
     border-radius: var(--radius-round);
     background-color: rgba(255, 255, 255, 0.75);
     border: 1px solid rgba(142, 102, 222, 0.25);
@@ -1143,14 +1144,14 @@ section {
 }
 
 .assessment-heading {
-    font-size: 2.6rem;
+    font-size: 2.2rem;
     line-height: 1.15;
     letter-spacing: -0.02em;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
 }
 
 .assessment-sub {
-    font-size: 1.1rem;
+    font-size: 1.02rem;
     color: var(--text-muted);
 }
 
@@ -1158,7 +1159,7 @@ section {
 .category-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 26px;
+    gap: 16px;
 }
 
 .category-tile {
@@ -1184,7 +1185,7 @@ section {
 .category-media {
     display: block;
     position: relative;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 2 / 1;
     overflow: hidden;
 }
 
@@ -1207,10 +1208,10 @@ section {
 
 .category-badge {
     position: absolute;
-    left: 14px;
-    bottom: 14px;
-    width: 38px;
-    height: 38px;
+    left: 12px;
+    bottom: 12px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     background-color: rgba(255, 255, 255, 0.92);
     color: var(--primary-color);
@@ -1230,7 +1231,7 @@ section {
     align-items: center;
     justify-content: space-between;
     gap: 14px;
-    padding: 18px 20px 20px;
+    padding: 14px 18px 16px;
 }
 
 .category-text {
@@ -1242,21 +1243,21 @@ section {
 
 .category-label {
     font-family: var(--font-heading);
-    font-size: 1.12rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--text-main);
 }
 
 .category-blurb {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     line-height: 1.4;
     color: var(--text-muted);
 }
 
 .category-arrow {
     flex-shrink: 0;
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     background-color: var(--bg-lavender);
     color: var(--primary-color);
@@ -1279,7 +1280,7 @@ section {
 
 /* Closing note */
 .assessment-footnote {
-    margin-top: 46px;
+    margin-top: 20px;
     text-align: center;
 }
 
@@ -1288,7 +1289,7 @@ section {
     align-items: center;
     justify-content: center;
     gap: 18px;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
 }
 
 .assessment-script::before,
@@ -1301,7 +1302,7 @@ section {
 
 .assessment-script span {
     font-family: 'Caveat', 'Segoe Script', cursive;
-    font-size: 1.65rem;
+    font-size: 1.45rem;
     font-weight: 600;
     color: var(--primary-light);
 }
@@ -1578,7 +1579,7 @@ section {
 
 .assessment-disclaimer {
     max-width: 820px;
-    margin: 20px auto 0;
+    margin: 0 auto;
     text-align: center;
     font-size: 0.8rem;
     line-height: 1.6;
@@ -1697,6 +1698,71 @@ section {
     .assessment-script::before,
     .assessment-script::after {
         width: 48px;
+    }
+}
+
+/* Short desktop viewports: keep the whole picker on one screen by narrowing
+   the cards rather than flattening them, so the artwork keeps its framing. */
+@media (min-width: 901px) and (max-height: 920px) {
+    .self-check-section {
+        padding: 36px 0;
+    }
+
+    .assessment-card.is-picking {
+        max-width: 980px;
+    }
+
+    .assessment-intro {
+        margin-bottom: 18px;
+    }
+
+    .assessment-eyebrow {
+        padding: 6px 16px;
+        margin-bottom: 12px;
+        font-size: 0.68rem;
+    }
+
+    .assessment-heading {
+        font-size: 1.9rem;
+        margin-bottom: 8px;
+    }
+
+    .assessment-sub {
+        font-size: 0.95rem;
+    }
+
+    .category-body {
+        padding: 11px 14px 12px;
+    }
+
+    .category-label {
+        font-size: 0.98rem;
+    }
+
+    .category-blurb {
+        font-size: 0.78rem;
+    }
+
+    .assessment-footnote {
+        margin-top: 16px;
+    }
+
+    .assessment-script span {
+        font-size: 1.3rem;
+    }
+
+    .assessment-disclaimer {
+        font-size: 0.76rem;
+    }
+}
+
+@media (min-width: 901px) and (max-height: 800px) {
+    .self-check-section {
+        padding: 22px 0;
+    }
+
+    .assessment-card.is-picking {
+        max-width: 900px;
     }
 }
 /* -------------------------------------------------------------
