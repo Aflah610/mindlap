@@ -3691,3 +3691,103 @@ section {
         font-size: 0.84rem;
     }
 }
+
+/* -------------------------------------------------------------
+   FOOTER ACCORDION (phones)
+   The script adds .has-accordion only on small screens, so desktop and
+   no-script visitors keep the open columns.
+   ------------------------------------------------------------- */
+.footer-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    text-align: left;
+    cursor: default;
+}
+
+.footer-chevron {
+    display: none;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: var(--accent-color);
+    transition: transform 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .footer-section.has-accordion .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .footer-section.has-accordion .footer-brand {
+        margin-bottom: 28px;
+    }
+
+    .footer-section.has-accordion .footer-links-col {
+        border-top: 1px solid rgba(142, 102, 222, 0.16);
+    }
+
+    .footer-section.has-accordion .footer-links-col:last-child {
+        border-bottom: 1px solid rgba(142, 102, 222, 0.16);
+    }
+
+    .footer-section.has-accordion .footer-links-col h4 {
+        margin: 0;
+    }
+
+    .footer-section.has-accordion .footer-toggle {
+        min-height: 60px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .footer-section.has-accordion .footer-toggle:focus-visible {
+        outline: 2px solid var(--accent-color);
+        outline-offset: 2px;
+        border-radius: 6px;
+    }
+
+    .footer-section.has-accordion .footer-chevron {
+        display: block;
+    }
+
+    .footer-section.has-accordion .is-open .footer-chevron {
+        transform: rotate(180deg);
+    }
+
+    .footer-section.has-accordion .footer-panel {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.3s ease;
+    }
+
+    .footer-section.has-accordion .is-open .footer-panel {
+        grid-template-rows: 1fr;
+    }
+
+    .footer-section.has-accordion .footer-panel > .footer-links {
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .footer-section.has-accordion .is-open .footer-panel > .footer-links {
+        padding-bottom: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .footer-chevron,
+    .footer-panel {
+        transition: none !important;
+    }
+}

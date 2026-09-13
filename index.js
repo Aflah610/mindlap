@@ -613,4 +613,78 @@ document.addEventListener('DOMContentLoaded', () => {
         backBtn.addEventListener('click', goBack);
         buildCategories();
     }
+
+    // --- 6. FOOTER ACCORDION (phones) ---
+    const footer = document.querySelector('.footer-section');
+
+    if (footer) {
+        const mobileQuery = window.matchMedia('(max-width: 768px)');
+        const sections = [];
+
+        const setOpen = (section, open) => {
+            section.col.classList.toggle('is-open', open);
+            section.button.setAttribute('aria-expanded', open ? 'true' : 'false');
+            section.panel.inert = !open;
+        };
+
+        footer.querySelectorAll('.footer-links-col').forEach((col, i) => {
+            const heading = col.querySelector('h4');
+            const list = col.querySelector('.footer-links');
+            if (!heading || !list) return;
+
+            const panelId = 'footer-panel-' + i;
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'footer-toggle';
+            button.setAttribute('aria-controls', panelId);
+            const label = document.createElement('span');
+            label.textContent = heading.textContent;
+            button.appendChild(label);
+            button.insertAdjacentHTML('beforeend',
+                '<svg class="footer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
+                'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+            heading.textContent = '';
+            heading.appendChild(button);
+
+            const panel = document.createElement('div');
+            panel.className = 'footer-panel';
+            panel.id = panelId;
+            list.parentNode.insertBefore(panel, list);
+            panel.appendChild(list);
+
+            const section = { col, button, panel };
+            sections.push(section);
+
+            button.addEventListener('click', () => {
+                if (!mobileQuery.matches) return;
+                const open = !col.classList.contains('is-open');
+                // One section at a time keeps the footer short
+                sections.forEach(s => setOpen(s, s === section ? open : false));
+            });
+        });
+
+        // Desktop keeps the plain always-open columns; only phones get the accordion.
+        const sync = () => {
+            const mobile = mobileQuery.matches;
+            footer.classList.toggle('has-accordion', mobile);
+            sections.forEach(s => {
+                if (mobile) {
+                    s.button.tabIndex = 0;
+                    setOpen(s, s.col.classList.contains('is-open'));
+                } else {
+                    s.button.tabIndex = -1;
+                    s.button.removeAttribute('aria-expanded');
+                    s.panel.inert = false;
+                }
+            });
+        };
+
+        sync();
+        if (mobileQuery.addEventListener) {
+            mobileQuery.addEventListener('change', sync);
+        } else {
+            mobileQuery.addListener(sync);
+        }
+    }
 });
