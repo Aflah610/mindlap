@@ -1064,61 +1064,41 @@ section {
    SELF-ASSESSMENT SECTION
    ------------------------------------------------------------- */
 .self-check-section {
-    background-color: var(--bg-white);
+    background: linear-gradient(180deg, #FBF9FE 0%, #F5F1FD 100%);
+    overflow: hidden;
+}
+
+.self-check-decor {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(420px 320px at 96% 4%, rgba(142, 102, 222, 0.12), transparent 70%),
+        radial-gradient(380px 300px at 2% 96%, rgba(142, 102, 222, 0.10), transparent 70%);
+}
+
+.self-check-section .container {
+    position: relative;
+    z-index: 1;
 }
 
 .assessment-card {
-    max-width: 820px;
+    max-width: 880px;
     margin: 0 auto;
-    background-color: var(--bg-calm);
+    background-color: var(--bg-white);
     border-radius: var(--radius-lg);
     border: 1px solid rgba(142, 102, 222, 0.10);
     box-shadow: var(--shadow-medium);
     padding: 40px;
 }
 
-/* Progress */
-.assessment-progress-wrap {
-    margin-bottom: 28px;
-}
-
-.assessment-progress-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.assessment-chip {
-    padding: 6px 14px;
-    border-radius: var(--radius-round);
-    background-color: var(--bg-lavender);
-    color: var(--primary-color);
-    font-size: 0.78rem;
-    font-weight: 700;
-}
-
-.assessment-count {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--text-muted);
-}
-
-.assessment-progress-bar {
-    width: 100%;
-    height: 6px;
-    background-color: rgba(142, 102, 222, 0.12);
-    border-radius: var(--radius-round);
-    overflow: hidden;
-}
-
-.assessment-progress {
-    height: 100%;
-    width: 0;
-    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
-    border-radius: var(--radius-round);
-    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+/* The picker shows its cards straight on the section background. */
+.assessment-card.is-picking {
+    max-width: 1120px;
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
 }
 
 /* Screens */
@@ -1142,49 +1122,130 @@ section {
     }
 }
 
+/* Intro */
+.assessment-intro {
+    text-align: center;
+    margin-bottom: 44px;
+}
+
+.assessment-eyebrow {
+    display: inline-block;
+    padding: 9px 22px;
+    margin-bottom: 22px;
+    border-radius: var(--radius-round);
+    background-color: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(142, 102, 222, 0.25);
+    color: var(--accent-color);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
 .assessment-heading {
-    font-size: 1.45rem;
-    margin-bottom: 8px;
+    font-size: 2.6rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 14px;
 }
 
 .assessment-sub {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     color: var(--text-muted);
-    margin-bottom: 28px;
 }
 
-/* Focus area tiles */
+/* Focus area cards */
 .category-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: 26px;
 }
 
 .category-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 8px;
-    padding: 24px 16px;
+    display: block;
+    padding: 0;
+    text-align: left;
     background-color: var(--bg-white);
-    border: 1px solid rgba(142, 102, 222, 0.12);
-    border-radius: var(--radius-md);
+    border: 1px solid rgba(142, 102, 222, 0.10);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
     font-family: var(--font-body);
     cursor: pointer;
+    box-shadow: 0 10px 28px rgba(74, 46, 128, 0.07);
     transition: var(--transition-smooth);
 }
 
 .category-tile:hover {
-    border-color: var(--accent-color);
-    background-color: var(--bg-lavender);
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-soft);
+    transform: translateY(-6px);
+    border-color: rgba(142, 102, 222, 0.28);
+    box-shadow: 0 20px 42px rgba(74, 46, 128, 0.16);
 }
 
-.category-icon {
-    width: 48px;
-    height: 48px;
+.category-media {
+    display: block;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+}
+
+.category-scene {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.category-badge {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.92);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(31, 18, 58, 0.18);
+}
+
+.category-svg {
+    width: 19px;
+    height: 19px;
+}
+
+.category-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px 20px 20px;
+}
+
+.category-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.category-label {
+    font-family: var(--font-heading);
+    font-size: 1.12rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.category-blurb {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+}
+
+.category-arrow {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     background-color: var(--bg-lavender);
     color: var(--primary-color);
@@ -1194,26 +1255,44 @@ section {
     transition: var(--transition-smooth);
 }
 
-.category-tile:hover .category-icon {
-    background-color: var(--white);
+.category-arrow svg {
+    width: 17px;
+    height: 17px;
 }
 
-.category-svg {
-    width: 24px;
-    height: 24px;
+.category-tile:hover .category-arrow {
+    background-color: var(--primary-color);
+    color: var(--white);
+    transform: translateX(3px);
 }
 
-.category-label {
-    font-family: var(--font-heading);
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text-main);
+/* Closing note */
+.assessment-footnote {
+    margin-top: 46px;
+    text-align: center;
 }
 
-.category-blurb {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    line-height: 1.4;
+.assessment-script {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 14px;
+}
+
+.assessment-script::before,
+.assessment-script::after {
+    content: '';
+    height: 1px;
+    width: min(120px, 16vw);
+    background-color: rgba(142, 102, 222, 0.35);
+}
+
+.assessment-script span {
+    font-family: 'Caveat', 'Segoe Script', cursive;
+    font-size: 1.65rem;
+    font-weight: 600;
+    color: var(--primary-light);
 }
 
 /* Questions */
@@ -1512,18 +1591,44 @@ section {
         font-size: 1.12rem;
     }
 
+    .assessment-intro {
+        margin-bottom: 28px;
+    }
+
+    .assessment-eyebrow {
+        padding: 8px 16px;
+        margin-bottom: 18px;
+        font-size: 0.66rem;
+        letter-spacing: 0.14em;
+    }
+
+    .assessment-heading {
+        font-size: 1.85rem;
+    }
+
+    .assessment-sub {
+        font-size: 0.98rem;
+    }
+
     .category-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 14px;
     }
 
-    .category-tile {
-        padding: 18px 10px;
+    .category-body {
+        padding: 14px;
+        gap: 10px;
     }
 
-    .category-icon {
-        width: 42px;
-        height: 42px;
+    .category-label {
+        font-size: 0.98rem;
+    }
+
+    .category-blurb {
+        font-size: 0.76rem;
+    }
+
+    .assessment-script span {
+        font-size: 1.35rem;
     }
 
     .result-head {
@@ -1544,16 +1649,45 @@ section {
 }
 
 @media (max-width: 380px) {
-    .category-grid {
-        grid-template-columns: 1fr;
-    }
-
     .scale-option {
         padding: 12px 14px;
         gap: 12px;
     }
 }
 
+
+@media (max-width: 900px) {
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .category-arrow {
+        display: none;
+    }
+
+    .category-badge {
+        left: 10px;
+        bottom: 10px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .category-svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .category-body {
+        padding: 12px 13px 14px;
+    }
+
+    .assessment-script::before,
+    .assessment-script::after {
+        width: 48px;
+    }
+}
 /* -------------------------------------------------------------
    TESTIMONIALS SECTION
    ------------------------------------------------------------- */

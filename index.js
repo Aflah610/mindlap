@@ -147,6 +147,96 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        // Card artwork. Drawn inline so the cards cost no extra requests; swap any
+        // entry for an <img> if illustrated artwork is added later.
+        function scene(id, body) {
+            return '<svg class="category-scene" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" ' +
+                'aria-hidden="true" focusable="false">' + body.replace(/@/g, 'sc-' + id) + '</svg>';
+        }
+
+        const SCENES = {
+            anxiety: scene('anxiety',
+                '<defs><linearGradient id="@" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#C4DCF5"/><stop offset="1" stop-color="#EDF5FD"/></linearGradient></defs>' +
+                '<rect width="400" height="200" fill="url(#@)"/>' +
+                '<circle cx="324" cy="44" r="23" fill="#FFF6DC"/>' +
+                '<ellipse cx="86" cy="50" rx="40" ry="15" fill="#FFFFFF" opacity=".82"/>' +
+                '<ellipse cx="124" cy="57" rx="26" ry="11" fill="#FFFFFF" opacity=".7"/>' +
+                '<path d="M0 148 L88 88 L158 142 L232 96 L312 150 L400 112 L400 200 L0 200Z" fill="#A9C0DE" opacity=".7"/>' +
+                '<path d="M0 168 L82 124 L168 172 L248 132 L338 178 L400 150 L400 200 L0 200Z" fill="#7F9BC4"/>' +
+                '<rect y="186" width="400" height="14" fill="#6B87B3"/>'),
+
+            depression: scene('depression',
+                '<defs><linearGradient id="@" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#3F3C66" /><stop offset="1" stop-color="#7C76AC"/></linearGradient></defs>' +
+                '<rect width="400" height="200" fill="url(#@)"/>' +
+                '<circle cx="318" cy="46" r="21" fill="#F6F2FF" opacity=".95"/>' +
+                '<circle cx="308" cy="40" r="18" fill="#4B4778" opacity=".85"/>' +
+                '<circle cx="70" cy="38" r="2.5" fill="#FFFFFF" opacity=".85"/>' +
+                '<circle cx="120" cy="62" r="2" fill="#FFFFFF" opacity=".7"/>' +
+                '<circle cx="196" cy="34" r="2.2" fill="#FFFFFF" opacity=".8"/>' +
+                '<circle cx="248" cy="70" r="1.8" fill="#FFFFFF" opacity=".6"/>' +
+                '<path d="M0 150 L90 106 L180 152 L270 112 L360 156 L400 136 L400 200 L0 200Z" fill="#332F55" opacity=".8"/>' +
+                '<path d="M0 174 L100 146 L210 180 L320 150 L400 176 L400 200 L0 200Z" fill="#272341"/>'),
+
+            relationship: scene('relationship',
+                '<defs><linearGradient id="@" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#FBD3AE"/><stop offset=".55" stop-color="#F7A98C"/>' +
+                '<stop offset="1" stop-color="#E78FA8"/></linearGradient></defs>' +
+                '<rect width="400" height="200" fill="url(#@)"/>' +
+                '<circle cx="214" cy="118" r="32" fill="#FFE9B8" opacity=".95"/>' +
+                '<rect y="124" width="400" height="76" fill="#DE8AA3" opacity=".5"/>' +
+                '<rect y="124" width="400" height="3" fill="#FFFFFF" opacity=".4"/>' +
+                '<ellipse cx="214" cy="150" rx="26" ry="5" fill="#FFE9B8" opacity=".45"/>' +
+                '<path d="M0 170 L400 170 L400 200 L0 200Z" fill="#6B5679"/>' +
+                '<circle cx="176" cy="140" r="9" fill="#453757"/>' +
+                '<path d="M167 170 v-16 a9 9 0 0 1 18 0 v16z" fill="#453757"/>' +
+                '<circle cx="200" cy="144" r="8" fill="#453757"/>' +
+                '<path d="M192 170 v-14 a8 8 0 0 1 16 0 v14z" fill="#453757"/>'),
+
+            stress: scene('stress',
+                '<defs><linearGradient id="@" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#FBD9A8"/><stop offset="1" stop-color="#FCF0DE"/></linearGradient></defs>' +
+                '<rect width="400" height="200" fill="url(#@)"/>' +
+                '<circle cx="72" cy="46" r="21" fill="#FBBF6E" opacity=".85"/>' +
+                '<path d="M0 140 L110 96 L210 146 L300 104 L400 148 L400 200 L0 200Z" fill="#DCBC90" opacity=".72"/>' +
+                '<path d="M0 166 L120 138 L240 176 L340 146 L400 168 L400 200 L0 200Z" fill="#BB9C70"/>' +
+                '<path d="M196 200 q20 -34 6 -58 q-12 -22 8 -40" stroke="#FBF1E2" stroke-width="11" ' +
+                'fill="none" stroke-linecap="round" opacity=".75"/>'),
+
+            loneliness: scene('loneliness',
+                '<defs><linearGradient id="@" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#8A76C2"/><stop offset=".6" stop-color="#C68FB8"/>' +
+                '<stop offset="1" stop-color="#F2BCAE"/></linearGradient></defs>' +
+                '<rect width="400" height="200" fill="url(#@)"/>' +
+                '<circle cx="332" cy="42" r="15" fill="#FFF2D9" opacity=".9"/>' +
+                '<g fill="#4C3E6E">' +
+                '<rect x="18" y="120" width="32" height="62"/><rect x="58" y="98" width="24" height="84"/>' +
+                '<rect x="90" y="128" width="30" height="54"/><rect x="252" y="108" width="26" height="74"/>' +
+                '<rect x="286" y="132" width="34" height="50"/><rect x="328" y="112" width="22" height="70"/>' +
+                '<rect x="358" y="136" width="30" height="46"/></g>' +
+                '<rect y="178" width="400" height="22" fill="#3E3260"/>' +
+                '<circle cx="186" cy="150" r="9" fill="#2F2549"/>' +
+                '<path d="M177 178 v-16 a9 9 0 0 1 18 0 v16z" fill="#2F2549"/>'),
+
+            other: scene('other',
+                '<defs><linearGradient id="@" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#BFE3F5"/><stop offset="1" stop-color="#EAF7F0"/></linearGradient></defs>' +
+                '<rect width="400" height="200" fill="url(#@)"/>' +
+                '<circle cx="84" cy="44" r="19" fill="#FFF0C4"/>' +
+                '<ellipse cx="288" cy="40" rx="33" ry="12" fill="#FFFFFF" opacity=".78"/>' +
+                '<path d="M0 140 Q120 112 240 140 T400 134 L400 200 L0 200Z" fill="#93CDA8"/>' +
+                '<path d="M0 166 Q140 144 262 170 T400 160 L400 200 L0 200Z" fill="#6FB78C"/>' +
+                '<rect x="326" y="118" width="9" height="46" rx="3" fill="#7A5A46"/>' +
+                '<circle cx="330" cy="112" r="26" fill="#5EA87C"/>' +
+                '<circle cx="310" cy="124" r="17" fill="#6FB78C"/>' +
+                '<circle cx="350" cy="124" r="16" fill="#6FB78C"/>')
+        };
+
+        const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" ' +
+            'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+
         const CATEGORIES = [
             {
                 key: 'anxiety',
@@ -330,6 +420,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 screens[key].classList.toggle('active', key === name);
             });
             progressWrap.hidden = (name === 'category');
+            // The picker presents its cards straight on the section background;
+            // only the question and result screens sit inside a panel.
+            cardEl.classList.toggle('is-picking', name === 'category');
         }
 
         // Screens differ a lot in height, so the top of the card can end up above
@@ -343,9 +436,16 @@ document.addEventListener('DOMContentLoaded', () => {
         function buildCategories() {
             categoryGrid.innerHTML = CATEGORIES.map(function (cat) {
                 return '<button type="button" class="category-tile" data-key="' + cat.key + '">' +
-                    '<span class="category-icon">' + icon(cat.icon, 'category-svg') + '</span>' +
-                    '<span class="category-label">' + cat.label + '</span>' +
-                    '<span class="category-blurb">' + cat.blurb + '</span>' +
+                    '<span class="category-media">' + SCENES[cat.key] +
+                        '<span class="category-badge">' + icon(cat.icon, 'category-svg') + '</span>' +
+                    '</span>' +
+                    '<span class="category-body">' +
+                        '<span class="category-text">' +
+                            '<span class="category-label">' + cat.label + '</span>' +
+                            '<span class="category-blurb">' + cat.blurb + '</span>' +
+                        '</span>' +
+                        '<span class="category-arrow">' + ARROW + '</span>' +
+                    '</span>' +
                     '</button>';
             }).join('');
 

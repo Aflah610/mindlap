@@ -36,11 +36,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
         rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index.css?v=104">
+    <link rel="stylesheet" href="index.css?v=105">
     <!-- Fix avatar blend mode -->
     <style>
         .tc-avatar-img { mix-blend-mode: normal !important; opacity: 1 !important; filter: none !important; background: none !important; }
@@ -506,14 +506,10 @@
  
     <!-- Interactive Self-Assessment Section -->
     <section class="self-check-section" id="self-check">
+        <div class="self-check-decor" aria-hidden="true"></div>
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Self-Assessment Check</h2>
-                <p class="section-subtitle">Choose what's weighing on you, answer 10 short questions, and we'll suggest
-                    the specialist best suited to support you. Private, free and takes about two minutes.</p>
-            </div>
 
-            <div class="assessment-card">
+            <div class="assessment-card is-picking">
                 <!-- Progress (shown once an area is chosen) -->
                 <div class="assessment-progress-wrap" id="assessment-progress-wrap" hidden>
                     <div class="assessment-progress-meta">
@@ -527,8 +523,12 @@
 
                 <!-- Step 1: choose a focus area -->
                 <div class="assessment-screen active" id="screen-category">
-                    <h3 class="assessment-heading">What would you like to check in on?</h3>
-                    <p class="assessment-sub">Pick the area that feels closest to what you're going through.</p>
+                    <div class="assessment-intro">
+                        <span class="assessment-eyebrow">A small step for a better you</span>
+                        <h2 class="assessment-heading">What would you like to <span class="text-gradient">check in
+                                on?</span></h2>
+                        <p class="assessment-sub">Pick the area that feels closest to what you're going through.</p>
+                    </div>
                     <div class="category-grid" id="category-grid"></div>
                 </div>
 
@@ -546,8 +546,13 @@
                 <div class="assessment-screen" id="screen-result"></div>
             </div>
 
-            <p class="assessment-disclaimer">This check is a self-reflection tool to help you put words to how you're
-                feeling. It is not a medical diagnosis. For a full assessment, speak with a qualified professional.</p>
+            <div class="assessment-footnote">
+                <p class="assessment-script"><span>Your feelings are valid</span></p>
+                <p class="assessment-disclaimer">This check is a self-reflection tool to help you put words to how
+                    you're feeling.<br>It is not a medical diagnosis. For a full assessment, speak with a qualified
+                    professional.</p>
+            </div>
+
         </div>
     </section>
 
@@ -875,7 +880,7 @@
     </div>
 
     <!-- Custom JS Script -->
-    <script src="index.js?v=9.0"></script>
+    <script src="index.js?v=10.0"></script>
 </body>
 
 </html>
