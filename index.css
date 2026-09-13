@@ -789,27 +789,6 @@ section {
     margin-bottom: 52px;
 }
 
-.therapists-eyebrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    margin-bottom: 22px;
-    color: var(--text-light);
-    font-size: 0.76rem;
-    font-weight: 600;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-}
-
-.therapists-eyebrow::before,
-.therapists-eyebrow::after {
-    content: '';
-    width: 64px;
-    height: 1px;
-    background-color: rgba(142, 102, 222, 0.35);
-}
-
 .therapists-section .section-title {
     font-size: 3.3rem;
     line-height: 1.08;
@@ -906,18 +885,6 @@ section {
 
     .therapists-section .therapists-header {
         margin-bottom: 32px;
-    }
-
-    .therapists-eyebrow {
-        gap: 12px;
-        margin-bottom: 16px;
-        font-size: 0.66rem;
-        letter-spacing: 0.16em;
-    }
-
-    .therapists-eyebrow::before,
-    .therapists-eyebrow::after {
-        width: 32px;
     }
 
     .therapists-section .section-title {
@@ -3545,7 +3512,6 @@ section {
     }
 
     /* Nothing under 12px */
-    .therapists-eyebrow,
     .assessment-eyebrow,
     .cta-eyebrow {
         font-size: 0.75rem;
@@ -3975,17 +3941,10 @@ section {
     white-space: nowrap;
 }
 
-/* Narrow phones: keep the therapists label on one line without dropping below 12px */
-@media (max-width: 380px) {
-    .therapists-eyebrow {
-        gap: 10px;
-        letter-spacing: 0.08em;
-        white-space: nowrap;
-    }
-
-    .therapists-eyebrow::before,
-    .therapists-eyebrow::after {
-        width: 20px;
-        flex-shrink: 0;
-    }
+/* Brand name keeps its own casing: "Mindlap SelfCheck". Mixed case reads
+   smaller than capitals, so it gets a slightly larger size on every screen. */
+.assessment-eyebrow {
+    text-transform: none;
+    letter-spacing: 0.04em;
+    font-size: 0.85rem;
 }
