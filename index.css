@@ -2477,6 +2477,10 @@ body.lightbox-open {
     margin-bottom: 48px;
 }
 
+.profile-card-full {
+    grid-column: span 2;
+}
+
 .profile-card {
     background-color: var(--bg-white);
     border-radius: var(--radius-lg);
@@ -2661,7 +2665,12 @@ body.lightbox-open {
         grid-template-columns: 1fr;
         gap: 24px;
     }
-    
+
+    /* Without this the span-2 card adds an implicit second column and the page overflows */
+    .profile-card-full {
+        grid-column: auto;
+    }
+
     .profile-hero-card {
         padding: 32px;
     }
@@ -2802,6 +2811,112 @@ body.lightbox-open {
     .float-icon {
         width: 20px;
         height: 20px;
+    }
+}
+
+/* -------------------------------------------------------------
+   STICKY MOBILE CONTACT BAR
+   ------------------------------------------------------------- */
+.sticky-contact-bar {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sticky-contact-bar {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background-color: var(--bg-white);
+        border-top: 1px solid var(--border-light);
+        box-shadow: 0 -4px 20px rgba(74, 46, 128, 0.10);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .sticky-contact-item {
+        flex: 1 1 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 8px;
+        text-decoration: none;
+        transition: var(--transition-smooth);
+    }
+
+    .sticky-contact-item:active {
+        opacity: 0.65;
+    }
+
+    .sticky-contact-call {
+        background-color: var(--bg-white);
+    }
+
+    .sticky-contact-chat {
+        background-color: var(--bg-lavender);
+    }
+
+    .sticky-contact-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+        color: var(--primary-color);
+    }
+
+    .sticky-contact-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.25;
+    }
+
+    .sticky-contact-label {
+        font-family: var(--font-heading);
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .sticky-contact-number {
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--text-muted);
+    }
+
+    .sticky-contact-chat .sticky-contact-label,
+    .sticky-contact-chat .sticky-contact-number {
+        color: var(--primary-color);
+    }
+
+    /* The bar takes over from the floating circles on mobile */
+    .floating-contact-actions {
+        display: none;
+    }
+
+    /* Keep the end of the page clear of the fixed bar */
+    body {
+        padding-bottom: 68px;
+    }
+}
+
+@media (max-width: 360px) {
+    .sticky-contact-item {
+        gap: 8px;
+        padding: 10px 6px;
+    }
+
+    .sticky-contact-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .sticky-contact-label {
+        font-size: 0.85rem;
+    }
+
+    .sticky-contact-number {
+        font-size: 0.7rem;
     }
 }
 
