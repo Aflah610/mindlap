@@ -2137,13 +2137,14 @@ section {
     background-color: var(--bg-white);
     border-top: 1px solid rgba(142, 102, 222, 0.08);
     padding-top: 80px;
+    padding-bottom: 64px;
 }
 
 .footer-grid {
     display: grid;
     grid-template-columns: 1.2fr repeat(3, 0.8fr) 1.2fr;
     gap: 40px;
-    margin-bottom: 60px;
+    margin-bottom: 0;
 }
 
 .footer-brand {
@@ -2224,23 +2225,6 @@ section {
     padding: 6px 12px;
     border-radius: var(--radius-round);
     margin-top: 8px;
-}
-
-.footer-bottom {
-    border-top: 1px solid rgba(142, 102, 222, 0.08);
-    padding: 30px 0;
-    background-color: var(--bg-calm);
-}
-
-.bottom-flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.bottom-flex p {
-    font-size: 0.82rem;
-    color: var(--text-light);
 }
 
 .footer-heart {
@@ -2748,11 +2732,6 @@ section {
         grid-column: span 1;
     }
     
-    .bottom-flex {
-        flex-direction: column;
-        gap: 12px;
-        text-align: center;
-    }
 }
 
 /* -------------------------------------------------------------
@@ -2761,7 +2740,7 @@ section {
 .profile-body {
     background-color: var(--bg-calm);
     padding-top: 140px;
-    padding-bottom: 90px;
+    padding-bottom: 0;
 }
 
 .profile-nav-back {
@@ -3087,7 +3066,7 @@ section {
 @media (max-width: 768px) {
     .profile-body {
         padding-top: 100px;
-        padding-bottom: 50px;
+        padding-bottom: 0;
     }
 
     .profile-content-grid {
@@ -3124,7 +3103,7 @@ section {
 @media (max-width: 480px) {
     .profile-body {
         padding-top: 90px;
-        padding-bottom: 40px;
+        padding-bottom: 0;
     }
     
     .profile-hero-card {
@@ -3484,11 +3463,21 @@ section {
     margin: 0 auto 18px;
 }
 
+/* Breathing room between the profile banner and the footer */
+.profile-cta-banner {
+    margin-bottom: 80px;
+}
+
 @media (max-width: 768px) {
     /* Room for the fixed Call/Chat bar, including the iPhone home indicator */
+    /* Room for the fixed Call/Chat bar lives inside the footer, so the page ends in white */
     body,
     body.profile-body {
-        padding-bottom: calc(72px + env(safe-area-inset-bottom));
+        padding-bottom: 0;
+    }
+
+    .footer-section {
+        padding-bottom: calc(40px + 72px + env(safe-area-inset-bottom));
     }
 
     /* Menu button: 44px touch area, dots stay where they were */
@@ -3551,6 +3540,10 @@ section {
         margin-top: 10px;
     }
 
+    .profile-cta-banner {
+        margin-bottom: 48px;
+    }
+
     /* Nothing under 12px */
     .therapists-eyebrow,
     .assessment-eyebrow,
@@ -3586,7 +3579,7 @@ section {
     .footer-grid {
         grid-template-columns: 1fr 1fr;
         gap: 32px 20px;
-        margin-bottom: 36px;
+        margin-bottom: 0;
     }
 
     .footer-brand,
