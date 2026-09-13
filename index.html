@@ -40,7 +40,7 @@
         rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index.css?v=103">
+    <link rel="stylesheet" href="index.css?v=104">
     <!-- Fix avatar blend mode -->
     <style>
         .tc-avatar-img { mix-blend-mode: normal !important; opacity: 1 !important; filter: none !important; background: none !important; }
@@ -504,113 +504,50 @@
         </div>
     </section>
  
-    <!-- Why Choose Mindlap & Interactive Self-Assessment Section -->
-    <section class="split-interactive-section" id="self-check">
-        <div class="container split-grid">
- 
-            <!-- Left Panel: Mindfulness Illustration -->
-            <div class="why-choose-media">
-                <img src="assets/why-choose.webp" alt="Mindlap Mindfulness and Meditation Illustration"
-                    class="why-choose-img" width="560" height="560" loading="lazy">
+    <!-- Interactive Self-Assessment Section -->
+    <section class="self-check-section" id="self-check">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Self-Assessment Check</h2>
+                <p class="section-subtitle">Choose what's weighing on you, answer 10 short questions, and we'll suggest
+                    the specialist best suited to support you. Private, free and takes about two minutes.</p>
             </div>
 
-            <!-- Right Panel: Interactive Self-Assessment Quiz -->
-            <div class="quiz-container">
-                <div class="quiz-card">
-                    <div class="quiz-header">
-                        <h3>Self-Assessment Check</h3>
-                        <p>Not sure what you're feeling? Take a 2-minute quick check to understand yourself better.</p>
-                        <!-- Progress bar -->
-                        <div class="quiz-progress-bar">
-                            <div class="quiz-progress" id="quiz-progress" style="width: 20%;"></div>
-                        </div>
+            <div class="assessment-card">
+                <!-- Progress (shown once an area is chosen) -->
+                <div class="assessment-progress-wrap" id="assessment-progress-wrap" hidden>
+                    <div class="assessment-progress-meta">
+                        <span class="assessment-chip" id="assessment-chip"></span>
+                        <span class="assessment-count" id="assessment-count"></span>
                     </div>
-
-                    <div class="quiz-body">
-                        <!-- Question 1 -->
-                        <div class="quiz-step active" data-step="1">
-                            <h4 class="question-text">1. How has your sleep been over the past week?</h4>
-                            <div class="option-list">
-                                <button class="quiz-option" data-score="1" data-value="normal">Sound sleep, feel
-                                    refreshed</button>
-                                <button class="quiz-option" data-score="2" data-value="restless">Slightly restless or
-                                    interrupted</button>
-                                <button class="quiz-option" data-score="3" data-value="insomnia">Finding it hard to
-                                    fall/stay asleep</button>
-                                <button class="quiz-option" data-score="3" data-value="oversleeping">Oversleeping, still
-                                    feeling exhausted</button>
-                            </div>
-                        </div>
-
-                        <!-- Question 2 -->
-                        <div class="quiz-step" data-step="2">
-                            <h4 class="question-text">2. How often do you feel overwhelmed or anxious?</h4>
-                            <div class="option-list">
-                                <button class="quiz-option" data-score="1" data-value="rarely">Rarely or normal daily
-                                    stress</button>
-                                <button class="quiz-option" data-score="2" data-value="sometimes">Sometimes, but
-                                    manageable</button>
-                                <button class="quiz-option" data-score="3" data-value="often">Frequently throughout the
-                                    week</button>
-                                <button class="quiz-option" data-score="4" data-value="constantly">Almost constantly,
-                                    hard to focus</button>
-                            </div>
-                        </div>
-
-                        <!-- Question 3 -->
-                        <div class="quiz-step" data-step="3">
-                            <h4 class="question-text">3. Which area is currently causing the most stress?</h4>
-                            <div class="option-list">
-                                <button class="quiz-option" data-score="2" data-value="work">Work pressure &
-                                    professional burnout</button>
-                                <button class="quiz-option" data-score="3" data-value="relationship">Relationship or
-                                    family concerns</button>
-                                <button class="quiz-option" data-score="2" data-value="personal">Self-esteem & internal
-                                    growth</button>
-                                <button class="quiz-option" data-score="3" data-value="trauma">Past experiences or
-                                    emotional wounds</button>
-                            </div>
-                        </div>
-
-                        <!-- Question 4 -->
-                        <div class="quiz-step" data-step="4">
-                            <h4 class="question-text">4. How easily can you regulate your emotional responses?</h4>
-                            <div class="option-list">
-                                <button class="quiz-option" data-score="1" data-value="easy">Easily, I communicate
-                                    calmly</button>
-                                <button class="quiz-option" data-score="2" data-value="moderate">Moderate, sometimes I
-                                    suppress feelings</button>
-                                <button class="quiz-option" data-score="3" data-value="hard">Hard, small triggers affect
-                                    me deeply</button>
-                            </div>
-                        </div>
-
-                        <!-- Quiz Result -->
-                        <div class="quiz-step" data-step="result" id="quiz-result">
-                            <div class="result-icon"></div>
-                            <h4 class="result-title">We are here to support you.</h4>
-                            <p class="result-description" id="result-desc">Based on your choices, you might be
-                                experiencing moderate stress and anxiety support needs. We recommend focusing on
-                                emotional regulation and stress management.</p>
-
-                            <div class="recommended-therapist-block">
-                                <p class="recommendation-header">Recommended Specialist For You:</p>
-                                <div class="recommendation-profile" id="recommended-profile-box">
-                                    <!-- Dynamic content based on quiz results -->
-                                </div>
-                            </div>
-
-                            <div class="quiz-actions">
-                                <button class="btn btn-outline btn-sm" id="btn-restart-quiz">Restart</button>
-                                <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session."
-                                    target="_blank" class="btn btn-primary btn-sm" id="quiz-book-btn">Book Therapy
-                                    Session</a>
-                            </div>
-                        </div>
+                    <div class="assessment-progress-bar">
+                        <div class="assessment-progress" id="assessment-progress"></div>
                     </div>
                 </div>
+
+                <!-- Step 1: choose a focus area -->
+                <div class="assessment-screen active" id="screen-category">
+                    <h3 class="assessment-heading">What would you like to check in on?</h3>
+                    <p class="assessment-sub">Pick the area that feels closest to what you're going through.</p>
+                    <div class="category-grid" id="category-grid"></div>
+                </div>
+
+                <!-- Step 2: questions -->
+                <div class="assessment-screen" id="screen-question">
+                    <h3 class="assessment-question" id="question-text"></h3>
+                    <div class="scale-list" id="scale-list"></div>
+                    <button type="button" class="assessment-back" id="assessment-back">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Back
+                    </button>
+                </div>
+
+                <!-- Step 3: result -->
+                <div class="assessment-screen" id="screen-result"></div>
             </div>
 
+            <p class="assessment-disclaimer">This check is a self-reflection tool to help you put words to how you're
+                feeling. It is not a medical diagnosis. For a full assessment, speak with a qualified professional.</p>
         </div>
     </section>
 
@@ -938,7 +875,7 @@
     </div>
 
     <!-- Custom JS Script -->
-    <script src="index.js?v=8.0"></script>
+    <script src="index.js?v=9.0"></script>
 </body>
 
 </html>
