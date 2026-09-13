@@ -983,13 +983,6 @@ section {
     flex-shrink: 0;
 }
 
-.tc-desc {
-    font-size: 0.76rem;
-    line-height: 1.55;
-    color: var(--text-muted);
-    margin: 0;
-}
-
 /* -- Footer: price, language, button -- */
 .tc-footer {
     display: flex;
