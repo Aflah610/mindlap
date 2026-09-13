@@ -779,20 +779,161 @@ section {
    ------------------------------------------------------------- */
 .therapists-section {
     background-color: var(--bg-calm);
-    padding: 48px 0 40px 0;
+    padding: 96px 0 40px 0;
 }
 
-.therapists-section .section-header {
-    margin-bottom: 32px;
+.therapists-section .therapists-header {
+    position: relative;
+    z-index: 1;
+    max-width: 820px;
+    margin-bottom: 52px;
+}
+
+.therapists-eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 22px;
+    color: var(--text-light);
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+}
+
+.therapists-eyebrow::before,
+.therapists-eyebrow::after {
+    content: '';
+    width: 64px;
+    height: 1px;
+    background-color: rgba(142, 102, 222, 0.35);
 }
 
 .therapists-section .section-title {
-    font-size: 1.8rem;
-    margin-bottom: 6px;
+    font-size: 3.3rem;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    margin-bottom: 20px;
+}
+
+/* Own line, with room below so background-clip text doesn't shave the "y" */
+.therapists-section .section-title .text-gradient {
+    display: block;
+    padding-bottom: 0.08em;
 }
 
 .therapists-section .section-subtitle {
-    font-size: 0.9rem;
+    max-width: 580px;
+    margin: 0 auto;
+    font-size: 1.12rem;
+    line-height: 1.6;
+}
+
+/* Decorations either side of the heading, anchored to the section */
+.therapists-note {
+    position: absolute;
+    top: 128px;
+    left: clamp(24px, 10vw, 280px);
+    text-align: center;
+    color: #7D7890;
+    transform: rotate(-12deg);
+    pointer-events: none;
+}
+
+.therapists-note-text {
+    font-family: 'Caveat', 'Segoe Script', cursive;
+    font-size: 1.55rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.therapists-note-heart {
+    width: 22px;
+    height: 22px;
+    margin-top: 6px;
+    color: var(--accent-color);
+}
+
+.therapists-wave {
+    position: absolute;
+    top: 252px;
+    left: 0;
+    width: clamp(260px, 26vw, 520px);
+    height: 110px;
+    color: rgba(142, 102, 222, 0.3);
+    pointer-events: none;
+}
+
+.therapists-plant {
+    position: absolute;
+    top: 136px;
+    right: clamp(16px, 4vw, 120px);
+    width: clamp(180px, 15vw, 290px);
+    height: auto;
+    pointer-events: none;
+}
+
+/* Cards always paint above the decorations */
+.therapists-section .therapist-grid-new {
+    position: relative;
+    z-index: 1;
+}
+
+/* Below this the decorations would crowd the centred heading */
+@media (max-width: 1180px) {
+    .therapists-note,
+    .therapists-wave,
+    .therapists-plant {
+        display: none;
+    }
+}
+
+@media (max-width: 1024px) {
+    .therapists-section {
+        padding-top: 72px;
+    }
+
+    .therapists-section .section-title {
+        font-size: 2.6rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .therapists-section {
+        padding-top: 56px;
+    }
+
+    .therapists-section .therapists-header {
+        margin-bottom: 32px;
+    }
+
+    .therapists-eyebrow {
+        gap: 12px;
+        margin-bottom: 16px;
+        font-size: 0.66rem;
+        letter-spacing: 0.16em;
+    }
+
+    .therapists-eyebrow::before,
+    .therapists-eyebrow::after {
+        width: 32px;
+    }
+
+    .therapists-section .section-title {
+        font-size: 2.1rem;
+        margin-bottom: 14px;
+    }
+
+    .therapists-section .section-subtitle {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .therapists-section .section-title {
+        font-size: 1.8rem;
+    }
 }
 
 /* ---- New 3-col therapist grid ---- */
