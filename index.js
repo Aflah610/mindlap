@@ -330,6 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 label: 'Loneliness',
                 blurb: 'Feeling alone or disconnected',
                 noun: 'loneliness',
+                image: 'assets/check-loneliness.webp',
                 icon: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
                 match: { higher: 'anasooya', lower: 'theresa' },
                 questions: [
