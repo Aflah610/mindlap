@@ -243,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 label: 'Anxiety',
                 blurb: 'Worry, tension, restlessness',
                 noun: 'anxiety',
+                image: 'assets/check-anxiety.webp',
                 icon: '<path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path><polyline points="13 11 9 17 15 17 11 23"></polyline>',
                 match: { higher: 'anasooya', lower: 'theresa' },
                 questions: [
@@ -435,8 +436,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function buildCategories() {
             categoryGrid.innerHTML = CATEGORIES.map(function (cat) {
+                const photo = cat.image
+                    ? '<img class="category-photo" src="' + cat.image + '" alt="" loading="lazy" ' +
+                      'width="400" height="225">'
+                    : '';
                 return '<button type="button" class="category-tile" data-key="' + cat.key + '">' +
-                    '<span class="category-media">' + SCENES[cat.key] +
+                    '<span class="category-media">' + SCENES[cat.key] + photo +
                         '<span class="category-badge">' + icon(cat.icon, 'category-svg') + '</span>' +
                     '</span>' +
                     '<span class="category-body">' +
@@ -448,6 +453,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     '</span>' +
                     '</button>';
             }).join('');
+
+            // If artwork is missing, drop it and let the drawn scene below show through.
+            categoryGrid.querySelectorAll('.category-photo').forEach(function (photo) {
+                photo.addEventListener('error', function () {
+                    photo.remove();
+                });
+            });
 
             categoryGrid.querySelectorAll('.category-tile').forEach(function (tile) {
                 tile.addEventListener('click', function () {
