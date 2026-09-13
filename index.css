@@ -2859,10 +2859,14 @@ body.lightbox-open {
     }
 
     .sticky-contact-icon {
-        width: 24px;
-        height: 24px;
+        width: 28px;
+        height: 28px;
         flex-shrink: 0;
         color: var(--primary-color);
+    }
+
+    .sticky-contact-chat .sticky-contact-icon {
+        color: #25D366;
     }
 
     .sticky-contact-text {
@@ -2907,8 +2911,8 @@ body.lightbox-open {
     }
 
     .sticky-contact-icon {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
     }
 
     .sticky-contact-label {
