@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update WhatsApp message link on result booking button
         const bookBtn = document.getElementById('quiz-book-btn');
         if (bookBtn) {
-            bookBtn.setAttribute('href', `https://wa.me/917594000993?text=${encodeURIComponent(matchedTherapist.waText)}`);
+            bookBtn.setAttribute('href', `https://wa.me/917594000774?text=${encodeURIComponent(matchedTherapist.waText)}`);
         }
 
         // Display result step
