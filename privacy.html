@@ -29,25 +29,33 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="index.css?v=111">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css?v=113">
   <style>
     .page-header {
-      padding: 150px 0 50px;
+      padding: 150px 24px 40px;
       text-align: center;
-      background: var(--bg-color);
+    }
+    .page-header h1 {
+      font-size: clamp(1.9rem, 6vw, 2.6rem);
+      margin-bottom: 8px;
+    }
+    .page-header p {
+      color: var(--text-light);
+      font-size: 0.95rem;
     }
     .page-content {
       max-width: 800px;
       margin: 0 auto;
-      padding: 0 20px 100px;
+      padding: 0 24px 96px;
       line-height: 1.8;
-      color: var(--text-color);
+      color: var(--text-muted);
     }
     .page-content h2 {
       margin-top: 40px;
-      margin-bottom: 20px;
-      color: var(--primary-purple);
+      margin-bottom: 16px;
+      font-size: clamp(1.25rem, 4.5vw, 1.6rem);
+      color: var(--primary-color);
     }
     .page-content p {
       margin-bottom: 20px;
@@ -59,28 +67,54 @@
     .page-content li {
       margin-bottom: 10px;
     }
+    .page-content strong {
+      color: var(--text-main);
+    }
+    .page-content a {
+      color: var(--primary-color);
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+    @media (max-width: 768px) {
+      .page-header {
+        padding: 104px 20px 28px;
+      }
+      .page-content {
+        padding: 0 20px 64px;
+        line-height: 1.75;
+      }
+      .page-content h2 {
+        margin-top: 32px;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <nav id="navbar" class="scrolled">
-    <div class="nav-container">
-      <a href="index.html" class="logo">
-        <span class="nav-logo-text">Mind<span>lap</span></span>
-      </a>
-      <div class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="index.html#therapists">Therapists</a>
-        <a href="index.html#therapists">About</a>
-        <a href="index.html#contact">Contact</a>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle Dark/Light Mode">
-          <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-          <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-        </button>
-      </div>
-      <a href="https://wa.me/917594000774" target="_blank" class="btn btn-primary">WhatsApp Us</a>
-    </div>
-  </nav>
+    <!-- Header / Navbar -->
+    <header class="navbar-header scrolled" id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo-area">
+                <img src="assets/logo.webp" alt="Mindlap - Online Therapy & Counseling" id="nav-logo" class="logo-img" width="160" height="48">
+            </a>
+            
+            <nav class="nav-links" id="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#therapists" class="nav-link">Therapists</a>
+                <a href="index.html#self-check" class="nav-link">Self Check</a>
+                <a href="index.html#therapists" class="nav-link">About Us</a>
+                <a href="index.html#contact" class="nav-link">Contact</a>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session." target="_blank" class="btn btn-primary btn-book">Book Session</a>
+                <button class="mobile-nav-toggle" id="mobile-toggle" aria-label="Toggle menu" aria-expanded="false">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+            </div>
+        </div>
+    </header>
 
   <header class="page-header">
     <h1 class="section-title">Privacy Policy</h1>
@@ -116,54 +150,123 @@
     <p>If you have questions or comments about this Privacy Policy, please contact us at: <a href="mailto:Officialmindlap@gmail.com">Officialmindlap@gmail.com</a>.</p>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer minimal-footer">
-    <div class="footer-container">
-      <div class="footer-brand">
-        <a href="index.html" class="logo">
-          <span class="nav-logo-text">Mind<span>lap</span></span>
-        </a>
-        <p>Premium mental wellness consultations designed to help you feel safe, understood, and supported.</p>
-        
-        <div class="footer-minimal-links">
-          <a href="index.html">Home</a>
-          <a href="index.html#therapists">Therapists</a>
-          <a href="index.html#therapists">About Us</a>
-          <a href="index.html#contact">Contact</a>
+    <!-- Footer Section -->
+    <footer class="footer-section" id="contact">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <img src="assets/logo.webp" alt="Mindlap - Online Therapy Logo" class="footer-logo" width="160" height="48" loading="lazy">
+                <p class="brand-tagline">WHERE MINDS FIND COMFORT</p>
+                <div class="social-icons">
+                    <a href="https://www.instagram.com/mindlapmalayalam?igsi=cWN0dHhqeDEyNnds" target="_blank" class="social-link" aria-label="Instagram">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    </a>
+                    <a href="https://www.facebook.com/profile.php?id=61594069254574" target="_blank" class="social-link" aria-label="Facebook">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                    </a>
+                    <a href="https://www.linkedin.com/company/mindlaptherapy/" target="_blank" class="social-link" aria-label="LinkedIn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sm"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-links-col">
+                <h4>Company</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html#therapists">About Us</a></li>
+                    <li><a href="index.html#therapists">Therapists</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="index.html#contact">Contact Us</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col">
+                <h4>Services</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html#therapists">Individual Therapy</a></li>
+                    <li><a href="index.html#therapists">Couples Therapy</a></li>
+                    <li><a href="index.html#therapists">Adolescent Therapy</a></li>
+                    <li><a href="index.html#therapists">Trauma Therapy</a></li>
+                    <li><a href="index.html#self-check">Self Check</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col">
+                <h4>Support</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms & Conditions</a></li>
+                    <li><a href="#">Refund Policy</a></li>
+                    <li><a href="#">Emergency Policy</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col contact-col">
+                <h4>We're here 24/7</h4>
+                <ul class="footer-links contact-info">
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-contact"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        <span>+91 75940 00774</span>
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-contact"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        <span>Officialmindlap@gmail.com</span>
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-contact"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        <span>Calicut, Kerala, India</span>
+                    </li>
+
+                </ul>
+            </div>
         </div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2026 Mindlap. All rights reserved.</p>
-      <div class="legal-links">
-        <a href="privacy.html">Privacy Policy</a>
-        <a href="terms.html">Terms & Conditions</a>
-      </div>
-    </div>
-  </footer>
+        <div class="footer-bottom">
+            <div class="container bottom-flex">
+                <p>&copy; 2026 Mindlap. All rights reserved.</p>
+                
+            </div>
+        </div>
+    </footer>
 
-  <!-- Sticky Mobile Contact Bar -->
-  <div class="sticky-contact-bar">
-      <a href="tel:+917594000774" class="sticky-contact-item sticky-contact-call" aria-label="Call Mindlap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sticky-contact-icon">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-          </svg>
-          <span class="sticky-contact-text">
-              <span class="sticky-contact-label">Call Us</span>
-              <span class="sticky-contact-number">+91 75940 00774</span>
-          </span>
-      </a>
-      <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session." target="_blank" class="sticky-contact-item sticky-contact-chat" aria-label="Chat with Mindlap on WhatsApp">
-          <svg viewBox="0 0 24 24" fill="currentColor" class="sticky-contact-icon">
-              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.504-5.717-1.464L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.114-2.905-6.99C16.246 1.875 13.765 1.04 11.13 1.04 5.69 1.04 1.267 5.463 1.263 10.902c-.001 1.73.461 3.42 1.337 4.91L1.646 21.03l5-1.876zM17.65 14.542c-.32-.16-1.89-.93-2.185-1.04-.294-.11-.51-.16-.724.16-.215.32-.832 1.04-1.02 1.255-.188.215-.377.24-.697.08-.32-.16-1.352-.5-2.575-1.59-.95-.848-1.592-1.895-1.778-2.215-.187-.32-.02-.493.14-.653.145-.143.32-.373.48-.56.16-.188.215-.32.32-.533.11-.215.055-.4-.027-.56-.083-.16-.724-1.745-.993-2.394-.262-.63-.526-.547-.724-.547-.188-.002-.403-.002-.618-.002-.215 0-.565.08-.86.4-.295.32-1.127 1.103-1.127 2.69 0 1.587 1.155 3.12 1.314 3.336.16.215 2.273 3.473 5.508 4.872.77.332 1.37.53 1.838.678.773.245 1.478.21 2.035.127.62-.093 1.89-.773 2.156-1.48.267-.706.267-1.313.187-1.438-.08-.125-.295-.205-.615-.365z"/>
-          </svg>
-          <span class="sticky-contact-text">
-              <span class="sticky-contact-label">Chat With Us</span>
-              <span class="sticky-contact-number">+91 75940 00774</span>
-          </span>
-      </a>
-  </div>
+    <!-- Floating Action Contact Buttons -->
+    <div class="floating-contact-actions">
+        <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session." 
+           target="_blank" class="floating-btn btn-whatsapp" aria-label="Chat on WhatsApp">
+            <svg viewBox="0 0 24 24" fill="currentColor" class="float-icon">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.504-5.717-1.464L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.114-2.905-6.99C16.246 1.875 13.765 1.04 11.13 1.04 5.69 1.04 1.267 5.463 1.263 10.902c-.001 1.73.461 3.42 1.337 4.91L1.646 21.03l5-1.876zM17.65 14.542c-.32-.16-1.89-.93-2.185-1.04-.294-.11-.51-.16-.724.16-.215.32-.832 1.04-1.02 1.255-.188.215-.377.24-.697.08-.32-.16-1.352-.5-2.575-1.59-.95-.848-1.592-1.895-1.778-2.215-.187-.32-.02-.493.14-.653.145-.143.32-.373.48-.56.16-.188.215-.32.32-.533.11-.215.055-.4-.027-.56-.083-.16-.724-1.745-.993-2.394-.262-.63-.526-.547-.724-.547-.188-.002-.403-.002-.618-.002-.215 0-.565.08-.86.4-.295.32-1.127 1.103-1.127 2.69 0 1.587 1.155 3.12 1.314 3.336.16.215 2.273 3.473 5.508 4.872.77.332 1.37.53 1.838.678.773.245 1.478.21 2.035.127.62-.093 1.89-.773 2.156-1.48.267-.706.267-1.313.187-1.438-.08-.125-.295-.205-.615-.365z"/>
+            </svg>
+        </a>
+        <a href="tel:+917594000774" class="floating-btn btn-phone" aria-label="Call Us">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="float-icon">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+        </a>
+    </div>
 
-  <script src="script.js?v=2"></script>
+    <!-- Sticky Mobile Contact Bar -->
+    <div class="sticky-contact-bar">
+        <a href="tel:+917594000774" class="sticky-contact-item sticky-contact-call" aria-label="Call Mindlap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sticky-contact-icon">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            <span class="sticky-contact-text">
+                <span class="sticky-contact-label">Call Us</span>
+                <span class="sticky-contact-number">+91 75940 00774</span>
+            </span>
+        </a>
+        <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session." target="_blank" class="sticky-contact-item sticky-contact-chat" aria-label="Chat with Mindlap on WhatsApp">
+            <svg viewBox="0 0 24 24" fill="currentColor" class="sticky-contact-icon">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.504-5.717-1.464L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.114-2.905-6.99C16.246 1.875 13.765 1.04 11.13 1.04 5.69 1.04 1.267 5.463 1.263 10.902c-.001 1.73.461 3.42 1.337 4.91L1.646 21.03l5-1.876zM17.65 14.542c-.32-.16-1.89-.93-2.185-1.04-.294-.11-.51-.16-.724.16-.215.32-.832 1.04-1.02 1.255-.188.215-.377.24-.697.08-.32-.16-1.352-.5-2.575-1.59-.95-.848-1.592-1.895-1.778-2.215-.187-.32-.02-.493.14-.653.145-.143.32-.373.48-.56.16-.188.215-.32.32-.533.11-.215.055-.4-.027-.56-.083-.16-.724-1.745-.993-2.394-.262-.63-.526-.547-.724-.547-.188-.002-.403-.002-.618-.002-.215 0-.565.08-.86.4-.295.32-1.127 1.103-1.127 2.69 0 1.587 1.155 3.12 1.314 3.336.16.215 2.273 3.473 5.508 4.872.77.332 1.37.53 1.838.678.773.245 1.478.21 2.035.127.62-.093 1.89-.773 2.156-1.48.267-.706.267-1.313.187-1.438-.08-.125-.295-.205-.615-.365z"/>
+            </svg>
+            <span class="sticky-contact-text">
+                <span class="sticky-contact-label">Chat With Us</span>
+                <span class="sticky-contact-number">+91 75940 00774</span>
+            </span>
+        </a>
+    </div>
+
+    <!-- Custom JS Script -->
+    <script src="index.js?v=17.0"></script>
 </body>
 </html>

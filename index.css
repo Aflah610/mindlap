@@ -3474,3 +3474,227 @@ section {
     }
 }
 
+/* -------------------------------------------------------------
+   MOBILE POLISH
+   Kept last so it wins over the earlier breakpoint rules.
+   ------------------------------------------------------------- */
+
+/* The profile banner clips anything outside it, so the heart sits inside. */
+.cta-heart-icon {
+    margin: 0 auto 18px;
+}
+
+@media (max-width: 768px) {
+    /* Room for the fixed Call/Chat bar, including the iPhone home indicator */
+    body,
+    body.profile-body {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom));
+    }
+
+    /* Menu button: 44px touch area, dots stay where they were */
+    .mobile-nav-toggle {
+        width: 44px;
+        height: 44px;
+        padding: 12px;
+        margin-left: -16px;
+    }
+
+    .nav-links {
+        height: calc(100dvh - 72px);
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0;
+    }
+
+    .logo-area {
+        min-height: 44px;
+    }
+
+    .btn {
+        min-height: 44px;
+    }
+
+    .tc-view-btn {
+        min-height: 46px;
+        padding: 12px 18px !important;
+        font-size: 0.88rem !important;
+    }
+
+    /* Name links: bigger touch area without moving anything */
+    .tc-name a {
+        display: inline-block;
+        padding: 12px 0;
+        margin: -12px 0;
+    }
+
+    .social-icons {
+        gap: 14px;
+    }
+
+    .social-link {
+        width: 44px;
+        height: 44px;
+    }
+
+    .profile-nav-back {
+        min-height: 44px;
+        margin-bottom: 16px;
+    }
+
+    .assessment-back {
+        min-height: 44px;
+        margin-top: 10px;
+    }
+
+    /* Nothing under 12px */
+    .therapists-eyebrow,
+    .assessment-eyebrow,
+    .cta-eyebrow {
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+    }
+
+    .tc-lang-badge {
+        font-size: 0.75rem;
+        padding: 3px 11px;
+    }
+
+    .tc-spec-dot {
+        font-size: 0.8rem;
+    }
+
+    .tc-price-text small,
+    .tc-lang-text small {
+        font-size: 0.75rem;
+    }
+
+    .tc-price-text strong,
+    .tc-lang-text strong {
+        font-size: 0.85rem;
+    }
+
+    .sticky-contact-number {
+        font-size: 0.78rem;
+    }
+
+    /* Footer: brand and contact full width, link lists side by side */
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 32px 20px;
+        margin-bottom: 36px;
+    }
+
+    .footer-brand,
+    .contact-col {
+        grid-column: 1 / -1;
+    }
+
+    .footer-links-col h4 {
+        margin-bottom: 8px;
+    }
+
+    .footer-links li {
+        margin-bottom: 0;
+    }
+
+    .footer-links a {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+    }
+
+    .footer-links a:hover {
+        padding-left: 0;
+    }
+
+    .contact-info li {
+        min-height: 44px;
+        margin-bottom: 4px;
+    }
+}
+
+@media (max-width: 560px) {
+    /* Profile hero: photo on top, details centred underneath */
+    .profile-hero-grid {
+        grid-template-columns: 1fr;
+        gap: 22px;
+        text-align: center;
+    }
+
+    .profile-hero-media {
+        width: 100%;
+        max-width: 230px;
+        margin: 0 auto;
+    }
+
+    .profile-hero-img {
+        max-width: 230px;
+        aspect-ratio: 1 / 1;
+    }
+
+    .profile-hero-info {
+        align-items: center;
+    }
+
+    .profile-hero-info h1 {
+        font-size: 1.9rem;
+        margin-bottom: 6px;
+    }
+
+    .profile-hero-role {
+        font-size: 0.9rem;
+        margin-bottom: 14px;
+    }
+
+    .profile-hero-edu-container {
+        justify-content: center;
+        text-align: left;
+        margin-bottom: 16px;
+    }
+
+    .profile-hero-edu {
+        font-size: 0.9rem !important;
+    }
+
+    .profile-hero-tags {
+        justify-content: center;
+    }
+
+    .cta-heart-icon {
+        margin: 0 auto 14px;
+    }
+}
+
+@media (max-width: 380px) {
+    .assessment-script {
+        gap: 10px;
+    }
+
+    .assessment-script::before,
+    .assessment-script::after {
+        width: 26px;
+    }
+
+    .assessment-script span {
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 360px) {
+    .sticky-contact-number {
+        font-size: 0.75rem;
+    }
+
+    .footer-grid {
+        gap: 28px 14px;
+    }
+
+    .footer-links a {
+        font-size: 0.84rem;
+    }
+}
