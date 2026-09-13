@@ -309,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 label: 'Stress',
                 blurb: 'Pressure, overwhelm, burnout',
                 noun: 'stress',
+                image: 'assets/check-stress.webp',
                 icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>',
                 match: { higher: 'sajitha', lower: 'athira' },
                 questions: [
