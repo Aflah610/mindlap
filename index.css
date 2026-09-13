@@ -1658,15 +1658,7 @@ section {
     font-size: 0.82rem;
     line-height: 1.5;
     color: var(--text-muted);
-    margin-bottom: 8px;
-}
-
-.result-rec-link {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    text-decoration: none;
-    border-bottom: 1px solid currentColor;
+    margin-bottom: 0;
 }
 
 .result-actions {
@@ -3482,12 +3474,6 @@ section {
     }
 
     /* Name links: bigger touch area without moving anything */
-    .tc-name a {
-        display: inline-block;
-        padding: 12px 0;
-        margin: -12px 0;
-    }
-
     .social-icons {
         gap: 14px;
     }

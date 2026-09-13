@@ -107,43 +107,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Anasooya Pramod',
                 role: 'Consultant Psychologist',
                 focus: 'Stress & Anxiety Support, Trauma-Informed Care, Mindfulness & Self-Awareness',
-                img: 'assets/anasooya_bg.jpeg',
-                profileUrl: 'anasooya.html'
+                img: 'assets/anasooya_bg.jpeg'
             },
             gouri: {
                 name: 'Gouri Nandhana',
                 role: 'Consultant Psychologist',
                 focus: 'Depression & Anxiety, Couples Therapy, Trauma & PTSD',
-                img: 'assets/gouri_bg.jpeg',
-                profileUrl: 'gouri.html'
+                img: 'assets/gouri_bg.jpeg'
             },
             sajitha: {
                 name: 'Sajitha KT',
                 role: 'Consultant Psychologist',
                 focus: 'Stress & Anxiety Management, Behaviour Modification, Trauma Therapy',
-                img: 'assets/sajitha_bg.jpeg',
-                profileUrl: 'sajitha.html'
+                img: 'assets/sajitha_bg.jpeg'
             },
             athira: {
                 name: 'Athira Asok',
                 role: 'Consultant Psychologist',
                 focus: 'Depression & Anxiety, Stress & Crisis Management, Couples Therapy',
-                img: 'assets/athira_bg.jpeg',
-                profileUrl: 'athira.html'
+                img: 'assets/athira_bg.jpeg'
             },
             rashin: {
                 name: 'Rashin PK',
                 role: 'Consultant Psychologist',
                 focus: 'Mood Disorders, Couples Therapy, Emotional Impulsiveness',
-                img: 'assets/rashin_bg.jpeg',
-                profileUrl: 'rashin.html'
+                img: 'assets/rashin_bg.jpeg'
             },
             theresa: {
                 name: 'Theresa P Thomas',
                 role: 'Consultant Psychologist',
                 focus: 'Stress & Anxiety Management, Positive Behavioural Change, Anger Regulation',
-                img: 'assets/theresa_bg.jpeg',
-                profileUrl: 'theresa.html'
+                img: 'assets/theresa_bg.jpeg'
             }
         };
 
@@ -587,7 +581,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             '<h4>' + therapist.name + '</h4>' +
                             '<span class="result-rec-role">' + therapist.role + '</span>' +
                             '<p class="result-rec-focus">' + therapist.focus + '</p>' +
-                            '<a href="' + therapist.profileUrl + '" class="result-rec-link">View detailed profile</a>' +
                         '</div>' +
                     '</div>' +
                 '</div>' +
