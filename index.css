@@ -3791,3 +3791,262 @@ section {
         transition: none !important;
     }
 }
+
+/* -------------------------------------------------------------
+   MOBILE HERO + FLOATING CONTACT CARD
+   Phones only. The extra hero pieces are hidden on larger screens.
+   ------------------------------------------------------------- */
+.hero-eyebrow,
+.hero-badges,
+.hero-btn-arrow {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding-top: 92px;
+        padding-bottom: 0;
+        background: linear-gradient(180deg, #FBF9FE 0%, #F4EFFC 48%, #ECE6FB 100%);
+    }
+
+    /* Soft hand-off into the therapists section */
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 36px;
+        background: linear-gradient(to bottom, rgba(251, 249, 254, 0), var(--bg-calm));
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .hero-waves,
+    .hero-image-wrapper::before {
+        display: none;
+    }
+
+    .hero-section .hero-container {
+        text-align: left;
+        gap: 0;
+    }
+
+    .hero-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+        color: var(--text-light);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+    }
+
+    .hero-eyebrow::before {
+        content: '';
+        width: 36px;
+        height: 1px;
+        background-color: rgba(142, 102, 222, 0.45);
+    }
+
+    .hero-section .hero-title {
+        font-size: clamp(2.4rem, 11vw, 3.1rem);
+        line-height: 1.05;
+        letter-spacing: -0.035em;
+        color: #1E1740;
+        margin-bottom: 16px;
+    }
+
+    .hero-section .hero-title .text-gradient {
+        background: linear-gradient(120deg, #6A3FD2 0%, #A57CF2 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        padding-bottom: 0.06em;
+    }
+
+    .hero-section .hero-subtitle {
+        max-width: 34ch;
+        margin: 0 0 24px;
+        font-size: 1.05rem;
+        line-height: 1.55;
+        color: #5E5A6E;
+    }
+
+    .hero-badges {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 0 0 26px;
+        padding: 0;
+        list-style: none;
+    }
+
+    .hero-badge {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        text-align: center;
+        font-size: 0.8rem;
+        font-weight: 500;
+        line-height: 1.25;
+        color: #5E5A6E;
+    }
+
+    .hero-badge-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background-color: rgba(142, 102, 222, 0.12);
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hero-badge-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .hero-section .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 12px;
+        width: min(100%, 320px);
+    }
+
+    .hero-section .hero-actions .btn {
+        width: 100%;
+        min-height: 52px;
+        padding: 14px 24px;
+        font-size: 1rem;
+        gap: 12px;
+    }
+
+    .hero-btn-arrow {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        transition: transform 0.25s ease;
+    }
+
+    .hero-section .btn-primary:hover .hero-btn-arrow {
+        transform: translateX(3px);
+    }
+
+    .hero-section .btn-explore {
+        background-color: rgba(255, 255, 255, 0.7);
+        border: 1.5px solid var(--primary-color);
+        box-shadow: none;
+    }
+
+    /* Illustration runs edge to edge and fades in at the top */
+    .hero-section .hero-media {
+        order: 2;
+        width: 100vw;
+        margin: 12px 0 0 calc(50% - 50vw);
+        justify-content: center;
+    }
+
+    .hero-section .hero-image-wrapper {
+        max-width: none;
+        margin: 0;
+    }
+
+    .hero-section .hero-illustration {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 0;
+        animation: none;
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 18%);
+        mask-image: linear-gradient(to bottom, transparent 0%, #000 18%);
+    }
+
+    /* Call / Chat: floating rounded card with a divider */
+    .sticky-contact-bar {
+        left: 12px;
+        right: 12px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        padding-bottom: 0;
+        align-items: center;
+        border: 1px solid rgba(142, 102, 222, 0.14);
+        border-radius: 20px;
+        background-color: rgba(255, 255, 255, 0.96);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 12px 32px rgba(74, 46, 128, 0.16);
+        overflow: hidden;
+    }
+
+    .sticky-contact-call,
+    .sticky-contact-chat {
+        background-color: transparent;
+        padding: 13px 8px;
+    }
+
+    .sticky-contact-chat {
+        position: relative;
+    }
+
+    .sticky-contact-chat::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 22%;
+        height: 56%;
+        width: 1px;
+        background-color: rgba(142, 102, 222, 0.22);
+    }
+
+    .sticky-contact-call .sticky-contact-label {
+        color: #1E1740;
+    }
+
+    .sticky-contact-chat .sticky-contact-label {
+        color: var(--primary-color);
+    }
+
+    .sticky-contact-chat .sticky-contact-number {
+        color: var(--text-muted);
+    }
+
+    /* Keep the page end clear of the raised card */
+    .footer-section {
+        padding-bottom: calc(40px + 88px + env(safe-area-inset-bottom));
+    }
+}
+
+@media (max-width: 360px) {
+    .hero-badge {
+        font-size: 0.75rem;
+    }
+
+    .sticky-contact-bar {
+        left: 8px;
+        right: 8px;
+    }
+}
+
+.text-nowrap {
+    white-space: nowrap;
+}
+
+/* Narrow phones: keep the hero label on one line without dropping below 12px */
+@media (max-width: 380px) {
+    .hero-eyebrow {
+        gap: 10px;
+        letter-spacing: 0.1em;
+        white-space: nowrap;
+    }
+
+    .hero-eyebrow::before {
+        width: 20px;
+        flex-shrink: 0;
+    }
+}
