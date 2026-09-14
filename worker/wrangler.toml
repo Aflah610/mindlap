@@ -1,0 +1,23 @@
+name = "mindlap-booking-api"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# Non-secret configuration. Safe to commit.
+[vars]
+# Zoho data center for your account: "com" (US/global), "in" (India),
+# "eu", "com.au", "jp", "com.cn". Check the domain you use to log in
+# to Zoho Bookings (e.g. bookings.zoho.in -> "in").
+ZOHO_DC = "in"
+
+# The Zoho Bookings workspace ID that holds your services/staff.
+# Find it in Zoho Bookings under Settings, or via the /api/services
+# response once the Worker is deployed with a placeholder value.
+ZOHO_WORKSPACE_ID = "445145000000046156"
+
+# Comma-separated list of origins allowed to call this Worker.
+ALLOWED_ORIGIN = "https://mindlap.in,https://www.mindlap.in"
+
+# Secrets (DO NOT put these here - set them with `wrangler secret put`):
+#   ZOHO_CLIENT_ID
+#   ZOHO_CLIENT_SECRET
+#   ZOHO_REFRESH_TOKEN

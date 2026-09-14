@@ -1990,6 +1990,12 @@ section {
     margin-bottom: 32px;
 }
 
+.cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
 .cta-btn {
     gap: 12px;
 }
@@ -2040,6 +2046,10 @@ section {
 
     .cta-content {
         text-align: center;
+    }
+
+    .cta-actions {
+        justify-content: center;
     }
 
     .cta-banner {
@@ -2380,6 +2390,162 @@ section {
     color: var(--text-main);
 }
 
+/* -------------------------------------------------------------
+   BOOK ONLINE MODAL (Zoho Bookings via Cloudflare Worker)
+   ------------------------------------------------------------- */
+.booking-modal-card {
+    max-width: 560px;
+}
+
+.booking-modal-title {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    padding-right: 32px;
+}
+
+.booking-modal-subtitle {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+}
+
+.booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.booking-field-row {
+    display: flex;
+    gap: 16px;
+}
+
+.booking-field-row .booking-field {
+    flex: 1 1 0;
+}
+
+.booking-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.booking-field label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.booking-field select,
+.booking-field input,
+.booking-field textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border-light);
+    background-color: var(--bg-calm);
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: var(--text-main);
+    transition: var(--transition-smooth);
+}
+
+.booking-field select:focus,
+.booking-field input:focus,
+.booking-field textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background-color: var(--bg-white);
+}
+
+.booking-field select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.booking-field textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.booking-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.booking-slots-empty,
+.booking-slots-loading {
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.booking-slot {
+    padding: 8px 14px;
+    border-radius: var(--radius-round);
+    border: 1.5px solid var(--border-light);
+    background-color: var(--bg-calm);
+    color: var(--text-main);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.booking-slot:hover {
+    border-color: var(--accent-color);
+}
+
+.booking-slot.selected {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--white);
+}
+
+.booking-honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.booking-status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-height: 1.2em;
+    color: var(--text-muted);
+}
+
+.booking-status.error {
+    color: #D64545;
+}
+
+.booking-status.success {
+    color: var(--success-color);
+}
+
+.booking-submit-btn {
+    width: 100%;
+}
+
+.booking-submit-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.booking-fallback {
+    margin-top: 24px;
+}
+
+@media (max-width: 560px) {
+    .booking-field-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
+
 
 /* -------------------------------------------------------------
    RESPONSIVENESS (MEDIA QUERIES)
@@ -2554,14 +2720,15 @@ section {
     
 
     
-    .nav-actions .btn-book {
+    .nav-actions .btn-book,
+    .nav-actions .btn-book-online {
         display: none !important;
     }
-    
+
     .nav-actions .btn-book::before {
         display: none !important;
     }
-    
+
     .feeling-grid {
         grid-template-columns: repeat(2, 1fr);
     }

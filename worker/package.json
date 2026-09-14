@@ -1,0 +1,14 @@
+{
+  "name": "mindlap-booking-worker",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Cloudflare Worker that proxies the Zoho Bookings API for the Mindlap website.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}
