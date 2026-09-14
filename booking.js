@@ -228,7 +228,7 @@
                 const email = document.getElementById('booking-email').value.trim();
                 const phone = document.getElementById('booking-phone').value.trim();
                 const notes = document.getElementById('booking-notes').value.trim();
-                const website = document.getElementById('booking-website').value; // honeypot
+                const hpConfirm = document.getElementById('booking-hp').value; // honeypot, must stay empty
 
                 if (!name || !email || !phone) {
                     setStatus('Please fill in your name, email and phone number.', 'error');
@@ -251,7 +251,7 @@
                             email: email,
                             phone: phone,
                             notes: notes,
-                            website: website,
+                            hp_confirm: hpConfirm,
                             timezone: 'Asia/Calcutta'
                         })
                     });

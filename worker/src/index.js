@@ -184,10 +184,10 @@ export default {
       // --- POST /api/book ------------------------------------------------------
       if (url.pathname === '/api/book' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
-        const { service_id, staff_id, date, time, name, email, phone, notes, timezone, website } = body || {};
+        const { service_id, staff_id, date, time, name, email, phone, notes, timezone, hp_confirm } = body || {};
 
         // Honeypot: real users never fill this hidden field in.
-        if (website) {
+        if (hp_confirm) {
           return jsonResponse({ error: 'Rejected' }, 400, headers);
         }
 
