@@ -256,10 +256,18 @@
                         })
                     });
                     const data = await res.json().catch(() => ({}));
-                    const ok = res.ok && (!data.response || data.response.status === 'success');
-                    if (!ok) {
-                        throw new Error((data && data.error) || 'Booking failed');
+
+                    if (!res.ok) {
+                        if (res.status === 409 || data.slot_conflict) {
+                            // Someone else booked this exact time first.
+                            setStatus('That time was just booked by someone else. Pick another time below.', 'error');
+                            loadSlots(serviceSelect.value, staffSelect.value, dateInput.value);
+                        } else {
+                            setStatus(data.error || 'Something went wrong while booking. Please try again or book via WhatsApp.', 'error');
+                        }
+                        return;
                     }
+
                     setStatus("You're booked! Check your email for confirmation.", 'success');
                     form.reset();
                     resetSlots();

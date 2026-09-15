@@ -204,7 +204,25 @@ export default {
           notes: notes || undefined,
           customer_details: JSON.stringify({ name, email, phone_number: phone })
         });
-        return jsonResponse(data, 200, headers);
+
+        // Zoho always answers HTTP 200 with response.status "success" even
+        // when the *booking itself* failed (e.g. someone else just took the
+        // slot) - the real outcome is in response.returnvalue. A successful
+        // booking always has a booking_id; anything else is a failure, and
+        // we translate that into a proper HTTP status so the frontend can't
+        // mistake a rejected double-booking for a confirmed one.
+        const returnvalue = data && data.response && data.response.returnvalue;
+        if (returnvalue && returnvalue.booking_id) {
+          return jsonResponse(data, 200, headers);
+        }
+
+        const message = (returnvalue && (returnvalue.message || returnvalue.errormessage)) || 'Booking failed';
+        const isSlotConflict = /slot/i.test(message) && /(not available|unavailable|already|taken|booked)/i.test(message);
+        return jsonResponse(
+          { error: message, slot_conflict: isSlotConflict, raw: data },
+          isSlotConflict ? 409 : 400,
+          headers
+        );
       }
 
       return jsonResponse({ error: 'Not found' }, 404, headers);
