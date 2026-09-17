@@ -225,6 +225,51 @@ export default {
         );
       }
 
+      // --- POST /api/otp/send ---------------------------------------------------
+      if (url.pathname === '/api/otp/send' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const phone = String(body.phone || '').trim();
+        if (!phone) {
+          return jsonResponse({ error: 'Phone number is required' }, 400, headers);
+        }
+
+        const zohoRes = await fetch(env.ZOHO_CREATOR_SEND_OTP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ Phone: phone })
+        });
+        const data = await zohoRes.json().catch(() => ({}));
+        const result = String((data && data.result) || '');
+
+        if (result.startsWith('SUCCESS')) {
+          return jsonResponse({ success: true, message: result }, 200, headers);
+        }
+        return jsonResponse({ success: false, error: result || 'Could not send code' }, 400, headers);
+      }
+
+      // --- POST /api/otp/verify -------------------------------------------------
+      if (url.pathname === '/api/otp/verify' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const phone = String(body.phone || '').trim();
+        const code = String(body.code || '').trim();
+        if (!phone || !code) {
+          return jsonResponse({ error: 'Phone number and code are required' }, 400, headers);
+        }
+
+        const zohoRes = await fetch(env.ZOHO_CREATOR_VERIFY_OTP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ Phone: phone, Entered_OTP: code })
+        });
+        const data = await zohoRes.json().catch(() => ({}));
+        const result = String((data && data.result) || '');
+
+        if (result.startsWith('SUCCESS')) {
+          return jsonResponse({ success: true, message: result }, 200, headers);
+        }
+        return jsonResponse({ success: false, error: result || 'Verification failed' }, 400, headers);
+      }
+
       return jsonResponse({ error: 'Not found' }, 404, headers);
     } catch (err) {
       return jsonResponse({ error: 'Internal error', detail: String((err && err.message) || err) }, 500, headers);

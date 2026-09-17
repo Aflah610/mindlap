@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Test - Internal Only</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="index.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .otp-test-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-medium);
+            padding: 32px;
+        }
+        .otp-test-card h1 {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+        .otp-test-card .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        .otp-step {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .otp-step[hidden] {
+            display: none;
+        }
+        .otp-verified-badge {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: var(--success-light);
+            color: var(--success-color);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .otp-verified-badge.show {
+            display: flex;
+        }
+        .otp-resend {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            align-self: flex-start;
+            padding: 0;
+        }
+        .otp-resend:disabled {
+            color: var(--text-light);
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="otp-test-card">
+        <h1>Phone verification test</h1>
+        <p class="subtitle">Internal test page, not linked from the site. Confirms Send_OTP / Verify_OTP work end to end through the Worker.</p>
+
+        <div id="otp-verified-badge" class="otp-verified-badge">
+            <span>&#10003;</span>
+            <span>Phone verified</span>
+        </div>
+
+        <div class="otp-step" id="otp-step-phone">
+            <div class="booking-field">
+                <label for="otp-phone">Phone number (with country code)</label>
+                <input type="tel" id="otp-phone" placeholder="+91XXXXXXXXXX" autocomplete="tel">
+            </div>
+            <button type="button" id="otp-send-btn" class="btn btn-primary">Send code on WhatsApp</button>
+        </div>
+
+        <div class="otp-step" id="otp-step-code" hidden>
+            <div class="booking-field">
+                <label for="otp-code">Enter the 6-digit code</label>
+                <input type="text" id="otp-code" inputmode="numeric" maxlength="6" placeholder="123456">
+            </div>
+            <button type="button" id="otp-verify-btn" class="btn btn-primary">Verify code</button>
+            <button type="button" id="otp-resend-btn" class="otp-resend">Resend code</button>
+        </div>
+
+        <p id="otp-status" class="booking-status" role="status"></p>
+    </div>
+
+    <script src="otp-test.js"></script>
+</body>
+</html>
