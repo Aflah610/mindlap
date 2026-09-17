@@ -1,9 +1,16 @@
 /* -------------------------------------------------------------
-   Mindlap - Book Online (Zoho Bookings via Cloudflare Worker)
+   Mindlap - Book Online (OTP verify, then Zoho Bookings via
+   Cloudflare Worker)
    -------------------------------------------------------------
    This talks to a small Cloudflare Worker (see /worker) that
-   proxies the Zoho Bookings REST API so no Zoho credentials are
-   ever exposed in the browser.
+   proxies the Zoho Bookings REST API and the Zoho Creator OTP
+   functions, so no Zoho credentials are ever exposed in the
+   browser.
+
+   Flow: the modal opens on a phone verification step (Send_OTP /
+   Verify_OTP via Zoho Creator). Once verified, it reveals the
+   existing service/therapist/date booking form, with the phone
+   number carried over automatically.
 
    SETUP: replace BOOKING_API_BASE below with the URL of your
    deployed Worker (e.g. https://mindlap-booking-api.<your
@@ -29,10 +36,26 @@
         const slotsWrap = document.getElementById('booking-slots');
         const statusEl = document.getElementById('booking-status');
         const submitBtn = document.getElementById('booking-submit');
+        const bookingPhoneInput = document.getElementById('booking-phone');
+
+        // --- OTP step elements ---
+        const otpStep = document.getElementById('modal-otp-step');
+        const bookingStep = document.getElementById('modal-booking-step');
+        const otpPhoneSubstep = document.getElementById('modal-otp-phone-substep');
+        const otpCodeSubstep = document.getElementById('modal-otp-code-substep');
+        const otpPhoneInput = document.getElementById('modal-otp-phone');
+        const otpCodeInput = document.getElementById('modal-otp-code');
+        const otpSendBtn = document.getElementById('modal-otp-send-btn');
+        const otpVerifyBtn = document.getElementById('modal-otp-verify-btn');
+        const otpResendBtn = document.getElementById('modal-otp-resend-btn');
+        const otpStatusEl = document.getElementById('modal-otp-status');
+        const otpVerifiedBadge = document.getElementById('modal-otp-verified-badge');
 
         let servicesLoaded = false;
         let selectedSlot = null;
         let pendingStaffName = null;
+        let verifiedPhone = null;
+        let resendCooldownTimer = null;
 
         // Restrict date picker to today .. +60 days
         if (dateInput) {
@@ -49,9 +72,39 @@
             statusEl.className = 'booking-status' + (type ? ' ' + type : '');
         }
 
+        function setOtpStatus(message, type) {
+            if (!otpStatusEl) return;
+            otpStatusEl.textContent = message || '';
+            otpStatusEl.className = 'booking-status' + (type ? ' ' + type : '');
+        }
+
         function resetSlots(message) {
             selectedSlot = null;
             slotsWrap.innerHTML = '<p class="booking-slots-empty">' + (message || 'Choose a service, therapist and date to see available times.') + '</p>';
+        }
+
+        function showOtpStep() {
+            otpStep.hidden = false;
+            bookingStep.hidden = true;
+        }
+
+        function showBookingStep() {
+            otpStep.hidden = true;
+            bookingStep.hidden = false;
+            if (!servicesLoaded) {
+                loadServices();
+            }
+        }
+
+        function resetOtpUi() {
+            otpPhoneSubstep.hidden = false;
+            otpCodeSubstep.hidden = true;
+            otpVerifiedBadge.classList.remove('show');
+            otpCodeInput.value = '';
+            setOtpStatus('');
+            clearInterval(resendCooldownTimer);
+            otpResendBtn.disabled = false;
+            otpResendBtn.textContent = 'Resend code';
         }
 
         function openModal(staffName) {
@@ -59,8 +112,13 @@
             modal.classList.add('open');
             modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
-            if (!servicesLoaded) {
-                loadServices();
+
+            if (verifiedPhone) {
+                // Already verified earlier in this page visit, skip straight in.
+                showBookingStep();
+            } else {
+                resetOtpUi();
+                showOtpStep();
             }
         }
 
@@ -84,6 +142,116 @@
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && modal.classList.contains('open')) closeModal();
         });
+
+        // ---------------------------------------------------------------
+        // OTP: send / resend / verify
+        // ---------------------------------------------------------------
+
+        function startResendCooldown(seconds) {
+            let remaining = seconds;
+            otpResendBtn.disabled = true;
+            otpResendBtn.textContent = 'Resend code (' + remaining + 's)';
+            clearInterval(resendCooldownTimer);
+            resendCooldownTimer = setInterval(() => {
+                remaining -= 1;
+                if (remaining <= 0) {
+                    clearInterval(resendCooldownTimer);
+                    otpResendBtn.disabled = false;
+                    otpResendBtn.textContent = 'Resend code';
+                } else {
+                    otpResendBtn.textContent = 'Resend code (' + remaining + 's)';
+                }
+            }, 1000);
+        }
+
+        async function sendOtp(isResend) {
+            const phone = otpPhoneInput.value.trim();
+            if (!phone) {
+                setOtpStatus('Please enter a phone number.', 'error');
+                return;
+            }
+
+            otpSendBtn.disabled = true;
+            setOtpStatus(isResend ? 'Resending code…' : 'Sending code…');
+
+            try {
+                const res = await fetch(BOOKING_API_BASE + '/api/otp/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok || !data.success) {
+                    setOtpStatus(data.error || 'Could not send code.', 'error');
+                    return;
+                }
+
+                setOtpStatus('Code sent. Check WhatsApp on that number.', 'success');
+                otpPhoneSubstep.hidden = true;
+                otpCodeSubstep.hidden = false;
+                otpCodeInput.value = '';
+                otpCodeInput.focus();
+                startResendCooldown(60);
+            } catch (err) {
+                setOtpStatus('Network error, please try again.', 'error');
+            } finally {
+                otpSendBtn.disabled = false;
+            }
+        }
+
+        async function verifyOtp() {
+            const phone = otpPhoneInput.value.trim();
+            const code = otpCodeInput.value.trim();
+            if (!code) {
+                setOtpStatus('Please enter the code.', 'error');
+                return;
+            }
+
+            otpVerifyBtn.disabled = true;
+            setOtpStatus('Verifying…');
+
+            try {
+                const res = await fetch(BOOKING_API_BASE + '/api/otp/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, code })
+                });
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok || !data.success) {
+                    setOtpStatus(data.error || 'Incorrect or expired code.', 'error');
+                    return;
+                }
+
+                verifiedPhone = phone;
+                otpVerifiedBadge.classList.add('show');
+                setOtpStatus('');
+
+                if (bookingPhoneInput) {
+                    bookingPhoneInput.value = phone;
+                }
+
+                setTimeout(showBookingStep, 600);
+            } catch (err) {
+                setOtpStatus('Network error, please try again.', 'error');
+            } finally {
+                otpVerifyBtn.disabled = false;
+            }
+        }
+
+        if (otpSendBtn) otpSendBtn.addEventListener('click', () => sendOtp(false));
+        if (otpResendBtn) otpResendBtn.addEventListener('click', () => sendOtp(true));
+        if (otpVerifyBtn) otpVerifyBtn.addEventListener('click', verifyOtp);
+        if (otpCodeInput) {
+            otpCodeInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') verifyOtp();
+            });
+        }
+
+        // ---------------------------------------------------------------
+        // Booking form (service / therapist / date / slots)
+        // ---------------------------------------------------------------
 
         async function apiGet(path, params) {
             const url = new URL(BOOKING_API_BASE + path);
@@ -270,6 +438,7 @@
 
                     setStatus("You're booked! Check your email for confirmation.", 'success');
                     form.reset();
+                    if (verifiedPhone) bookingPhoneInput.value = verifiedPhone;
                     resetSlots();
                     setTimeout(closeModal, 2500);
                 } catch (err) {
