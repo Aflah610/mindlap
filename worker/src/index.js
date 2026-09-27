@@ -2,12 +2,18 @@
  * Mindlap - Zoho Bookings API proxy
  * -----------------------------------------------------------------------
  * A small Cloudflare Worker that sits between the public website
- * (mindlap.in) and the Zoho Bookings REST API. It exists so that:
+ * (mindlap.in) and Zoho. It exists so that:
  *
  *   1. Zoho OAuth credentials (client id/secret/refresh token) never
  *      reach the browser - they live only as Worker secrets.
  *   2. The site's own JS only ever talks to endpoints on this Worker,
  *      which are locked down to the site's origin via CORS.
+ *
+ * Zoho Creator (the "Mindlap Booking Engine" app) is the database of
+ * record for customers and appointment history. Zoho Bookings still owns
+ * the actual calendar slot. On every booking, this Worker writes to
+ * Creator first, then calls Zoho Bookings, then updates that same Creator
+ * row with the outcome (Confirmed or Failed) - see /api/book below.
  *
  * Routes:
  *   GET  /api/services                       -> Zoho "services" list
@@ -15,6 +21,11 @@
  *   GET  /api/availability?service_id=&staff_id=&date=YYYY-MM-DD
  *   POST /api/book  { service_id, staff_id, date, time, name, email,
  *                      phone, notes?, timezone? }
+ *   POST /api/otp/send    { phone }
+ *   POST /api/otp/verify  { phone, code }
+ *   POST /api/payment/create-order  { booking_id, amount, currency? }
+ *   POST /api/payment/verify        { razorpay_order_id, razorpay_payment_id,
+ *                                      razorpay_signature, booking_id? }
  *
  * See ../../docs/zoho-bookings-setup.md for how to configure and deploy
  * this Worker.
@@ -131,6 +142,190 @@ async function zohoPostForm(env, path, fields) {
   return res.json();
 }
 
+// --- Razorpay -----------------------------------------------------------
+
+async function razorpayCreateOrder(env, { amount, currency, receipt, notes }) {
+  const auth = btoa(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`);
+  const res = await fetch('https://api.razorpay.com/v1/orders', {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${auth}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      amount: Math.round(amount * 100), // Razorpay wants the amount in paise
+      currency: currency || 'INR',
+      receipt,
+      notes: notes || {}
+    })
+  });
+  return res.json();
+}
+
+function hexEncode(buffer) {
+  return Array.from(new Uint8Array(buffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function hmacSha256Hex(secret, message) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(message));
+  return hexEncode(signature);
+}
+
+// --- Zoho Creator (the real customer/appointment database) --------------
+//
+// Zoho Bookings still owns the actual calendar slot; Zoho Creator is the
+// database of record for customers and appointment history. A booking
+// always writes to Creator first (as a "Creating Appointment" row), then
+// calls Zoho Bookings, then updates that same Creator row to Confirmed or
+// Failed - so every attempt is logged even if Zoho Bookings rejects it.
+
+let cachedCreatorToken = null; // { token, expiresAt }
+
+async function getCreatorAccessToken(env) {
+  const now = Date.now();
+  if (cachedCreatorToken && cachedCreatorToken.expiresAt > now + 30_000) {
+    return cachedCreatorToken.token;
+  }
+
+  const dc = env.ZOHO_DC || 'com';
+  const params = new URLSearchParams({
+    grant_type: 'refresh_token',
+    client_id: env.ZOHO_CLIENT_ID,
+    client_secret: env.ZOHO_CLIENT_SECRET,
+    refresh_token: env.ZOHO_CREATOR_REFRESH_TOKEN
+  });
+
+  const res = await fetch(`https://accounts.zoho.${dc}/oauth/v2/token?${params.toString()}`, { method: 'POST' });
+  const data = await res.json();
+
+  if (!data.access_token) {
+    throw new Error('Zoho Creator OAuth token refresh failed: ' + JSON.stringify(data));
+  }
+
+  cachedCreatorToken = {
+    token: data.access_token,
+    expiresAt: now + (data.expires_in ? data.expires_in * 1000 : 55 * 60 * 1000)
+  };
+  return cachedCreatorToken.token;
+}
+
+function creatorApiBase(env) {
+  const dc = env.ZOHO_DC || 'com';
+  const owner = env.ZOHO_CREATOR_OWNER;
+  const app = env.ZOHO_CREATOR_APP;
+  return `https://www.zohoapis.${dc}/creator/v2.1/data/${owner}/${app}`;
+}
+
+async function creatorQuery(env, reportName, criteria) {
+  const token = await getCreatorAccessToken(env);
+  const url = new URL(`${creatorApiBase(env)}/report/${reportName}`);
+  if (criteria) url.searchParams.set('criteria', criteria);
+  const res = await fetch(url.toString(), { headers: { Authorization: `Zoho-oauthtoken ${token}` } });
+  const data = await res.json();
+  return (data && data.data) || [];
+}
+
+async function creatorCreate(env, formName, fields) {
+  const token = await getCreatorAccessToken(env);
+  const res = await fetch(`${creatorApiBase(env)}/form/${formName}`, {
+    method: 'POST',
+    headers: { Authorization: `Zoho-oauthtoken ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data: fields })
+  });
+  return res.json();
+}
+
+async function creatorUpdate(env, reportName, recordId, fields) {
+  const token = await getCreatorAccessToken(env);
+  const res = await fetch(`${creatorApiBase(env)}/report/${reportName}/${recordId}`, {
+    method: 'PATCH',
+    headers: { Authorization: `Zoho-oauthtoken ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data: fields })
+  });
+  return res.json();
+}
+
+/** "10:00" + 60 -> "11:00" (wraps at 24h, which is fine for same-day sessions) */
+function addMinutesToTime(hhmm, minutesToAdd) {
+  const [h, m] = hhmm.split(':').map(Number);
+  const total = (h * 60 + m + minutesToAdd) % (24 * 60);
+  const outH = Math.floor(total / 60);
+  const outM = total % 60;
+  return `${String(outH).padStart(2, '0')}:${String(outM).padStart(2, '0')}`;
+}
+
+/** Current time in the "dd-MMM-yyyy HH:mm:ss" format Zoho Creator datetime fields expect. */
+function creatorNow() {
+  const d = new Date();
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const mon = MONTHS[d.getUTCMonth()];
+  const yyyy = d.getUTCFullYear();
+  const hh = String(d.getUTCHours()).padStart(2, '0');
+  const mi = String(d.getUTCMinutes()).padStart(2, '0');
+  const ss = String(d.getUTCSeconds()).padStart(2, '0');
+  return `${dd}-${mon}-${yyyy} ${hh}:${mi}:${ss}`;
+}
+
+/** Keeps phone numbers consistent so the same customer is always matched. */
+function normalizePhone(phone) {
+  const trimmed = String(phone || '').trim().replace(/[^\d+]/g, '');
+  return trimmed;
+}
+
+/** Finds the Creator record for a therapist/service by its Zoho Bookings ID. */
+async function findCreatorRecordByBookingsId(env, reportName, fieldName, bookingsId) {
+  const rows = await creatorQuery(env, reportName, `(${fieldName}=="${bookingsId}")`);
+  return rows[0] || null;
+}
+
+/** Finds an existing customer by phone, or creates one. Returns the record ID. */
+async function findOrCreateCustomer(env, { phone, name, email }) {
+  const normalized = normalizePhone(phone);
+  const todayCreator = toZohoDate(new Date().toISOString().slice(0, 10));
+
+  const existing = await creatorQuery(
+    env,
+    'customers_Report',
+    `(phone_number=="${normalized}" || whatsapp_number=="${normalized}")`
+  );
+
+  if (existing.length) {
+    const record = existing[0];
+    const currentTotal = Number(record.total_appointments) || 0;
+    await creatorUpdate(env, 'customers_Report', record.ID, {
+      last_booking_date: todayCreator,
+      total_appointments: currentTotal + 1
+    });
+    return record.ID;
+  }
+
+  const created = await creatorCreate(env, 'customers', {
+    full_name: { first_name: name || 'Guest' },
+    phone_number: normalized,
+    whatsapp_number: normalized,
+    email: email || '',
+    authentication_status: 'Not Verified',
+    customer_status: 'Active',
+    first_booking_date: todayCreator,
+    last_booking_date: todayCreator,
+    total_appointments: 1
+  });
+
+  if (!created || !created.data || !created.data.ID) {
+    throw new Error('Could not create Zoho Creator customer record: ' + JSON.stringify(created));
+  }
+  return created.data.ID;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -182,6 +377,11 @@ export default {
       }
 
       // --- POST /api/book ------------------------------------------------------
+      // Writes to Zoho Creator first (the customer/appointment database),
+      // then calls Zoho Bookings to actually reserve the calendar slot, then
+      // updates that same Creator row with the outcome. A Creator hiccup
+      // never blocks a real booking - it just means that one row won't have
+      // a database record, which is logged via error_message where possible.
       if (url.pathname === '/api/book' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
         const { service_id, staff_id, date, time, name, email, phone, notes, timezone, hp_confirm } = body || {};
@@ -195,7 +395,42 @@ export default {
           return jsonResponse({ error: 'Missing required booking fields' }, 400, headers);
         }
 
-        const fromTime = `${toZohoDate(date)} ${to24Hour(time)}:00`;
+        const time24 = to24Hour(time);
+        let creatorAppointmentId = null;
+
+        try {
+          const [customerId, serviceRecord, therapistRecord] = await Promise.all([
+            findOrCreateCustomer(env, { phone, name, email }),
+            findCreatorRecordByBookingsId(env, 'services_Report', 'zoho_bookings_service_id', service_id),
+            findCreatorRecordByBookingsId(env, 'therapists_Report', 'zoho_bookings_staff_id', staff_id)
+          ]);
+
+          const durationMinutes = Number(serviceRecord && serviceRecord.duration) || 60;
+          const endTime24 = addMinutesToTime(time24, durationMinutes);
+
+          const created = await creatorCreate(env, 'appointments', {
+            // Customer/Therapist/Service are configured as multi-select
+            // lookups in this form, so Zoho expects an array here even
+            // though we only ever put one ID in it.
+            customer: [customerId],
+            therapist: therapistRecord ? [therapistRecord.ID] : undefined,
+            service: serviceRecord ? [serviceRecord.ID] : undefined,
+            appointment_date: toZohoDate(date),
+            start_time: time24,
+            end_time: endTime24,
+            session_mode: 'Video',
+            amount: serviceRecord ? serviceRecord.default_price : undefined,
+            payment_status: 'Pending',
+            booking_status: 'Creating Appointment',
+            // Mandatory on the form but not something the site collects yet.
+            Age: '0'
+          });
+          creatorAppointmentId = created && created.data && created.data.ID;
+        } catch (err) {
+          // Don't let a Creator problem stop a real booking attempt.
+        }
+
+        const fromTime = `${toZohoDate(date)} ${time24}:00`;
         const data = await zohoPostForm(env, 'appointment', {
           service_id,
           staff_id,
@@ -212,12 +447,37 @@ export default {
         // we translate that into a proper HTTP status so the frontend can't
         // mistake a rejected double-booking for a confirmed one.
         const returnvalue = data && data.response && data.response.returnvalue;
+
         if (returnvalue && returnvalue.booking_id) {
+          if (creatorAppointmentId) {
+            try {
+              await creatorUpdate(env, 'appointments_Report', creatorAppointmentId, {
+                zoho_bookings_appointment_id: returnvalue.booking_id,
+                booking_status: 'Confirmed',
+                confirmed_time: creatorNow()
+              });
+            } catch (err) {
+              // The real booking already succeeded - a Creator update
+              // failure here shouldn't be reported back as a failed booking.
+            }
+          }
           return jsonResponse(data, 200, headers);
         }
 
         const message = (returnvalue && (returnvalue.message || returnvalue.errormessage)) || 'Booking failed';
         const isSlotConflict = /slot/i.test(message) && /(not available|unavailable|already|taken|booked)/i.test(message);
+
+        if (creatorAppointmentId) {
+          try {
+            await creatorUpdate(env, 'appointments_Report', creatorAppointmentId, {
+              booking_status: 'Failed',
+              error_message: message
+            });
+          } catch (err) {
+            // Ignore - the booking already failed for its own reason.
+          }
+        }
+
         return jsonResponse(
           { error: message, slot_conflict: isSlotConflict, raw: data },
           isSlotConflict ? 409 : 400,
@@ -268,6 +528,80 @@ export default {
           return jsonResponse({ success: true, message: result }, 200, headers);
         }
         return jsonResponse({ success: false, error: result || 'Verification failed' }, 400, headers);
+      }
+
+      // --- POST /api/payment/create-order ---------------------------------------
+      if (url.pathname === '/api/payment/create-order' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const bookingId = String(body.booking_id || '').trim();
+        const amount = Number(body.amount);
+        const currency = String(body.currency || 'INR').trim();
+
+        if (!bookingId || !amount || amount <= 0) {
+          return jsonResponse({ error: 'booking_id and a positive amount are required' }, 400, headers);
+        }
+
+        const order = await razorpayCreateOrder(env, {
+          amount,
+          currency,
+          receipt: bookingId,
+          notes: { booking_id: bookingId }
+        });
+
+        if (!order || !order.id) {
+          return jsonResponse({ error: (order && order.error && order.error.description) || 'Could not create payment order' }, 400, headers);
+        }
+
+        return jsonResponse(
+          {
+            order_id: order.id,
+            amount: order.amount,
+            currency: order.currency,
+            key_id: env.RAZORPAY_KEY_ID
+          },
+          200,
+          headers
+        );
+      }
+
+      // --- POST /api/payment/verify ----------------------------------------------
+      if (url.pathname === '/api/payment/verify' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const orderId = String(body.razorpay_order_id || '').trim();
+        const paymentId = String(body.razorpay_payment_id || '').trim();
+        const signature = String(body.razorpay_signature || '').trim();
+        const bookingId = String(body.booking_id || '').trim();
+
+        if (!orderId || !paymentId || !signature) {
+          return jsonResponse({ error: 'Missing payment verification fields' }, 400, headers);
+        }
+
+        // Razorpay signs "order_id|payment_id" with the key secret - if our
+        // own computed signature doesn't match, the payment details were
+        // tampered with (or forged) and must be rejected.
+        const expectedSignature = await hmacSha256Hex(env.RAZORPAY_KEY_SECRET, `${orderId}|${paymentId}`);
+        if (expectedSignature !== signature) {
+          return jsonResponse({ success: false, error: 'Payment signature verification failed' }, 400, headers);
+        }
+
+        // Best-effort: note the confirmed payment on the Zoho Bookings
+        // appointment. This is not critical to the payment itself succeeding,
+        // so a failure here does not fail the whole request.
+        if (bookingId) {
+          try {
+            await zohoPostForm(env, 'updateappointment', {
+              booking_id: bookingId,
+              action: 'edit_appointment_info',
+              data: JSON.stringify({
+                notes: `Paid via Razorpay. Payment ID: ${paymentId}, Order ID: ${orderId}.`
+              })
+            });
+          } catch (err) {
+            // Swallow - the payment itself is already verified and real.
+          }
+        }
+
+        return jsonResponse({ success: true, payment_id: paymentId }, 200, headers);
       }
 
       return jsonResponse({ error: 'Not found' }, 404, headers);

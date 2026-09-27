@@ -17,7 +17,17 @@ ZOHO_WORKSPACE_ID = "445145000000046156"
 # Comma-separated list of origins allowed to call this Worker.
 ALLOWED_ORIGIN = "https://mindlap.in,https://www.mindlap.in"
 
+# Zoho Creator account owner (workspace name) and app link name that hold
+# the Customers/Appointments/Therapists/Services tables.
+ZOHO_CREATOR_OWNER = "mindlappvtltd"
+ZOHO_CREATOR_APP = "mindlap-booking-engine"
+
 # Secrets (DO NOT put these here - set them with `wrangler secret put`):
-#   ZOHO_CLIENT_ID
-#   ZOHO_CLIENT_SECRET
-#   ZOHO_REFRESH_TOKEN
+#   ZOHO_CLIENT_ID              (shared self-client, also used for Bookings)
+#   ZOHO_CLIENT_SECRET          (shared self-client, also used for Bookings)
+#   ZOHO_REFRESH_TOKEN          (Zoho Bookings scope)
+#   ZOHO_CREATOR_REFRESH_TOKEN  (Zoho Creator scope: report.READ, form.CREATE, report.UPDATE)
+#   ZOHO_CREATOR_SEND_OTP_URL
+#   ZOHO_CREATOR_VERIFY_OTP_URL
+#   RAZORPAY_KEY_ID
+#   RAZORPAY_KEY_SECRET
