@@ -30,9 +30,94 @@
         const statusEl = document.getElementById('booking-status');
         const submitBtn = document.getElementById('booking-submit');
 
+        const bookingStepEl = document.getElementById('booking-step');
+        const paymentStepEl = document.getElementById('payment-step');
+        const paymentAmountLine = document.getElementById('payment-amount-line');
+        const payNowBtn = document.getElementById('pay-now-btn');
+        const payLaterBtn = document.getElementById('pay-later-btn');
+        const paymentStatusEl = document.getElementById('payment-status');
+
+        // --- Wizard chrome (session type -> details -> payment) ---
+        const wizardBackBtn = document.getElementById('wizard-back-btn');
+        const wizardProgress = document.getElementById('wizard-progress');
+        const wizardTypeStep = document.getElementById('wizard-step-type');
+        const sessionTypeCards = document.querySelectorAll('.session-type-card');
+
+        const WIZARD_STEPS = ['wizard-step-type', 'booking-step']; // payment-step is a post-booking outcome, not a navigable step
+        let currentStepIndex = 0;
+        let selectedSessionType = null;
+
+        renderWizardDots();
+
+        function renderWizardDots() {
+            if (!wizardProgress) return;
+            wizardProgress.innerHTML = WIZARD_STEPS.map((_, i) =>
+                '<span class="wizard-dot' + (i === currentStepIndex ? ' active' : i < currentStepIndex ? ' done' : '') + '"></span>'
+            ).join('');
+        }
+
+        function goToStep(stepId) {
+            const index = WIZARD_STEPS.indexOf(stepId);
+            currentStepIndex = index === -1 ? currentStepIndex : index;
+
+            WIZARD_STEPS.forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.hidden = (id !== stepId);
+            });
+            if (paymentStepEl) paymentStepEl.hidden = (stepId !== 'payment-step');
+
+            if (wizardBackBtn) wizardBackBtn.hidden = (stepId === 'wizard-step-type');
+            if (wizardProgress) wizardProgress.hidden = (stepId === 'payment-step');
+            renderWizardDots();
+        }
+
+        function filterServicesBySessionType(type) {
+            const options = Array.from(serviceSelect.querySelectorAll('option[value]:not([value=""])'));
+            options.forEach((opt) => {
+                const name = (opt.textContent || '').toLowerCase();
+                const matches = type === 'couple'
+                    ? /couple/.test(name) || /package/.test(name)
+                    : /individual/.test(name) || /package/.test(name);
+                opt.hidden = !matches;
+            });
+            // If the currently selected service just got hidden, clear it.
+            const current = serviceSelect.selectedOptions[0];
+            if (current && current.hidden) {
+                serviceSelect.value = '';
+                serviceSelect.dispatchEvent(new Event('change'));
+            }
+        }
+
+        sessionTypeCards.forEach((card) => {
+            card.addEventListener('click', () => {
+                selectedSessionType = card.getAttribute('data-session-type');
+                sessionTypeCards.forEach((c) => c.classList.toggle('selected', c === card));
+
+                const proceed = () => {
+                    filterServicesBySessionType(selectedSessionType);
+                    goToStep('booking-step');
+                };
+
+                if (!servicesLoaded) {
+                    loadServices().then(proceed);
+                } else {
+                    proceed();
+                }
+            });
+        });
+
+        if (wizardBackBtn) {
+            wizardBackBtn.addEventListener('click', () => {
+                if (!bookingStepEl.hidden) {
+                    goToStep('wizard-step-type');
+                }
+            });
+        }
+
         let servicesLoaded = false;
         let selectedSlot = null;
         let pendingStaffName = null;
+        let pendingPayment = null; // { bookingId, amount, currency }
 
         // Restrict date picker to today .. +60 days
         if (dateInput) {
@@ -59,9 +144,10 @@
             modal.classList.add('open');
             modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
-            if (!servicesLoaded) {
-                loadServices();
-            }
+            // Always start a fresh visit at the session-type step.
+            selectedSessionType = null;
+            sessionTypeCards.forEach((c) => c.classList.remove('selected'));
+            goToStep('wizard-step-type');
         }
 
         function closeModal() {
@@ -269,9 +355,20 @@
                     }
 
                     setStatus("You're booked! Check your email for confirmation.", 'success');
+
+                    const returnvalue = (data.response && data.response.returnvalue) || {};
+                    const bookingId = returnvalue.booking_id;
+                    const amount = Number(returnvalue.due != null ? returnvalue.due : returnvalue.cost) || 0;
+                    const currency = returnvalue.currency || 'INR';
+
                     form.reset();
                     resetSlots();
-                    setTimeout(closeModal, 2500);
+
+                    if (bookingId && amount > 0) {
+                        showPaymentStep(bookingId, amount, currency);
+                    } else {
+                        setTimeout(closeModal, 2500);
+                    }
                 } catch (err) {
                     setStatus('Something went wrong while booking. Please try again or book via WhatsApp.', 'error');
                 } finally {
@@ -279,5 +376,107 @@
                 }
             });
         }
+
+        // -----------------------------------------------------------------
+        // Payment (Razorpay), shown right after a booking is confirmed
+        // -----------------------------------------------------------------
+
+        function setPaymentStatus(message, type) {
+            if (!paymentStatusEl) return;
+            paymentStatusEl.textContent = message || '';
+            paymentStatusEl.className = 'booking-status' + (type ? ' ' + type : '');
+        }
+
+        function showPaymentStep(bookingId, amount, currency) {
+            pendingPayment = { bookingId, amount, currency };
+            if (bookingStepEl) bookingStepEl.hidden = true;
+            if (paymentStepEl) paymentStepEl.hidden = false;
+            if (wizardBackBtn) wizardBackBtn.hidden = true;
+            if (wizardProgress) wizardProgress.hidden = true;
+            setPaymentStatus('');
+            if (paymentAmountLine) {
+                const symbol = currency === 'INR' ? '₹' : currency + ' ';
+                paymentAmountLine.textContent = 'Amount due: ' + symbol + amount;
+            }
+        }
+
+        async function startPayment() {
+            if (!pendingPayment || typeof Razorpay === 'undefined') {
+                setPaymentStatus('Payment is unavailable right now. Please pay later or contact us.', 'error');
+                return;
+            }
+
+            payNowBtn.disabled = true;
+            setPaymentStatus('Preparing payment…');
+
+            try {
+                const orderRes = await fetch(BOOKING_API_BASE + '/api/payment/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        booking_id: pendingPayment.bookingId,
+                        amount: pendingPayment.amount,
+                        currency: pendingPayment.currency
+                    })
+                });
+                const order = await orderRes.json().catch(() => ({}));
+
+                if (!orderRes.ok || !order.order_id) {
+                    setPaymentStatus(order.error || 'Could not start payment. Please try again.', 'error');
+                    return;
+                }
+
+                const checkout = new Razorpay({
+                    key: order.key_id,
+                    order_id: order.order_id,
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: 'Mindlap',
+                    description: 'Therapy session booking',
+                    theme: { color: '#4A2E80' },
+                    handler: async (response) => {
+                        setPaymentStatus('Confirming payment…');
+                        try {
+                            const verifyRes = await fetch(BOOKING_API_BASE + '/api/payment/verify', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    booking_id: pendingPayment.bookingId
+                                })
+                            });
+                            const verifyData = await verifyRes.json().catch(() => ({}));
+
+                            if (!verifyRes.ok || !verifyData.success) {
+                                setPaymentStatus(verifyData.error || 'Payment could not be verified. Please contact us.', 'error');
+                                return;
+                            }
+
+                            setPaymentStatus('Payment successful, thank you!', 'success');
+                            setTimeout(closeModal, 2000);
+                        } catch (err) {
+                            setPaymentStatus('Payment could not be verified. Please contact us.', 'error');
+                        }
+                    },
+                    modal: {
+                        ondismiss: () => {
+                            setPaymentStatus('Payment cancelled. You can try again or pay later.', 'error');
+                        }
+                    }
+                });
+
+                checkout.open();
+                setPaymentStatus('');
+            } catch (err) {
+                setPaymentStatus('Could not start payment. Please try again.', 'error');
+            } finally {
+                payNowBtn.disabled = false;
+            }
+        }
+
+        if (payNowBtn) payNowBtn.addEventListener('click', startPayment);
+        if (payLaterBtn) payLaterBtn.addEventListener('click', closeModal);
     });
 })();
