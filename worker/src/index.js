@@ -25,6 +25,10 @@
  *   POST /api/otp/verify  { phone, code } -> also returns a session_token
  *   POST /api/sessions    { session_token } -> past/upcoming appointments
  *                                              for that verified phone
+ *   POST /api/credits/check { session_token } -> prepaid package credits
+ *                                                 (Zoho CRM) for that phone
+ *   POST /api/credits/book  { session_token, package_id, service_id,
+ *                              staff_id, date, time, name, email, notes? }
  *   POST /api/payment/create-order  { booking_id, amount, currency? }
  *   POST /api/payment/verify        { razorpay_order_id, razorpay_payment_id,
  *                                      razorpay_signature, booking_id? }
@@ -392,6 +396,108 @@ async function logSyncError(env, { operation, message, phone, bookingId }) {
   }
 }
 
+// --- Zoho CRM (prepaid package credits) ----------------------------------
+//
+// Contacts.Package_credit_value is the source of truth for how many
+// prepaid sessions a customer has left. Successful_Bookings records say
+// *which service* each package covers, and get decremented alongside the
+// Contacts total whenever a credit is used.
+
+let cachedCrmToken = null; // { token, expiresAt }
+
+async function getCrmAccessToken(env) {
+  const now = Date.now();
+  if (cachedCrmToken && cachedCrmToken.expiresAt > now + 30_000) {
+    return cachedCrmToken.token;
+  }
+
+  const dc = env.ZOHO_DC || 'com';
+  const params = new URLSearchParams({
+    grant_type: 'refresh_token',
+    client_id: env.ZOHO_CLIENT_ID,
+    client_secret: env.ZOHO_CLIENT_SECRET,
+    refresh_token: env.ZOHO_CRM_REFRESH_TOKEN
+  });
+
+  const res = await fetch(`https://accounts.zoho.${dc}/oauth/v2/token?${params.toString()}`, { method: 'POST' });
+  const data = await res.json();
+
+  if (!data.access_token) {
+    throw new Error('Zoho CRM OAuth token refresh failed: ' + JSON.stringify(data));
+  }
+
+  cachedCrmToken = {
+    token: data.access_token,
+    expiresAt: now + (data.expires_in ? data.expires_in * 1000 : 55 * 60 * 1000)
+  };
+  return cachedCrmToken.token;
+}
+
+function crmApiBase(env) {
+  const dc = env.ZOHO_DC || 'com';
+  return `https://www.zohoapis.${dc}/crm/v2`;
+}
+
+/** Search a module by phone number. Returns [] if nothing matches (Zoho answers 204). */
+async function crmSearchByPhone(env, moduleName, phone, fields) {
+  const token = await getCrmAccessToken(env);
+  const url = new URL(`${crmApiBase(env)}/${moduleName}/search`);
+  url.searchParams.set('phone', phone);
+  if (fields) url.searchParams.set('fields', fields);
+
+  const res = await fetch(url.toString(), { headers: { Authorization: `Zoho-oauthtoken ${token}` } });
+  if (res.status === 204) return [];
+  const data = await res.json().catch(() => ({}));
+  return data.data || [];
+}
+
+async function crmUpdateRecord(env, moduleName, recordId, fields) {
+  const token = await getCrmAccessToken(env);
+  const res = await fetch(`${crmApiBase(env)}/${moduleName}/${recordId}`, {
+    method: 'PUT',
+    headers: { Authorization: `Zoho-oauthtoken ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data: [{ id: recordId, ...fields }] })
+  });
+  return res.json();
+}
+
+/**
+ * Looks up a customer's prepaid package credits by phone. Returns
+ * { hasCredits, totalCredits, contactId, packages: [{ id, service, remaining }] }
+ * packages only lists Successful_Bookings rows that still have credit left.
+ */
+async function checkPackageCredits(env, phone) {
+  const contacts = await crmSearchByPhone(env, 'Contacts', phone, 'id,Package_credit_value,Full_Name');
+  const contact = contacts[0];
+  const totalCredits = contact ? Number(contact.Package_credit_value) || 0 : 0;
+
+  if (!contact || totalCredits <= 0) {
+    return { hasCredits: false, totalCredits: 0, contactId: contact ? contact.id : null, packages: [] };
+  }
+
+  const bookings = await crmSearchByPhone(
+    env,
+    'Successful_Bookings',
+    phone,
+    'id,Service,Package_Credit,Therapist'
+  );
+  const packages = bookings
+    .filter((b) => Number(b.Package_Credit) > 0)
+    .map((b) => ({ id: b.id, service: b.Service, remaining: Number(b.Package_Credit) }));
+
+  return { hasCredits: true, totalCredits, contactId: contact.id, packages };
+}
+
+/** Spends one credit: decrements both the Contacts total and the specific package row. */
+async function spendPackageCredit(env, contactId, contactCredits, packageId, packageCredits) {
+  await crmUpdateRecord(env, 'Contacts', contactId, { Package_credit_value: Math.max(0, contactCredits - 1) });
+  if (packageId) {
+    await crmUpdateRecord(env, 'Successful_Bookings', packageId, {
+      Package_Credit: Math.max(0, packageCredits - 1)
+    });
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -701,6 +807,187 @@ export default {
             past: past.map(strip)
           },
           200,
+          headers
+        );
+      }
+
+      // --- POST /api/credits/check -------------------------------------------------
+      // After OTP verification, checks whether this phone number has prepaid
+      // package credits (Zoho CRM), and if so, which service(s) they cover.
+      if (url.pathname === '/api/credits/check' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const session = await verifySessionToken(env, body.session_token);
+        if (!session) {
+          return jsonResponse({ error: 'Please verify your phone number again.' }, 401, headers);
+        }
+
+        try {
+          const result = await checkPackageCredits(env, session.phone);
+          if (!result.hasCredits) {
+            return jsonResponse({ has_credits: false }, 200, headers);
+          }
+
+          // Resolve each package's Zoho Bookings service_id so the frontend
+          // can call the existing /api/staff and /api/availability routes.
+          const packagesWithServiceId = await Promise.all(
+            result.packages.map(async (pkg) => {
+              const serviceRecord = await findCreatorRecordByBookingsId(env, 'services_Report', 'service_name', pkg.service);
+              return {
+                package_id: pkg.id,
+                service_name: pkg.service,
+                remaining: pkg.remaining,
+                service_id: serviceRecord ? serviceRecord.zoho_bookings_service_id : null
+              };
+            })
+          );
+
+          return jsonResponse(
+            {
+              has_credits: true,
+              total_credits: result.totalCredits,
+              packages: packagesWithServiceId.filter((p) => p.service_id)
+            },
+            200,
+            headers
+          );
+        } catch (err) {
+          await logSyncError(env, {
+            operation: 'Update Appointment',
+            message: 'Credit check failed: ' + (err && err.message ? err.message : String(err)),
+            phone: session.phone
+          });
+          return jsonResponse({ has_credits: false }, 200, headers);
+        }
+      }
+
+      // --- POST /api/credits/book -------------------------------------------------
+      // Books an appointment against a prepaid package credit - no payment
+      // step. Re-checks the credit balance server-side rather than trusting
+      // whatever the frontend last saw, to avoid spending a credit twice.
+      if (url.pathname === '/api/credits/book' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const session = await verifySessionToken(env, body.session_token);
+        if (!session) {
+          return jsonResponse({ error: 'Please verify your phone number again.' }, 401, headers);
+        }
+
+        const { package_id, service_id, staff_id, date, time, name, email, notes, hp_confirm } = body || {};
+        if (hp_confirm) {
+          return jsonResponse({ error: 'Rejected' }, 400, headers);
+        }
+        if (!package_id || !service_id || !staff_id || !date || !time || !name || !email) {
+          return jsonResponse({ error: 'Missing required booking fields' }, 400, headers);
+        }
+
+        const phone = session.phone;
+        const credits = await checkPackageCredits(env, phone);
+        const chosenPackage = credits.packages.find((p) => p.id === package_id);
+
+        if (!credits.hasCredits || !chosenPackage || chosenPackage.remaining <= 0) {
+          return jsonResponse({ error: 'No remaining credit on that package. Please refresh and try again.' }, 400, headers);
+        }
+
+        const time24 = to24Hour(time);
+        let creatorAppointmentId = null;
+
+        try {
+          const [customerId, serviceRecord, therapistRecord] = await Promise.all([
+            findOrCreateCustomer(env, { phone, name, email }),
+            findCreatorRecordByBookingsId(env, 'services_Report', 'zoho_bookings_service_id', service_id),
+            findCreatorRecordByBookingsId(env, 'therapists_Report', 'zoho_bookings_staff_id', staff_id)
+          ]);
+
+          const durationMinutes = Number(serviceRecord && serviceRecord.duration) || 60;
+          const endTime24 = addMinutesToTime(time24, durationMinutes);
+
+          const created = await creatorCreate(env, 'appointments', {
+            customer: [customerId],
+            therapist: therapistRecord ? [therapistRecord.ID] : undefined,
+            service: serviceRecord ? [serviceRecord.ID] : undefined,
+            appointment_date: toZohoDate(date),
+            start_time: time24,
+            end_time: endTime24,
+            session_mode: 'Video',
+            amount: 0,
+            payment_status: 'Paid',
+            booking_status: 'Creating Appointment',
+            Age: '0'
+          });
+          creatorAppointmentId = created && created.data && created.data.ID;
+        } catch (err) {
+          await logSyncError(env, {
+            operation: 'Create Appointment',
+            message: 'Credit booking pre-write failed: ' + (err && err.message ? err.message : String(err)),
+            phone
+          });
+        }
+
+        const fromTime = `${toZohoDate(date)} ${time24}:00`;
+        const data = await zohoPostForm(env, 'appointment', {
+          service_id,
+          staff_id,
+          from_time: fromTime,
+          timezone: 'Asia/Calcutta',
+          notes: notes || undefined,
+          customer_details: JSON.stringify({ name, email, phone_number: phone })
+        });
+
+        const returnvalue = data && data.response && data.response.returnvalue;
+
+        if (returnvalue && returnvalue.booking_id) {
+          if (creatorAppointmentId) {
+            try {
+              await creatorUpdate(env, 'appointments_Report', creatorAppointmentId, {
+                zoho_bookings_appointment_id: returnvalue.booking_id,
+                booking_status: 'Confirmed',
+                confirmed_time: creatorNow()
+              });
+            } catch (err) {
+              await logSyncError(env, {
+                operation: 'Update Appointment',
+                message: err && err.message ? err.message : String(err),
+                phone,
+                bookingId: returnvalue.booking_id
+              });
+            }
+          }
+
+          // Only spend the credit once the real booking is actually confirmed.
+          try {
+            await spendPackageCredit(env, credits.contactId, credits.totalCredits, chosenPackage.id, chosenPackage.remaining);
+          } catch (err) {
+            await logSyncError(env, {
+              operation: 'Update Appointment',
+              message: 'Credit spend failed after successful booking: ' + (err && err.message ? err.message : String(err)),
+              phone,
+              bookingId: returnvalue.booking_id
+            });
+          }
+
+          return jsonResponse(data, 200, headers);
+        }
+
+        const message = (returnvalue && (returnvalue.message || returnvalue.errormessage)) || 'Booking failed';
+        const isSlotConflict = /slot/i.test(message) && /(not available|unavailable|already|taken|booked)/i.test(message);
+
+        if (creatorAppointmentId) {
+          try {
+            await creatorUpdate(env, 'appointments_Report', creatorAppointmentId, {
+              booking_status: 'Failed',
+              error_message: message
+            });
+          } catch (err) {
+            await logSyncError(env, {
+              operation: 'Update Appointment',
+              message: err && err.message ? err.message : String(err),
+              phone
+            });
+          }
+        }
+
+        return jsonResponse(
+          { error: message, slot_conflict: isSlotConflict, raw: data },
+          isSlotConflict ? 409 : 400,
           headers
         );
       }

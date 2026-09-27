@@ -29,5 +29,7 @@ ZOHO_CREATOR_APP = "mindlap-booking-engine"
 #   ZOHO_CREATOR_REFRESH_TOKEN  (Zoho Creator scope: report.READ, form.CREATE, report.UPDATE)
 #   ZOHO_CREATOR_SEND_OTP_URL
 #   ZOHO_CREATOR_VERIFY_OTP_URL
+#   ZOHO_CRM_REFRESH_TOKEN      (Zoho CRM scope: ZohoCRM.modules.ALL - package credits)
+#   SESSION_TOKEN_SECRET
 #   RAZORPAY_KEY_ID
 #   RAZORPAY_KEY_SECRET
