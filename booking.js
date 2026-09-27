@@ -261,7 +261,21 @@
                 const data = await res.json().catch(() => ({}));
 
                 if (!res.ok || !data.success) {
-                    setOtpStatus(data.error || 'Could not send code.', 'error');
+                    // A code can still exist even when WhatsApp delivery
+                    // itself failed (the code is generated and saved before
+                    // the message is sent) - so still let them type one in,
+                    // rather than dead-ending on the error.
+                    const deliveryFailed = /whatsapp message/i.test(data.error || '');
+                    if (deliveryFailed) {
+                        setOtpStatus((data.error || 'Could not send the WhatsApp message.') + ' If you already have a code, you can still enter it below.', 'error');
+                        otpPhoneSubstep.hidden = true;
+                        otpCodeSubstep.hidden = false;
+                        otpCodeInput.value = '';
+                        otpCodeInput.focus();
+                        startOtpResendCooldown(60);
+                    } else {
+                        setOtpStatus(data.error || 'Could not send code.', 'error');
+                    }
                     return;
                 }
 

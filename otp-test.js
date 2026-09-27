@@ -72,7 +72,17 @@
                 const data = await res.json().catch(() => ({}));
 
                 if (!res.ok || !data.success) {
-                    setStatus(data.error || 'Could not send code.', 'error');
+                    const deliveryFailed = /whatsapp message/i.test(data.error || '');
+                    if (deliveryFailed) {
+                        setStatus((data.error || 'Could not send the WhatsApp message.') + ' If you already have a code, you can still enter it below.', 'error');
+                        stepPhone.hidden = true;
+                        stepCode.hidden = false;
+                        codeInput.value = '';
+                        codeInput.focus();
+                        startResendCooldown(60);
+                    } else {
+                        setStatus(data.error || 'Could not send code.', 'error');
+                    }
                     return;
                 }
 
