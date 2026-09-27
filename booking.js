@@ -242,10 +242,16 @@
             }, 1000);
         }
 
+        /** India only for now - the input just takes the 10-digit local number. */
+        function getFullPhone() {
+            const digits = otpPhoneInput.value.replace(/\D/g, '');
+            return digits ? '+91' + digits : '';
+        }
+
         async function sendWizardOtp(isResend) {
-            const phone = otpPhoneInput.value.trim();
-            if (!phone) {
-                setOtpStatus('Please enter a phone number.', 'error');
+            const phone = getFullPhone();
+            if (!phone || phone.length !== 13) {
+                setOtpStatus('Please enter a valid 10-digit phone number.', 'error');
                 return;
             }
 
@@ -359,7 +365,7 @@
         }
 
         async function verifyWizardOtp() {
-            const phone = otpPhoneInput.value.trim();
+            const phone = getFullPhone();
             const code = otpCodeInput.value.trim();
             if (!code) {
                 setOtpStatus('Please enter the code.', 'error');

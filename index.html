@@ -41,7 +41,7 @@
         rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index.css?v=123">
+    <link rel="stylesheet" href="index.css?v=124">
     <!-- Fix avatar blend mode -->
     <style>
         .tc-avatar-img { mix-blend-mode: normal !important; opacity: 1 !important; filter: none !important; background: none !important; }
@@ -777,8 +777,12 @@
 
                 <div class="otp-substep" id="wizard-otp-phone-substep">
                     <div class="booking-field">
-                        <label for="wizard-otp-phone">Phone number (with country code)</label>
-                        <input type="tel" id="wizard-otp-phone" placeholder="+91XXXXXXXXXX" autocomplete="tel">
+                        <label for="wizard-otp-phone">Phone number</label>
+                        <div class="phone-input-group">
+                            <span class="phone-input-prefix">&#127470;&#127475; +91</span>
+                            <input type="tel" id="wizard-otp-phone" inputmode="numeric" maxlength="10"
+                                placeholder="98765 43210" autocomplete="tel">
+                        </div>
                     </div>
                     <button type="button" id="wizard-otp-send-btn"
                         class="btn btn-primary btn-lg booking-submit-btn">Send code on WhatsApp</button>
@@ -971,7 +975,7 @@
     <!-- Custom JS Script -->
     <script src="index.js?v=19.0"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="booking.js?v=6.1"></script>
+    <script src="booking.js?v=7.0"></script>
 </body>
 
 </html>

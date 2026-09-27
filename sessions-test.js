@@ -51,8 +51,14 @@
             }, 1000);
         }
 
+        /** India only for now - the input just takes the 10-digit local number. */
+        function getFullPhone() {
+            const digits = phoneInput.value.replace(/\D/g, '');
+            return digits ? '+91' + digits : '';
+        }
+
         async function sendOtp(isResend) {
-            const phone = phoneInput.value.trim();
+            const phone = getFullPhone();
             if (!phone) {
                 setStatus('Please enter a phone number.', 'error');
                 return;
@@ -160,7 +166,7 @@
         }
 
         async function verifyOtp() {
-            const phone = phoneInput.value.trim();
+            const phone = getFullPhone();
             const code = codeInput.value.trim();
             if (!code) {
                 setStatus('Please enter the code.', 'error');

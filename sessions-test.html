@@ -124,8 +124,11 @@
 
         <div class="otp-step" id="otp-step-phone">
             <div class="booking-field">
-                <label for="otp-phone">Phone number (with country code)</label>
-                <input type="tel" id="otp-phone" placeholder="+91XXXXXXXXXX" autocomplete="tel">
+                <label for="otp-phone">Phone number</label>
+                <div class="phone-input-group">
+                    <span class="phone-input-prefix">&#127470;&#127475; +91</span>
+                    <input type="tel" id="otp-phone" inputmode="numeric" maxlength="10" placeholder="98765 43210" autocomplete="tel">
+                </div>
             </div>
             <button type="button" id="otp-send-btn" class="btn btn-primary">Send code on WhatsApp</button>
         </div>
@@ -153,6 +156,6 @@
         </div>
     </div>
 
-    <script src="sessions-test.js?v=1.1"></script>
+    <script src="sessions-test.js?v=1.2"></script>
 </body>
 </html>
