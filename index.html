@@ -41,7 +41,7 @@
         rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index.css?v=122">
+    <link rel="stylesheet" href="index.css?v=123">
     <!-- Fix avatar blend mode -->
     <style>
         .tc-avatar-img { mix-blend-mode: normal !important; opacity: 1 !important; filter: none !important; background: none !important; }
@@ -764,7 +764,50 @@
                 <div class="wizard-progress" id="wizard-progress" aria-hidden="true"></div>
               </div>
 
-              <div class="wizard-step" id="wizard-step-type">
+              <!-- Step: phone verification (also unlocks prepaid package credits) -->
+              <div class="wizard-step otp-step" id="wizard-step-otp">
+                <h2 class="booking-modal-title">Verify your phone</h2>
+                <p class="booking-modal-subtitle">We'll text a one-time code to your WhatsApp. If you have a prepaid
+                    package, we'll find it automatically.</p>
+
+                <div id="wizard-otp-verified-badge" class="otp-verified-badge">
+                    <span>&#10003;</span>
+                    <span>Phone verified</span>
+                </div>
+
+                <div class="otp-substep" id="wizard-otp-phone-substep">
+                    <div class="booking-field">
+                        <label for="wizard-otp-phone">Phone number (with country code)</label>
+                        <input type="tel" id="wizard-otp-phone" placeholder="+91XXXXXXXXXX" autocomplete="tel">
+                    </div>
+                    <button type="button" id="wizard-otp-send-btn"
+                        class="btn btn-primary btn-lg booking-submit-btn">Send code on WhatsApp</button>
+                </div>
+
+                <div class="otp-substep" id="wizard-otp-code-substep" hidden>
+                    <div class="booking-field">
+                        <label for="wizard-otp-code">Enter the 6-digit code</label>
+                        <input type="text" id="wizard-otp-code" inputmode="numeric" maxlength="6"
+                            placeholder="123456">
+                    </div>
+                    <button type="button" id="wizard-otp-verify-btn"
+                        class="btn btn-primary btn-lg booking-submit-btn">Verify code</button>
+                    <button type="button" id="wizard-otp-resend-btn" class="otp-resend">Resend code</button>
+                </div>
+
+                <p id="wizard-otp-status" class="booking-status" role="status"></p>
+              </div>
+
+              <!-- Step: prepaid package credits found -->
+              <div class="wizard-step" id="wizard-step-credits" hidden>
+                <h2 class="booking-modal-title">You have sessions ready to use</h2>
+                <p class="booking-modal-subtitle">Pick a package below to book with your remaining credits, no
+                    payment needed.</p>
+
+                <div class="session-type-grid" id="credits-package-list"></div>
+              </div>
+
+              <div class="wizard-step" id="wizard-step-type" hidden>
                 <h2 class="booking-modal-title">What kind of session are you looking for?</h2>
                 <p class="booking-modal-subtitle">Choose the format that fits you, you can always change this later.
                 </p>
@@ -799,7 +842,9 @@
                     an instant confirmation by email.</p>
 
                 <form id="booking-form" class="booking-form" novalidate>
-                    <div class="booking-field">
+                    <div class="modal-cta-box" id="credit-mode-banner" hidden></div>
+
+                    <div class="booking-field" id="booking-service-field">
                         <label for="booking-service">Service</label>
                         <select id="booking-service" required>
                             <option value="">Select a service</option>
@@ -926,7 +971,7 @@
     <!-- Custom JS Script -->
     <script src="index.js?v=19.0"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="booking.js?v=5.0"></script>
+    <script src="booking.js?v=6.0"></script>
 </body>
 
 </html>

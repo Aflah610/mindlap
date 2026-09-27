@@ -37,15 +37,33 @@
         const payLaterBtn = document.getElementById('pay-later-btn');
         const paymentStatusEl = document.getElementById('payment-status');
 
-        // --- Wizard chrome (session type -> details -> payment) ---
+        // --- Wizard chrome (otp -> credits/type -> details -> payment) ---
         const wizardBackBtn = document.getElementById('wizard-back-btn');
         const wizardProgress = document.getElementById('wizard-progress');
         const wizardTypeStep = document.getElementById('wizard-step-type');
         const sessionTypeCards = document.querySelectorAll('.session-type-card');
 
-        const WIZARD_STEPS = ['wizard-step-type', 'booking-step']; // payment-step is a post-booking outcome, not a navigable step
+        // --- Phone verification + package credits ---
+        const otpPhoneSubstep = document.getElementById('wizard-otp-phone-substep');
+        const otpCodeSubstep = document.getElementById('wizard-otp-code-substep');
+        const otpPhoneInput = document.getElementById('wizard-otp-phone');
+        const otpCodeInput = document.getElementById('wizard-otp-code');
+        const otpSendBtn = document.getElementById('wizard-otp-send-btn');
+        const otpVerifyBtn = document.getElementById('wizard-otp-verify-btn');
+        const otpResendBtn = document.getElementById('wizard-otp-resend-btn');
+        const otpStatusEl = document.getElementById('wizard-otp-status');
+        const otpVerifiedBadge = document.getElementById('wizard-otp-verified-badge');
+        const creditsPackageList = document.getElementById('credits-package-list');
+        const creditModeBanner = document.getElementById('credit-mode-banner');
+        const bookingServiceField = document.getElementById('booking-service-field');
+
+        const WIZARD_STEPS = ['wizard-step-otp', 'wizard-step-credits', 'wizard-step-type', 'booking-step']; // payment-step is a post-booking outcome, not a navigable step
         let currentStepIndex = 0;
         let selectedSessionType = null;
+        let sessionToken = null;
+        let creditBookingMode = false;
+        let selectedPackage = null; // { package_id, service_id, service_name, remaining }
+        let otpResendTimer = null;
 
         renderWizardDots();
 
@@ -66,7 +84,9 @@
             });
             if (paymentStepEl) paymentStepEl.hidden = (stepId !== 'payment-step');
 
-            if (wizardBackBtn) wizardBackBtn.hidden = (stepId === 'wizard-step-type');
+            if (wizardBackBtn) {
+                wizardBackBtn.hidden = (stepId === 'wizard-step-otp' || stepId === 'wizard-step-credits');
+            }
             if (wizardProgress) wizardProgress.hidden = (stepId === 'payment-step');
             renderWizardDots();
         }
@@ -109,7 +129,7 @@
         if (wizardBackBtn) {
             wizardBackBtn.addEventListener('click', () => {
                 if (!bookingStepEl.hidden) {
-                    goToStep('wizard-step-type');
+                    goToStep(creditBookingMode ? 'wizard-step-credits' : 'wizard-step-type');
                 }
             });
         }
@@ -144,10 +164,21 @@
             modal.classList.add('open');
             modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
-            // Always start a fresh visit at the session-type step.
             selectedSessionType = null;
+            creditBookingMode = false;
+            selectedPackage = null;
             sessionTypeCards.forEach((c) => c.classList.remove('selected'));
-            goToStep('wizard-step-type');
+            if (bookingServiceField) bookingServiceField.hidden = false;
+            if (creditModeBanner) creditModeBanner.hidden = true;
+
+            if (sessionToken) {
+                // Already verified earlier in this visit - re-check credits
+                // (cheap) instead of asking for the phone number again.
+                checkCreditsAndAdvance();
+            } else {
+                resetOtpUi();
+                goToStep('wizard-step-otp');
+            }
         }
 
         function closeModal() {
@@ -170,6 +201,200 @@
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && modal.classList.contains('open')) closeModal();
         });
+
+        // -----------------------------------------------------------------
+        // Phone verification (also unlocks prepaid package credits)
+        // -----------------------------------------------------------------
+
+        function setOtpStatus(message, type) {
+            if (!otpStatusEl) return;
+            otpStatusEl.textContent = message || '';
+            otpStatusEl.className = 'booking-status' + (type ? ' ' + type : '');
+        }
+
+        function resetOtpUi() {
+            if (otpPhoneSubstep) otpPhoneSubstep.hidden = false;
+            if (otpCodeSubstep) otpCodeSubstep.hidden = true;
+            if (otpVerifiedBadge) otpVerifiedBadge.classList.remove('show');
+            if (otpCodeInput) otpCodeInput.value = '';
+            setOtpStatus('');
+            clearInterval(otpResendTimer);
+            if (otpResendBtn) {
+                otpResendBtn.disabled = false;
+                otpResendBtn.textContent = 'Resend code';
+            }
+        }
+
+        function startOtpResendCooldown(seconds) {
+            let remaining = seconds;
+            otpResendBtn.disabled = true;
+            otpResendBtn.textContent = 'Resend code (' + remaining + 's)';
+            clearInterval(otpResendTimer);
+            otpResendTimer = setInterval(() => {
+                remaining -= 1;
+                if (remaining <= 0) {
+                    clearInterval(otpResendTimer);
+                    otpResendBtn.disabled = false;
+                    otpResendBtn.textContent = 'Resend code';
+                } else {
+                    otpResendBtn.textContent = 'Resend code (' + remaining + 's)';
+                }
+            }, 1000);
+        }
+
+        async function sendWizardOtp(isResend) {
+            const phone = otpPhoneInput.value.trim();
+            if (!phone) {
+                setOtpStatus('Please enter a phone number.', 'error');
+                return;
+            }
+
+            otpSendBtn.disabled = true;
+            setOtpStatus(isResend ? 'Resending code…' : 'Sending code…');
+
+            try {
+                const res = await fetch(BOOKING_API_BASE + '/api/otp/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok || !data.success) {
+                    setOtpStatus(data.error || 'Could not send code.', 'error');
+                    return;
+                }
+
+                setOtpStatus('Code sent. Check WhatsApp on that number.', 'success');
+                otpPhoneSubstep.hidden = true;
+                otpCodeSubstep.hidden = false;
+                otpCodeInput.value = '';
+                otpCodeInput.focus();
+                startOtpResendCooldown(60);
+            } catch (err) {
+                setOtpStatus('Network error, please try again.', 'error');
+            } finally {
+                otpSendBtn.disabled = false;
+            }
+        }
+
+        function renderCreditPackages(packages) {
+            if (!creditsPackageList) return;
+            creditsPackageList.innerHTML = '';
+            packages.forEach((pkg) => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'session-type-card';
+                card.innerHTML =
+                    '<span class="session-type-icon">' +
+                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                        '<rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M2 10h20"></path></svg>' +
+                    '</span>' +
+                    '<span class="session-type-text">' +
+                        '<span class="session-type-name">' + escapeHtml(pkg.service_name) + '</span>' +
+                        '<span class="session-type-desc">' + pkg.remaining + ' session' + (pkg.remaining === 1 ? '' : 's') + ' remaining</span>' +
+                    '</span>' +
+                    '<svg class="session-type-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+
+                card.addEventListener('click', () => selectPackage(pkg));
+                creditsPackageList.appendChild(card);
+            });
+        }
+
+        async function selectPackage(pkg) {
+            creditBookingMode = true;
+            selectedPackage = pkg;
+
+            if (creditModeBanner) {
+                creditModeBanner.hidden = false;
+                creditModeBanner.innerHTML = '<p>Booking with your package: <strong>' + escapeHtml(pkg.service_name) +
+                    '</strong> (' + pkg.remaining + ' remaining). No payment needed.</p>';
+            }
+            if (bookingServiceField) bookingServiceField.hidden = true;
+
+            if (!servicesLoaded) {
+                await loadServices();
+            }
+            serviceSelect.value = pkg.service_id;
+            serviceSelect.dispatchEvent(new Event('change'));
+
+            goToStep('booking-step');
+        }
+
+        async function checkCreditsAndAdvance() {
+            setOtpStatus('Checking for prepaid sessions…');
+            try {
+                const res = await fetch(BOOKING_API_BASE + '/api/credits/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_token: sessionToken })
+                });
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok && data.has_credits && data.packages && data.packages.length) {
+                    renderCreditPackages(data.packages);
+                    goToStep('wizard-step-credits');
+                } else {
+                    goToStep('wizard-step-type');
+                }
+            } catch (err) {
+                // If the credit check itself fails, don't block booking -
+                // just fall back to the normal flow.
+                goToStep('wizard-step-type');
+            }
+        }
+
+        async function verifyWizardOtp() {
+            const phone = otpPhoneInput.value.trim();
+            const code = otpCodeInput.value.trim();
+            if (!code) {
+                setOtpStatus('Please enter the code.', 'error');
+                return;
+            }
+
+            otpVerifyBtn.disabled = true;
+            setOtpStatus('Verifying…');
+
+            try {
+                const res = await fetch(BOOKING_API_BASE + '/api/otp/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, code })
+                });
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok || !data.success) {
+                    setOtpStatus(data.error || 'Incorrect or expired code.', 'error');
+                    return;
+                }
+
+                sessionToken = data.session_token || null;
+                otpVerifiedBadge.classList.add('show');
+                setOtpStatus('');
+
+                const bookingPhoneInput = document.getElementById('booking-phone');
+                if (bookingPhoneInput) bookingPhoneInput.value = phone;
+
+                if (sessionToken) {
+                    await checkCreditsAndAdvance();
+                } else {
+                    goToStep('wizard-step-type');
+                }
+            } catch (err) {
+                setOtpStatus('Network error, please try again.', 'error');
+            } finally {
+                otpVerifyBtn.disabled = false;
+            }
+        }
+
+        if (otpSendBtn) otpSendBtn.addEventListener('click', () => sendWizardOtp(false));
+        if (otpResendBtn) otpResendBtn.addEventListener('click', () => sendWizardOtp(true));
+        if (otpVerifyBtn) otpVerifyBtn.addEventListener('click', verifyWizardOtp);
+        if (otpCodeInput) {
+            otpCodeInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') verifyWizardOtp();
+            });
+        }
 
         async function apiGet(path, params) {
             const url = new URL(BOOKING_API_BASE + path);
@@ -322,13 +547,24 @@
                 }
 
                 submitBtn.disabled = true;
-                setStatus('Booking your session…');
+                setStatus(creditBookingMode ? 'Booking with your package…' : 'Booking your session…');
 
                 try {
-                    const res = await fetch(BOOKING_API_BASE + '/api/book', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
+                    const endpoint = creditBookingMode ? '/api/credits/book' : '/api/book';
+                    const body = creditBookingMode
+                        ? {
+                            session_token: sessionToken,
+                            package_id: selectedPackage && selectedPackage.package_id,
+                            service_id: serviceSelect.value,
+                            staff_id: staffSelect.value,
+                            date: dateInput.value,
+                            time: selectedSlot,
+                            name: name,
+                            email: email,
+                            notes: notes,
+                            hp_confirm: hpConfirm
+                        }
+                        : {
                             service_id: serviceSelect.value,
                             staff_id: staffSelect.value,
                             date: dateInput.value,
@@ -339,7 +575,12 @@
                             notes: notes,
                             hp_confirm: hpConfirm,
                             timezone: 'Asia/Calcutta'
-                        })
+                        };
+
+                    const res = await fetch(BOOKING_API_BASE + endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
                     });
                     const data = await res.json().catch(() => ({}));
 
@@ -354,15 +595,22 @@
                         return;
                     }
 
+                    form.reset();
+                    resetSlots();
+
+                    if (creditBookingMode) {
+                        // Already paid for via the package - no payment step.
+                        setStatus("You're booked using your package! Check your email for confirmation.", 'success');
+                        setTimeout(closeModal, 2500);
+                        return;
+                    }
+
                     setStatus("You're booked! Check your email for confirmation.", 'success');
 
                     const returnvalue = (data.response && data.response.returnvalue) || {};
                     const bookingId = returnvalue.booking_id;
                     const amount = Number(returnvalue.due != null ? returnvalue.due : returnvalue.cost) || 0;
                     const currency = returnvalue.currency || 'INR';
-
-                    form.reset();
-                    resetSlots();
 
                     if (bookingId && amount > 0) {
                         showPaymentStep(bookingId, amount, currency);
