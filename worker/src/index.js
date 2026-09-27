@@ -22,7 +22,9 @@
  *   POST /api/book  { service_id, staff_id, date, time, name, email,
  *                      phone, notes?, timezone? }
  *   POST /api/otp/send    { phone }
- *   POST /api/otp/verify  { phone, code }
+ *   POST /api/otp/verify  { phone, code } -> also returns a session_token
+ *   POST /api/sessions    { session_token } -> past/upcoming appointments
+ *                                              for that verified phone
  *   POST /api/payment/create-order  { booking_id, amount, currency? }
  *   POST /api/payment/verify        { razorpay_order_id, razorpay_payment_id,
  *                                      razorpay_signature, booking_id? }
@@ -178,6 +180,49 @@ async function hmacSha256Hex(secret, message) {
   );
   const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(message));
   return hexEncode(signature);
+}
+
+// --- Session tokens -------------------------------------------------------
+//
+// Issued once a phone number is OTP-verified, so "My Sessions" can prove a
+// visitor really owns that number instead of just trusting a phone number
+// typed into a request. A signed, self-contained token (payload + HMAC),
+// no server-side session storage needed.
+
+function base64UrlEncode(str) {
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function base64UrlDecode(str) {
+  let padded = String(str).replace(/-/g, '+').replace(/_/g, '/');
+  while (padded.length % 4) padded += '=';
+  return atob(padded);
+}
+
+async function createSessionToken(env, phone) {
+  const payload = JSON.stringify({ phone, exp: Date.now() + 30 * 24 * 60 * 60 * 1000 });
+  const encodedPayload = base64UrlEncode(payload);
+  const signature = await hmacSha256Hex(env.SESSION_TOKEN_SECRET, encodedPayload);
+  return `${encodedPayload}.${signature}`;
+}
+
+async function verifySessionToken(env, token) {
+  const parts = String(token || '').split('.');
+  if (parts.length !== 2) return null;
+  const [encodedPayload, signature] = parts;
+
+  const expectedSignature = await hmacSha256Hex(env.SESSION_TOKEN_SECRET, encodedPayload);
+  if (expectedSignature !== signature) return null;
+
+  let payload;
+  try {
+    payload = JSON.parse(base64UrlDecode(encodedPayload));
+  } catch (err) {
+    return null;
+  }
+
+  if (!payload || !payload.phone || !payload.exp || Date.now() > payload.exp) return null;
+  return payload;
 }
 
 // --- Zoho Creator (the real customer/appointment database) --------------
@@ -525,9 +570,100 @@ export default {
         const result = String((data && data.result) || '');
 
         if (result.startsWith('SUCCESS')) {
-          return jsonResponse({ success: true, message: result }, 200, headers);
+          const sessionToken = await createSessionToken(env, normalizePhone(phone));
+          return jsonResponse({ success: true, message: result, session_token: sessionToken }, 200, headers);
         }
         return jsonResponse({ success: false, error: result || 'Verification failed' }, 400, headers);
+      }
+
+      // --- POST /api/sessions -----------------------------------------------------
+      // "My Sessions": past and upcoming appointments for a verified customer.
+      // Requires a session_token from a successful /api/otp/verify - never just
+      // a bare phone number, or anyone could look up anyone else's history.
+      if (url.pathname === '/api/sessions' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const session = await verifySessionToken(env, body.session_token);
+        if (!session) {
+          return jsonResponse({ error: 'Please verify your phone number again.' }, 401, headers);
+        }
+
+        const normalized = normalizePhone(session.phone);
+        const customers = await creatorQuery(
+          env,
+          'customers_Report',
+          `(phone_number=="${normalized}" || whatsapp_number=="${normalized}")`
+        );
+        const customer = customers[0];
+
+        if (!customer) {
+          return jsonResponse({ customer: null, upcoming: [], past: [] }, 200, headers);
+        }
+
+        const [appointments, services, therapists] = await Promise.all([
+          creatorQuery(env, 'appointments_Report', `(customer.ID==${customer.ID})`),
+          creatorQuery(env, 'services_Report', ''),
+          creatorQuery(env, 'therapists_Report', '')
+        ]);
+
+        const serviceNames = {};
+        services.forEach((s) => { serviceNames[s.ID] = s.service_name; });
+        const therapistNames = {};
+        therapists.forEach((t) => { therapistNames[t.ID] = t.therapist_name && t.therapist_name.first_name; });
+
+        const parseZohoDate = (d) => {
+          const [dd, mon, yyyy] = String(d || '').split('-');
+          const monthIndex = MONTHS.indexOf(mon);
+          if (!dd || monthIndex === -1 || !yyyy) return null;
+          return new Date(Number(yyyy), monthIndex, Number(dd));
+        };
+
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        const visible = appointments.filter(
+          (a) => a.booking_status && a.booking_status !== 'Failed' && a.booking_status !== 'Creating Appointment'
+        );
+
+        const enriched = visible
+          .map((a) => {
+            const serviceId = a.service && a.service[0] && a.service[0].ID;
+            const therapistId = a.therapist && a.therapist[0] && a.therapist[0].ID;
+            return {
+              id: a.ID,
+              date: a.appointment_date,
+              parsedDate: parseZohoDate(a.appointment_date),
+              start_time: a.start_time,
+              end_time: a.end_time,
+              service_name: serviceNames[serviceId] || 'Session',
+              therapist_name: therapistNames[therapistId] || '',
+              session_mode: a.session_mode,
+              booking_status: a.booking_status,
+              payment_status: a.payment_status
+            };
+          })
+          .filter((a) => a.parsedDate);
+
+        const upcoming = enriched
+          .filter((a) => a.parsedDate >= startOfToday)
+          .sort((a, b) => a.parsedDate - b.parsedDate);
+        const past = enriched
+          .filter((a) => a.parsedDate < startOfToday)
+          .sort((a, b) => b.parsedDate - a.parsedDate);
+
+        const strip = ({ parsedDate, ...rest }) => rest;
+
+        return jsonResponse(
+          {
+            customer: {
+              name: customer.full_name && customer.full_name.first_name,
+              phone: customer.phone_number
+            },
+            upcoming: upcoming.map(strip),
+            past: past.map(strip)
+          },
+          200,
+          headers
+        );
       }
 
       // --- POST /api/payment/create-order ---------------------------------------
