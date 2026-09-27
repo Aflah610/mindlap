@@ -2625,7 +2625,7 @@ section {
     min-height: 60px;
 }
 
-/* -- Phone input with a fixed country prefix (India only, for now) -- */
+/* -- Phone input with a country-code dropdown (India selected by default) -- */
 .phone-input-group {
     display: flex;
     align-items: stretch;
@@ -2653,6 +2653,17 @@ section {
     border-right: 1.5px solid var(--border-light);
     white-space: nowrap;
     flex-shrink: 0;
+}
+
+select.phone-input-prefix {
+    width: auto !important;
+    max-width: 120px;
+    border: none !important;
+    border-right: 1.5px solid var(--border-light) !important;
+    border-radius: 0 !important;
+    background: var(--bg-lavender) !important;
+    font-family: inherit;
+    cursor: pointer;
 }
 
 .phone-input-group input {

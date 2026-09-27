@@ -47,6 +47,7 @@
         const otpPhoneSubstep = document.getElementById('wizard-otp-phone-substep');
         const otpCodeSubstep = document.getElementById('wizard-otp-code-substep');
         const otpPhoneInput = document.getElementById('wizard-otp-phone');
+        const otpCountrySelect = document.getElementById('wizard-otp-country');
         const otpCodeInput = document.getElementById('wizard-otp-code');
         const otpSendBtn = document.getElementById('wizard-otp-send-btn');
         const otpVerifyBtn = document.getElementById('wizard-otp-verify-btn');
@@ -242,16 +243,30 @@
             }, 1000);
         }
 
-        /** India only for now - the input just takes the 10-digit local number. */
-        function getFullPhone() {
-            const digits = otpPhoneInput.value.replace(/\D/g, '');
-            return digits ? '+91' + digits : '';
+        function getLocalDigits() {
+            return otpPhoneInput.value.replace(/\D/g, '');
         }
+
+        function getFullPhone() {
+            const digits = getLocalDigits();
+            return digits ? otpCountrySelect.value + digits : '';
+        }
+
+        function isValidLocalNumber() {
+            const len = getLocalDigits().length;
+            return otpCountrySelect.value === '+91' ? len === 10 : len >= 6 && len <= 13;
+        }
+
+        otpCountrySelect.addEventListener('change', () => {
+            otpPhoneInput.maxLength = otpCountrySelect.value === '+91' ? 10 : 13;
+        });
 
         async function sendWizardOtp(isResend) {
             const phone = getFullPhone();
-            if (!phone || phone.length !== 13) {
-                setOtpStatus('Please enter a valid 10-digit phone number.', 'error');
+            if (!isValidLocalNumber()) {
+                setOtpStatus(otpCountrySelect.value === '+91'
+                    ? 'Please enter a valid 10-digit phone number.'
+                    : 'Please enter a valid phone number.', 'error');
                 return;
             }
 

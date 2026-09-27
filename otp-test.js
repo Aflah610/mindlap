@@ -15,6 +15,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         const phoneInput = document.getElementById('otp-phone');
+        const countrySelect = document.getElementById('otp-country');
         const codeInput = document.getElementById('otp-code');
         const sendBtn = document.getElementById('otp-send-btn');
         const verifyBtn = document.getElementById('otp-verify-btn');
@@ -53,11 +54,14 @@
             resendBtn.textContent = 'Resend code (' + resendCooldown + 's)';
         }
 
-        /** India only for now - the input just takes the 10-digit local number. */
         function getFullPhone() {
             const digits = phoneInput.value.replace(/\D/g, '');
-            return digits ? '+91' + digits : '';
+            return digits ? countrySelect.value + digits : '';
         }
+
+        countrySelect.addEventListener('change', () => {
+            phoneInput.maxLength = countrySelect.value === '+91' ? 10 : 13;
+        });
 
         async function sendOtp(isResend) {
             const phone = getFullPhone();

@@ -41,7 +41,7 @@
         rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index.css?v=124">
+    <link rel="stylesheet" href="index.css?v=125">
     <!-- Fix avatar blend mode -->
     <style>
         .tc-avatar-img { mix-blend-mode: normal !important; opacity: 1 !important; filter: none !important; background: none !important; }
@@ -779,7 +779,26 @@
                     <div class="booking-field">
                         <label for="wizard-otp-phone">Phone number</label>
                         <div class="phone-input-group">
-                            <span class="phone-input-prefix">&#127470;&#127475; +91</span>
+                            <select id="wizard-otp-country" class="phone-input-prefix" aria-label="Country code">
+                                <option value="+91" selected>&#127470;&#127475; +91 India</option>
+                                <option value="+971">&#127462;&#127466; +971 UAE</option>
+                                <option value="+966">&#127480;&#127462; +966 Saudi Arabia</option>
+                                <option value="+974">&#127478;&#127462; +974 Qatar</option>
+                                <option value="+968">&#127476;&#127474; +968 Oman</option>
+                                <option value="+965">&#127472;&#127484; +965 Kuwait</option>
+                                <option value="+973">&#127463;&#127469; +973 Bahrain</option>
+                                <option value="+1">&#127482;&#127480; +1 USA / Canada</option>
+                                <option value="+44">&#127468;&#127463; +44 UK</option>
+                                <option value="+61">&#127462;&#127482; +61 Australia</option>
+                                <option value="+64">&#127475;&#127487; +64 New Zealand</option>
+                                <option value="+65">&#127480;&#127468; +65 Singapore</option>
+                                <option value="+60">&#127474;&#127486; +60 Malaysia</option>
+                                <option value="+49">&#127465;&#127466; +49 Germany</option>
+                                <option value="+353">&#127470;&#127466; +353 Ireland</option>
+                                <option value="+94">&#127473;&#127472; +94 Sri Lanka</option>
+                                <option value="+977">&#127475;&#127477; +977 Nepal</option>
+                                <option value="+880">&#127463;&#127465; +880 Bangladesh</option>
+                            </select>
                             <input type="tel" id="wizard-otp-phone" inputmode="numeric" maxlength="10"
                                 placeholder="98765 43210" autocomplete="tel">
                         </div>
@@ -975,7 +994,7 @@
     <!-- Custom JS Script -->
     <script src="index.js?v=19.0"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="booking.js?v=7.0"></script>
+    <script src="booking.js?v=7.1"></script>
 </body>
 
 </html>
