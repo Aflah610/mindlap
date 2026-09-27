@@ -40,4 +40,8 @@ build/
 Thumbs.db
 
 # Project-specific symlinks / build artifacts if any
-# mindlap_review/
+# Customer review screenshots live outside the repo (never publish them)
+mindlap_review/
+
+# Claude Code local settings
+.claude/

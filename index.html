@@ -41,7 +41,7 @@
         rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index.css?v=125">
+    <link rel="stylesheet" href="index.css?v=126">
     <!-- Fix avatar blend mode -->
     <style>
         .tc-avatar-img { mix-blend-mode: normal !important; opacity: 1 !important; filter: none !important; background: none !important; }
@@ -799,8 +799,8 @@
                                 <option value="+977">&#127475;&#127477; +977 Nepal</option>
                                 <option value="+880">&#127463;&#127465; +880 Bangladesh</option>
                             </select>
-                            <input type="tel" id="wizard-otp-phone" inputmode="numeric" maxlength="10"
-                                placeholder="98765 43210" autocomplete="tel">
+                            <input type="tel" id="wizard-otp-phone" inputmode="tel" maxlength="20"
+                                placeholder="98765 43210" autocomplete="tel-national">
                         </div>
                     </div>
                     <button type="button" id="wizard-otp-send-btn"
@@ -811,11 +811,14 @@
                     <div class="booking-field">
                         <label for="wizard-otp-code">Enter the 6-digit code</label>
                         <input type="text" id="wizard-otp-code" inputmode="numeric" maxlength="6"
-                            placeholder="123456">
+                            placeholder="123456" autocomplete="one-time-code">
                     </div>
                     <button type="button" id="wizard-otp-verify-btn"
                         class="btn btn-primary btn-lg booking-submit-btn">Verify code</button>
-                    <button type="button" id="wizard-otp-resend-btn" class="otp-resend">Resend code</button>
+                    <div class="otp-links">
+                        <button type="button" id="wizard-otp-resend-btn" class="otp-resend">Resend code</button>
+                        <button type="button" id="wizard-otp-change-btn" class="otp-resend">Change number</button>
+                    </div>
                 </div>
 
                 <p id="wizard-otp-status" class="booking-status" role="status"></p>
@@ -901,7 +904,7 @@
                         </div>
                         <div class="booking-field">
                             <label for="booking-phone">Phone number</label>
-                            <input type="tel" id="booking-phone" autocomplete="tel" required>
+                            <input type="tel" id="booking-phone" readonly>
                         </div>
                     </div>
 
@@ -994,7 +997,7 @@
     <!-- Custom JS Script -->
     <script src="index.js?v=19.0"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="booking.js?v=7.1"></script>
+    <script src="booking.js?v=7.2"></script>
 </body>
 
 </html>

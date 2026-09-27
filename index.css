@@ -2797,6 +2797,17 @@ select.phone-input-prefix {
     cursor: not-allowed;
 }
 
+.otp-links {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+#booking-phone[readonly] {
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
 #payment-amount-line {
     font-size: 1.15rem;
     font-weight: 700;

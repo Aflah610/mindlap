@@ -19,8 +19,8 @@
  *   GET  /api/services                       -> Zoho "services" list
  *   GET  /api/staff?service_id=...            -> Zoho "staffs" list
  *   GET  /api/availability?service_id=&staff_id=&date=YYYY-MM-DD
- *   POST /api/book  { service_id, staff_id, date, time, name, email,
- *                      phone, notes?, timezone? }
+ *   POST /api/book  { session_token, service_id, staff_id, date, time, name, email,
+ *                      notes?, timezone? }
  *   POST /api/otp/send    { phone }
  *   POST /api/otp/verify  { phone, code } -> also returns a session_token
  *   POST /api/sessions    { session_token } -> past/upcoming appointments
@@ -203,8 +203,18 @@ function base64UrlDecode(str) {
   return atob(padded);
 }
 
+// The browser only keeps this in memory, so a short lifetime costs nothing.
+const SESSION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+
+function timingSafeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 async function createSessionToken(env, phone) {
-  const payload = JSON.stringify({ phone, exp: Date.now() + 30 * 24 * 60 * 60 * 1000 });
+  const payload = JSON.stringify({ phone, exp: Date.now() + SESSION_TOKEN_TTL_MS });
   const encodedPayload = base64UrlEncode(payload);
   const signature = await hmacSha256Hex(env.SESSION_TOKEN_SECRET, encodedPayload);
   return `${encodedPayload}.${signature}`;
@@ -216,7 +226,7 @@ async function verifySessionToken(env, token) {
   const [encodedPayload, signature] = parts;
 
   const expectedSignature = await hmacSha256Hex(env.SESSION_TOKEN_SECRET, encodedPayload);
-  if (expectedSignature !== signature) return null;
+  if (!timingSafeEqual(expectedSignature, signature)) return null;
 
   let payload;
   try {
@@ -328,6 +338,41 @@ function creatorNow() {
 function normalizePhone(phone) {
   const trimmed = String(phone || '').trim().replace(/[^\d+]/g, '');
   return trimmed;
+}
+
+/** Normalized E.164 ("+919876543210") or null. India numbers must be exactly 10 digits. */
+function parseE164(phone) {
+  const normalized = normalizePhone(phone);
+  if (!/^\+[1-9]\d{6,14}$/.test(normalized)) return null;
+  if (normalized.startsWith('+91') && normalized.length !== 13) return null;
+  return normalized;
+}
+
+// Zoho's Send_OTP / Verify_OTP return raw text (sometimes including Meta API
+// internals). Only these known outcomes are shown to customers as-is.
+const OTP_CUSTOMER_MESSAGES = [
+  [/wait a minute/i, 'Please wait a minute before requesting another code.'],
+  [/too many codes/i, 'Too many codes requested. Please try again in a little while.'],
+  [/too many incorrect/i, 'Too many incorrect attempts. Please request a new code.'],
+  [/expired/i, 'This code has expired. Please request a new one.'],
+  [/already used/i, 'This code was already used. Please request a new one.'],
+  [/incorrect otp/i, 'That code is incorrect. Please check it and try again.'],
+  [/no otp record/i, 'Please request a code first.']
+];
+
+function customerOtpMessage(rawResult, fallback) {
+  const match = OTP_CUSTOMER_MESSAGES.find(([pattern]) => pattern.test(rawResult));
+  return match ? match[1] : fallback;
+}
+
+async function callOtpApi(url, payload) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json().catch(() => ({}));
+  return String((data && data.result) || '');
 }
 
 /** Finds the Creator record for a therapist/service by its Zoho Bookings ID. */
@@ -556,14 +601,22 @@ export default {
       // a database record, which is logged via error_message where possible.
       if (url.pathname === '/api/book' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
-        const { service_id, staff_id, date, time, name, email, phone, notes, timezone, hp_confirm } = body || {};
+        const { service_id, staff_id, date, time, name, email, notes, timezone, hp_confirm } = body || {};
 
         // Honeypot: real users never fill this hidden field in.
         if (hp_confirm) {
           return jsonResponse({ error: 'Rejected' }, 400, headers);
         }
 
-        if (!service_id || !staff_id || !date || !time || !name || !email || !phone) {
+        // The phone number always comes from the OTP-verified token, never
+        // from the request body, so a booking can't skip verification.
+        const session = await verifySessionToken(env, body.session_token);
+        if (!session) {
+          return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
+        }
+        const phone = session.phone;
+
+        if (!service_id || !staff_id || !date || !time || !name || !email) {
           return jsonResponse({ error: 'Missing required booking fields' }, 400, headers);
         }
 
@@ -678,47 +731,65 @@ export default {
       // --- POST /api/otp/send ---------------------------------------------------
       if (url.pathname === '/api/otp/send' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
-        const phone = String(body.phone || '').trim();
+        const phone = parseE164(body.phone);
         if (!phone) {
-          return jsonResponse({ error: 'Phone number is required' }, 400, headers);
+          return jsonResponse({ success: false, error: 'Please enter a valid phone number.' }, 400, headers);
         }
 
-        const zohoRes = await fetch(env.ZOHO_CREATOR_SEND_OTP_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ Phone: phone })
-        });
-        const data = await zohoRes.json().catch(() => ({}));
-        const result = String((data && data.result) || '');
+        let result;
+        try {
+          result = await callOtpApi(env.ZOHO_CREATOR_SEND_OTP_URL, { Phone: phone });
+        } catch (err) {
+          console.error('Send_OTP call failed', err);
+          return jsonResponse({ success: false, error: 'Could not send a code right now. Please try again.' }, 502, headers);
+        }
 
         if (result.startsWith('SUCCESS')) {
-          return jsonResponse({ success: true, message: result }, 200, headers);
+          return jsonResponse({ success: true }, 200, headers);
         }
-        return jsonResponse({ success: false, error: result || 'Could not send code' }, 400, headers);
+
+        // The code is generated and saved before the WhatsApp send is
+        // attempted, so a delivery failure still leaves a valid code behind.
+        if (/whatsapp/i.test(result)) {
+          console.error('WhatsApp delivery failed', result);
+          return jsonResponse({
+            success: false,
+            delivery_failed: true,
+            error: "We couldn't deliver the code on WhatsApp."
+          }, 502, headers);
+        }
+
+        console.error('Send_OTP rejected', result);
+        return jsonResponse({ success: false, error: customerOtpMessage(result, 'Could not send a code. Please try again.') }, 400, headers);
       }
 
       // --- POST /api/otp/verify -------------------------------------------------
       if (url.pathname === '/api/otp/verify' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
-        const phone = String(body.phone || '').trim();
-        const code = String(body.code || '').trim();
-        if (!phone || !code) {
-          return jsonResponse({ error: 'Phone number and code are required' }, 400, headers);
+        const phone = parseE164(body.phone);
+        const code = String(body.code || '').replace(/\D/g, '');
+        if (!phone) {
+          return jsonResponse({ success: false, error: 'Please enter a valid phone number.' }, 400, headers);
+        }
+        // Rejecting malformed codes here means they never cost the customer
+        // one of their limited attempts in Verify_OTP.
+        if (code.length !== 6) {
+          return jsonResponse({ success: false, error: 'Please enter the 6-digit code.' }, 400, headers);
         }
 
-        const zohoRes = await fetch(env.ZOHO_CREATOR_VERIFY_OTP_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ Phone: phone, Entered_OTP: code })
-        });
-        const data = await zohoRes.json().catch(() => ({}));
-        const result = String((data && data.result) || '');
+        let result;
+        try {
+          result = await callOtpApi(env.ZOHO_CREATOR_VERIFY_OTP_URL, { Phone: phone, Entered_OTP: code });
+        } catch (err) {
+          console.error('Verify_OTP call failed', err);
+          return jsonResponse({ success: false, error: 'Could not verify right now. Please try again.' }, 502, headers);
+        }
 
         if (result.startsWith('SUCCESS')) {
-          const sessionToken = await createSessionToken(env, normalizePhone(phone));
-          return jsonResponse({ success: true, message: result, session_token: sessionToken }, 200, headers);
+          const sessionToken = await createSessionToken(env, phone);
+          return jsonResponse({ success: true, phone, session_token: sessionToken }, 200, headers);
         }
-        return jsonResponse({ success: false, error: result || 'Verification failed' }, 400, headers);
+        return jsonResponse({ success: false, error: customerOtpMessage(result, 'Verification failed. Please try again.') }, 400, headers);
       }
 
       // --- POST /api/sessions -----------------------------------------------------
@@ -729,7 +800,7 @@ export default {
         const body = await request.json().catch(() => ({}));
         const session = await verifySessionToken(env, body.session_token);
         if (!session) {
-          return jsonResponse({ error: 'Please verify your phone number again.' }, 401, headers);
+          return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
         }
 
         const normalized = normalizePhone(session.phone);
@@ -818,7 +889,7 @@ export default {
         const body = await request.json().catch(() => ({}));
         const session = await verifySessionToken(env, body.session_token);
         if (!session) {
-          return jsonResponse({ error: 'Please verify your phone number again.' }, 401, headers);
+          return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
         }
 
         try {
@@ -868,7 +939,7 @@ export default {
         const body = await request.json().catch(() => ({}));
         const session = await verifySessionToken(env, body.session_token);
         if (!session) {
-          return jsonResponse({ error: 'Please verify your phone number again.' }, 401, headers);
+          return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
         }
 
         const { package_id, service_id, staff_id, date, time, name, email, notes, hp_confirm } = body || {};
@@ -1068,7 +1139,8 @@ export default {
 
       return jsonResponse({ error: 'Not found' }, 404, headers);
     } catch (err) {
-      return jsonResponse({ error: 'Internal error', detail: String((err && err.message) || err) }, 500, headers);
+      console.error('Unhandled Worker error', err);
+      return jsonResponse({ error: 'Something went wrong. Please try again.' }, 500, headers);
     }
   }
 };

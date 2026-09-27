@@ -54,12 +54,9 @@
 
         function getFullPhone() {
             const digits = phoneInput.value.replace(/\D/g, '');
-            return digits ? countrySelect.value + digits : '';
+            return digits ? countrySelect.value + digits.replace(/^0+/, '') : '';
         }
 
-        countrySelect.addEventListener('change', () => {
-            phoneInput.maxLength = countrySelect.value === '+91' ? 10 : 13;
-        });
 
         async function sendOtp(isResend) {
             const phone = getFullPhone();
@@ -80,8 +77,7 @@
                 const data = await res.json().catch(() => ({}));
 
                 if (!res.ok || !data.success) {
-                    const deliveryFailed = /whatsapp message/i.test(data.error || '');
-                    if (deliveryFailed) {
+                    if (data.delivery_failed) {
                         setStatus((data.error || 'Could not send the WhatsApp message.') + ' If you already have a code, you can still enter it below.', 'error');
                         stepPhone.hidden = true;
                         stepCode.hidden = false;
@@ -171,7 +167,7 @@
 
         async function verifyOtp() {
             const phone = getFullPhone();
-            const code = codeInput.value.trim();
+            const code = codeInput.value.replace(/\D/g, '');
             if (!code) {
                 setStatus('Please enter the code.', 'error');
                 return;

@@ -52,6 +52,7 @@
         const otpSendBtn = document.getElementById('wizard-otp-send-btn');
         const otpVerifyBtn = document.getElementById('wizard-otp-verify-btn');
         const otpResendBtn = document.getElementById('wizard-otp-resend-btn');
+        const otpChangeNumberBtn = document.getElementById('wizard-otp-change-btn');
         const otpStatusEl = document.getElementById('wizard-otp-status');
         const otpVerifiedBadge = document.getElementById('wizard-otp-verified-badge');
         const creditsPackageList = document.getElementById('credits-package-list');
@@ -62,6 +63,8 @@
         let currentStepIndex = 0;
         let selectedSessionType = null;
         let sessionToken = null;
+        let verifiedPhone = '';
+        let otpVerifyInFlight = false;
         let creditBookingMode = false;
         let selectedPackage = null; // { package_id, service_id, service_name, remaining }
         let otpResendTimer = null;
@@ -243,8 +246,21 @@
             }, 1000);
         }
 
+        /**
+         * Local number digits only. Tolerates pasted/autofilled numbers like
+         * "+91 98765 43210", "0091..." or a leading trunk "0".
+         */
         function getLocalDigits() {
-            return otpPhoneInput.value.replace(/\D/g, '');
+            const raw = otpPhoneInput.value.trim();
+            let digits = raw.replace(/\D/g, '');
+            const ccDigits = otpCountrySelect.value.replace('+', '');
+            if (/^(\+|00)/.test(raw)) {
+                digits = digits.replace(/^00/, '');
+                if (digits.startsWith(ccDigits)) digits = digits.slice(ccDigits.length);
+            } else if (ccDigits === '91' && digits.length === 12 && digits.startsWith('91')) {
+                digits = digits.slice(2);
+            }
+            return digits.replace(/^0+/, '');
         }
 
         function getFullPhone() {
@@ -257,9 +273,13 @@
             return otpCountrySelect.value === '+91' ? len === 10 : len >= 6 && len <= 13;
         }
 
-        otpCountrySelect.addEventListener('change', () => {
-            otpPhoneInput.maxLength = otpCountrySelect.value === '+91' ? 10 : 13;
-        });
+        function showOtpCodeEntry() {
+            otpPhoneSubstep.hidden = true;
+            otpCodeSubstep.hidden = false;
+            otpCodeInput.value = '';
+            otpCodeInput.focus();
+            startOtpResendCooldown(60);
+        }
 
         async function sendWizardOtp(isResend) {
             const phone = getFullPhone();
@@ -282,30 +302,20 @@
                 const data = await res.json().catch(() => ({}));
 
                 if (!res.ok || !data.success) {
-                    // A code can still exist even when WhatsApp delivery
-                    // itself failed (the code is generated and saved before
-                    // the message is sent) - so still let them type one in,
-                    // rather than dead-ending on the error.
-                    const deliveryFailed = /whatsapp message/i.test(data.error || '');
-                    if (deliveryFailed) {
-                        setOtpStatus((data.error || 'Could not send the WhatsApp message.') + ' If you already have a code, you can still enter it below.', 'error');
-                        otpPhoneSubstep.hidden = true;
-                        otpCodeSubstep.hidden = false;
-                        otpCodeInput.value = '';
-                        otpCodeInput.focus();
-                        startOtpResendCooldown(60);
+                    // The code is saved before the WhatsApp send is attempted,
+                    // so a delivery failure still leaves a usable code.
+                    if (data.delivery_failed) {
+                        showOtpCodeEntry();
+                        setOtpStatus((data.error || "We couldn't deliver the code on WhatsApp.") +
+                            ' If you already have a code, enter it below, or tap Resend in a minute.', 'error');
                     } else {
                         setOtpStatus(data.error || 'Could not send code.', 'error');
                     }
                     return;
                 }
 
-                setOtpStatus('Code sent. Check WhatsApp on that number.', 'success');
-                otpPhoneSubstep.hidden = true;
-                otpCodeSubstep.hidden = false;
-                otpCodeInput.value = '';
-                otpCodeInput.focus();
-                startOtpResendCooldown(60);
+                showOtpCodeEntry();
+                setOtpStatus('Code sent to ' + phone + ' on WhatsApp.', 'success');
             } catch (err) {
                 setOtpStatus('Network error, please try again.', 'error');
             } finally {
@@ -366,6 +376,10 @@
                 });
                 const data = await res.json().catch(() => ({}));
 
+                if (res.status === 401) {
+                    requireReverification();
+                    return;
+                }
                 if (res.ok && data.has_credits && data.packages && data.packages.length) {
                     renderCreditPackages(data.packages);
                     goToStep('wizard-step-credits');
@@ -380,13 +394,15 @@
         }
 
         async function verifyWizardOtp() {
+            if (otpVerifyInFlight) return;
             const phone = getFullPhone();
-            const code = otpCodeInput.value.trim();
-            if (!code) {
-                setOtpStatus('Please enter the code.', 'error');
+            const code = otpCodeInput.value.replace(/\D/g, '');
+            if (code.length !== 6) {
+                setOtpStatus('Please enter the 6-digit code.', 'error');
                 return;
             }
 
+            otpVerifyInFlight = true;
             otpVerifyBtn.disabled = true;
             setOtpStatus('Verifying…');
 
@@ -404,11 +420,10 @@
                 }
 
                 sessionToken = data.session_token || null;
+                verifiedPhone = data.phone || phone;
                 otpVerifiedBadge.classList.add('show');
                 setOtpStatus('');
-
-                const bookingPhoneInput = document.getElementById('booking-phone');
-                if (bookingPhoneInput) bookingPhoneInput.value = phone;
+                fillVerifiedPhone();
 
                 if (sessionToken) {
                     await checkCreditsAndAdvance();
@@ -418,13 +433,34 @@
             } catch (err) {
                 setOtpStatus('Network error, please try again.', 'error');
             } finally {
+                otpVerifyInFlight = false;
                 otpVerifyBtn.disabled = false;
             }
+        }
+
+        function fillVerifiedPhone() {
+            const bookingPhoneInput = document.getElementById('booking-phone');
+            if (bookingPhoneInput) bookingPhoneInput.value = verifiedPhone;
+        }
+
+        /** Token expired or missing - send them back to verify again. */
+        function requireReverification(message) {
+            sessionToken = null;
+            verifiedPhone = '';
+            resetOtpUi();
+            goToStep('wizard-step-otp');
+            setOtpStatus(message || 'Please verify your phone number again.', 'error');
         }
 
         if (otpSendBtn) otpSendBtn.addEventListener('click', () => sendWizardOtp(false));
         if (otpResendBtn) otpResendBtn.addEventListener('click', () => sendWizardOtp(true));
         if (otpVerifyBtn) otpVerifyBtn.addEventListener('click', verifyWizardOtp);
+        if (otpChangeNumberBtn) {
+            otpChangeNumberBtn.addEventListener('click', () => {
+                resetOtpUi();
+                otpPhoneInput.focus();
+            });
+        }
         if (otpCodeInput) {
             otpCodeInput.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') verifyWizardOtp();
@@ -572,12 +608,15 @@
 
                 const name = document.getElementById('booking-name').value.trim();
                 const email = document.getElementById('booking-email').value.trim();
-                const phone = document.getElementById('booking-phone').value.trim();
                 const notes = document.getElementById('booking-notes').value.trim();
                 const hpConfirm = document.getElementById('booking-hp').value; // honeypot, must stay empty
 
-                if (!name || !email || !phone) {
-                    setStatus('Please fill in your name, email and phone number.', 'error');
+                if (!sessionToken) {
+                    requireReverification();
+                    return;
+                }
+                if (!name || !email) {
+                    setStatus('Please fill in your name and email.', 'error');
                     return;
                 }
 
@@ -600,13 +639,13 @@
                             hp_confirm: hpConfirm
                         }
                         : {
+                            session_token: sessionToken,
                             service_id: serviceSelect.value,
                             staff_id: staffSelect.value,
                             date: dateInput.value,
                             time: selectedSlot,
                             name: name,
                             email: email,
-                            phone: phone,
                             notes: notes,
                             hp_confirm: hpConfirm,
                             timezone: 'Asia/Calcutta'
@@ -620,7 +659,9 @@
                     const data = await res.json().catch(() => ({}));
 
                     if (!res.ok) {
-                        if (res.status === 409 || data.slot_conflict) {
+                        if (res.status === 401 || data.reverify) {
+                            requireReverification('Your verification expired. Please verify your phone number again.');
+                        } else if (res.status === 409 || data.slot_conflict) {
                             // Someone else booked this exact time first.
                             setStatus('That time was just booked by someone else. Pick another time below.', 'error');
                             loadSlots(serviceSelect.value, staffSelect.value, dateInput.value);
@@ -631,6 +672,7 @@
                     }
 
                     form.reset();
+                    fillVerifiedPhone();
                     resetSlots();
 
                     if (creditBookingMode) {
