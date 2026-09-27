@@ -371,6 +371,27 @@ async function findOrCreateCustomer(env, { phone, name, email }) {
   return created.data.ID;
 }
 
+/**
+ * Records a Creator sync failure into the "Zoho Sync Error Log" form so it's
+ * visible somewhere instead of only failing silently. Never throws itself -
+ * if logging the error also fails, there's genuinely nothing more to do.
+ */
+async function logSyncError(env, { operation, message, phone, bookingId }) {
+  try {
+    await creatorCreate(env, 'Zoho_Sync_Error_Log', {
+      error_timestamp: creatorNow(),
+      operation_type: operation,
+      // "status" is left unset here - its choice list doesn't include a
+      // value this code can rely on; set it manually in Zoho when triaging.
+      error_message: String(message || '').slice(0, 2000),
+      customer_phone: phone || undefined,
+      booking_id: bookingId || undefined
+    });
+  } catch (err) {
+    // Nothing more we can do here.
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -472,7 +493,12 @@ export default {
           });
           creatorAppointmentId = created && created.data && created.data.ID;
         } catch (err) {
-          // Don't let a Creator problem stop a real booking attempt.
+          // Don't let a Creator problem stop a real booking attempt - just log it.
+          await logSyncError(env, {
+            operation: 'Create Appointment',
+            message: err && err.message ? err.message : String(err),
+            phone
+          });
         }
 
         const fromTime = `${toZohoDate(date)} ${time24}:00`;
@@ -503,7 +529,14 @@ export default {
               });
             } catch (err) {
               // The real booking already succeeded - a Creator update
-              // failure here shouldn't be reported back as a failed booking.
+              // failure here shouldn't be reported back as a failed booking,
+              // just logged so it can be fixed manually.
+              await logSyncError(env, {
+                operation: 'Update Appointment',
+                message: err && err.message ? err.message : String(err),
+                phone,
+                bookingId: returnvalue.booking_id
+              });
             }
           }
           return jsonResponse(data, 200, headers);
@@ -519,7 +552,13 @@ export default {
               error_message: message
             });
           } catch (err) {
-            // Ignore - the booking already failed for its own reason.
+            // The booking already failed for its own reason - log this
+            // second failure too so the Creator row isn't silently stuck.
+            await logSyncError(env, {
+              operation: 'Update Appointment',
+              message: err && err.message ? err.message : String(err),
+              phone
+            });
           }
         }
 
