@@ -484,15 +484,19 @@ function crmApiBase(env) {
 }
 
 /** Search a module by phone number. Returns [] if nothing matches (Zoho answers 204). */
-async function crmSearchByPhone(env, moduleName, phone, fields) {
+/** searchBy is "phone" (phone-type fields only) or "word" (any text field). */
+async function crmSearchByPhone(env, moduleName, phone, fields, searchBy = 'phone') {
   const token = await getCrmAccessToken(env);
   const url = new URL(`${crmApiBase(env)}/${moduleName}/search`);
-  url.searchParams.set('phone', phone);
+  url.searchParams.set(searchBy, phone);
   if (fields) url.searchParams.set('fields', fields);
 
   const res = await fetch(url.toString(), { headers: { Authorization: `Zoho-oauthtoken ${token}` } });
   if (res.status === 204) return [];
   const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(`CRM ${moduleName} search failed (${res.status}): ${JSON.stringify(data)}`);
+  }
   return data.data || [];
 }
 
@@ -519,13 +523,16 @@ function crmPhoneVariants(phone) {
 }
 
 async function crmSearchByPhoneVariants(env, moduleName, phone, fields) {
-  const seen = new Map();
   for (const variant of crmPhoneVariants(phone)) {
     const rows = await crmSearchByPhone(env, moduleName, variant, fields);
-    rows.forEach((row) => seen.set(row.id, row));
-    if (seen.size) break;
+    if (rows.length) return rows;
   }
-  return [...seen.values()];
+  // Last resort: a word search also covers numbers saved in a non-phone
+  // custom field. The full national number is specific enough to match on.
+  const national = phone.startsWith('+91') ? phone.slice(3) : phone.replace(/^\+/, '');
+  const rows = await crmSearchByPhone(env, moduleName, national, fields, 'word');
+  if (rows.length) console.log(`CRM ${moduleName}: found only via word search`, rows.length);
+  return rows;
 }
 
 async function checkPackageCredits(env, phone) {
@@ -923,9 +930,13 @@ export default {
 
           // Resolve each package's Zoho Bookings service_id so the frontend
           // can call the existing /api/staff and /api/availability routes.
+          // Service names are typed by hand in CRM (and some contain double
+          // spaces), so match ignoring case and spacing.
+          const looseName = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+          const allServices = result.packages.length ? await creatorQuery(env, 'services_Report', '') : [];
           const packagesWithServiceId = await Promise.all(
             result.packages.map(async (pkg) => {
-              const serviceRecord = await findCreatorRecordByBookingsId(env, 'services_Report', 'service_name', pkg.service);
+              const serviceRecord = allServices.find((s) => looseName(s.service_name) === looseName(pkg.service));
               return {
                 package_id: pkg.id,
                 service_name: pkg.service,
@@ -950,6 +961,7 @@ export default {
             headers
           );
         } catch (err) {
+          console.error('Credit check failed', err && err.message ? err.message : err);
           await logSyncError(env, {
             operation: 'Update Appointment',
             message: 'Credit check failed: ' + (err && err.message ? err.message : String(err)),
