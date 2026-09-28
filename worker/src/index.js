@@ -511,16 +511,34 @@ async function crmUpdateRecord(env, moduleName, recordId, fields) {
  * { hasCredits, totalCredits, contactId, packages: [{ id, service, remaining }] }
  * packages only lists Successful_Bookings rows that still have credit left.
  */
+/** Staff may type numbers into CRM as "+919037910639", "919037910639" or "9037910639". */
+function crmPhoneVariants(phone) {
+  const variants = [phone, phone.replace(/^\+/, '')];
+  if (phone.startsWith('+91')) variants.push(phone.slice(3));
+  return [...new Set(variants)];
+}
+
+async function crmSearchByPhoneVariants(env, moduleName, phone, fields) {
+  const seen = new Map();
+  for (const variant of crmPhoneVariants(phone)) {
+    const rows = await crmSearchByPhone(env, moduleName, variant, fields);
+    rows.forEach((row) => seen.set(row.id, row));
+    if (seen.size) break;
+  }
+  return [...seen.values()];
+}
+
 async function checkPackageCredits(env, phone) {
-  const contacts = await crmSearchByPhone(env, 'Contacts', phone, 'id,Package_credit_value,Full_Name');
+  const contacts = await crmSearchByPhoneVariants(env, 'Contacts', phone, 'id,Package_credit_value,Full_Name');
   const contact = contacts[0];
   const totalCredits = contact ? Number(contact.Package_credit_value) || 0 : 0;
 
   if (!contact || totalCredits <= 0) {
+    console.log('Credit check: no contact with credits', { found: Boolean(contact), totalCredits });
     return { hasCredits: false, totalCredits: 0, contactId: contact ? contact.id : null, packages: [] };
   }
 
-  const bookings = await crmSearchByPhone(
+  const bookings = await crmSearchByPhoneVariants(
     env,
     'Successful_Bookings',
     phone,
@@ -530,6 +548,11 @@ async function checkPackageCredits(env, phone) {
     .filter((b) => Number(b.Package_Credit) > 0)
     .map((b) => ({ id: b.id, service: b.Service, remaining: Number(b.Package_Credit) }));
 
+  console.log('Credit check:', {
+    totalCredits,
+    successfulBookings: bookings.length,
+    packages: packages.map((p) => ({ service: p.service, remaining: p.remaining }))
+  });
   return { hasCredits: true, totalCredits, contactId: contact.id, packages };
 }
 
@@ -911,6 +934,11 @@ export default {
               };
             })
           );
+
+          const unmatched = packagesWithServiceId.filter((p) => !p.service_id).map((p) => p.service_name);
+          if (unmatched.length) {
+            console.log('Credit check: package service not found in Creator services_Report', unmatched);
+          }
 
           return jsonResponse(
             {
