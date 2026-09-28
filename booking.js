@@ -66,7 +66,6 @@
         let verifiedPhone = '';
         let otpVerifyInFlight = false;
         let creditBookingMode = false;
-        let selectedPackage = null; // { package_id, service_id, service_name, remaining }
         let otpResendTimer = null;
 
         renderWizardDots();
@@ -170,7 +169,6 @@
             document.body.style.overflow = 'hidden';
             selectedSessionType = null;
             creditBookingMode = false;
-            selectedPackage = null;
             sessionTypeCards.forEach((c) => c.classList.remove('selected'));
             if (bookingServiceField) bookingServiceField.hidden = false;
             if (creditModeBanner) creditModeBanner.hidden = true;
@@ -323,55 +321,41 @@
             }
         }
 
-        function renderCreditPackages(packages) {
+        function renderCredits(credits) {
             if (!creditsPackageList) return;
             creditsPackageList.innerHTML = '';
-            packages.forEach((pkg) => {
-                const card = document.createElement('button');
-                card.type = 'button';
-                card.className = 'session-type-card';
-                card.innerHTML =
-                    '<span class="session-type-icon">' +
-                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-                        '<rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M2 10h20"></path></svg>' +
-                    '</span>' +
-                    '<span class="session-type-text">' +
-                        '<span class="session-type-name">' + escapeHtml(pkg.service_name || 'Your prepaid sessions') + '</span>' +
-                        '<span class="session-type-desc">' + pkg.remaining + ' session' + (pkg.remaining === 1 ? '' : 's') + ' remaining' +
-                            (pkg.service_id ? '' : ', use on any service') + '</span>' +
-                    '</span>' +
-                    '<svg class="session-type-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'session-type-card';
+            card.innerHTML =
+                '<span class="session-type-icon">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                    '<rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M2 10h20"></path></svg>' +
+                '</span>' +
+                '<span class="session-type-text">' +
+                    '<span class="session-type-name">Your prepaid sessions</span>' +
+                    '<span class="session-type-desc">' + credits + ' session' + (credits === 1 ? '' : 's') + ' remaining</span>' +
+                '</span>' +
+                '<svg class="session-type-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
 
-                card.addEventListener('click', () => selectPackage(pkg));
-                creditsPackageList.appendChild(card);
-            });
+            card.addEventListener('click', () => useCredits(credits));
+            creditsPackageList.appendChild(card);
         }
 
-        async function selectPackage(pkg) {
+        async function useCredits(credits) {
             creditBookingMode = true;
-            selectedPackage = pkg;
 
             if (creditModeBanner) {
                 creditModeBanner.hidden = false;
-                creditModeBanner.innerHTML = '<p>Booking with your ' +
-                    (pkg.service_name ? 'package: <strong>' + escapeHtml(pkg.service_name) + '</strong>' : '<strong>prepaid sessions</strong>') +
-                    ' (' + pkg.remaining + ' remaining). No payment needed.</p>';
+                creditModeBanner.innerHTML = '<p>Booking with your <strong>prepaid sessions</strong> (' +
+                    credits + ' remaining). No payment needed.</p>';
             }
 
             if (!servicesLoaded) {
                 await loadServices();
             }
-
-            if (pkg.service_id) {
-                // Package is tied to one service - pick it for them.
-                if (bookingServiceField) bookingServiceField.hidden = true;
-                serviceSelect.value = pkg.service_id;
-                serviceSelect.dispatchEvent(new Event('change'));
-            } else {
-                // General credits - let them choose any service.
-                if (bookingServiceField) bookingServiceField.hidden = false;
-                serviceSelect.querySelectorAll('option').forEach((opt) => { opt.hidden = false; });
-            }
+            if (bookingServiceField) bookingServiceField.hidden = false;
+            serviceSelect.querySelectorAll('option').forEach((opt) => { opt.hidden = false; });
 
             goToStep('booking-step');
         }
@@ -390,8 +374,8 @@
                     requireReverification();
                     return;
                 }
-                if (res.ok && data.has_credits && data.packages && data.packages.length) {
-                    renderCreditPackages(data.packages);
+                if (res.ok && data.has_credits && data.credits > 0) {
+                    renderCredits(data.credits);
                     goToStep('wizard-step-credits');
                 } else {
                     goToStep('wizard-step-type');
@@ -638,7 +622,6 @@
                     const body = creditBookingMode
                         ? {
                             session_token: sessionToken,
-                            package_id: selectedPackage && selectedPackage.package_id,
                             service_id: serviceSelect.value,
                             staff_id: staffSelect.value,
                             date: dateInput.value,

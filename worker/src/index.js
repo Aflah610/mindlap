@@ -25,9 +25,9 @@
  *   POST /api/otp/verify  { phone, code } -> also returns a session_token
  *   POST /api/sessions    { session_token } -> past/upcoming appointments
  *                                              for that verified phone
- *   POST /api/credits/check { session_token } -> prepaid package credits
- *                                                 (Zoho CRM) for that phone
- *   POST /api/credits/book  { session_token, package_id, service_id,
+ *   POST /api/credits/check { session_token } -> { has_credits, credits }
+ *                              from Contacts.Package_credit_value (read-only)
+ *   POST /api/credits/book  { session_token, service_id,
  *                              staff_id, date, time, name, email, notes? }
  *   POST /api/payment/create-order  { booking_id, amount, currency? }
  *   POST /api/payment/verify        { razorpay_order_id, razorpay_payment_id,
@@ -443,10 +443,9 @@ async function logSyncError(env, { operation, message, phone, bookingId }) {
 
 // --- Zoho CRM (prepaid package credits) ----------------------------------
 //
-// Contacts.Package_credit_value is the source of truth for how many
-// prepaid sessions a customer has left. Successful_Bookings records say
-// *which service* each package covers, and get decremented alongside the
-// Contacts total whenever a credit is used.
+// Read-only. Contacts.Package_credit_value is the only source of truth for
+// how many prepaid sessions a customer has left. The website never changes
+// it - Zoho CRM itself deducts credits.
 
 let cachedCrmToken = null; // { token, expiresAt }
 
@@ -500,24 +499,6 @@ async function crmSearchByPhone(env, moduleName, phone, fields, searchBy = 'phon
   return data.data || [];
 }
 
-async function crmUpdateRecord(env, moduleName, recordId, fields) {
-  const token = await getCrmAccessToken(env);
-  const res = await fetch(`${crmApiBase(env)}/${moduleName}/${recordId}`, {
-    method: 'PUT',
-    headers: { Authorization: `Zoho-oauthtoken ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ data: [{ id: recordId, ...fields }] })
-  });
-  return res.json();
-}
-
-/**
- * Looks up a customer's prepaid package credits by phone. Returns
- * { hasCredits, totalCredits, contactId, packages: [{ id, service, remaining }] }
- * packages only lists Successful_Bookings rows that still have credit left.
- */
-/** Credits from Contacts that aren't tied to a specific Successful_Bookings package. */
-const GENERAL_CREDIT_PACKAGE_ID = 'general';
-
 /** Staff may type numbers into CRM as "+919037910639", "919037910639" or "9037910639". */
 function crmPhoneVariants(phone) {
   const variants = [phone, phone.replace(/^\+/, '')];
@@ -533,47 +514,15 @@ async function crmSearchByPhoneVariants(env, moduleName, phone, fields) {
   // Last resort: a word search also covers numbers saved in a non-phone
   // custom field. The full national number is specific enough to match on.
   const national = phone.startsWith('+91') ? phone.slice(3) : phone.replace(/^\+/, '');
-  const rows = await crmSearchByPhone(env, moduleName, national, fields, 'word');
-  if (rows.length) console.log(`CRM ${moduleName}: found only via word search`, rows.length);
-  return rows;
+  return crmSearchByPhone(env, moduleName, national, fields, 'word');
 }
 
-async function checkPackageCredits(env, phone) {
-  const contacts = await crmSearchByPhoneVariants(env, 'Contacts', phone, 'id,Package_credit_value,Full_Name');
-  const contact = contacts[0];
-  const totalCredits = contact ? Number(contact.Package_credit_value) || 0 : 0;
-
-  if (!contact || totalCredits <= 0) {
-    console.log('Credit check: no contact with credits', { found: Boolean(contact), totalCredits });
-    return { hasCredits: false, totalCredits: 0, contactId: contact ? contact.id : null, packages: [] };
-  }
-
-  const bookings = await crmSearchByPhoneVariants(
-    env,
-    'Successful_Bookings',
-    phone,
-    'id,Service,Package_Credit,Therapist'
-  );
-  const packages = bookings
-    .filter((b) => Number(b.Package_Credit) > 0)
-    .map((b) => ({ id: b.id, service: b.Service, remaining: Number(b.Package_Credit) }));
-
-  console.log('Credit check:', {
-    totalCredits,
-    successfulBookings: bookings.map((b) => ({ service: b.Service, packageCredit: b.Package_Credit })),
-    packages: packages.map((p) => ({ service: p.service, remaining: p.remaining }))
-  });
-  return { hasCredits: true, totalCredits, contactId: contact.id, packages };
-}
-
-/** Spends one credit: decrements both the Contacts total and the specific package row. */
-async function spendPackageCredit(env, contactId, contactCredits, packageId, packageCredits) {
-  await crmUpdateRecord(env, 'Contacts', contactId, { Package_credit_value: Math.max(0, contactCredits - 1) });
-  if (packageId) {
-    await crmUpdateRecord(env, 'Successful_Bookings', packageId, {
-      Package_Credit: Math.max(0, packageCredits - 1)
-    });
-  }
+/** Returns the Contact's remaining prepaid sessions (0 if none or no contact). */
+async function getPackageCredits(env, phone) {
+  const contacts = await crmSearchByPhoneVariants(env, 'Contacts', phone, 'id,Package_credit_value');
+  const credits = contacts[0] ? Number(contacts[0].Package_credit_value) || 0 : 0;
+  console.log('Credit check:', { contactFound: Boolean(contacts[0]), credits });
+  return credits;
 }
 
 export default {
@@ -916,8 +865,8 @@ export default {
       }
 
       // --- POST /api/credits/check -------------------------------------------------
-      // After OTP verification, checks whether this phone number has prepaid
-      // package credits (Zoho CRM), and if so, which service(s) they cover.
+      // After OTP verification, returns Contacts.Package_credit_value (Zoho CRM)
+      // for this phone number.
       if (url.pathname === '/api/credits/check' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
         const session = await verifySessionToken(env, body.session_token);
@@ -926,51 +875,8 @@ export default {
         }
 
         try {
-          const result = await checkPackageCredits(env, session.phone);
-          if (!result.hasCredits) {
-            return jsonResponse({ has_credits: false }, 200, headers);
-          }
-
-          // Resolve each package's Zoho Bookings service_id so the frontend
-          // can call the existing /api/staff and /api/availability routes.
-          // Service names are typed by hand in CRM (and some contain double
-          // spaces), so match ignoring case and spacing.
-          const looseName = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
-          const allServices = result.packages.length ? await creatorQuery(env, 'services_Report', '') : [];
-          const packagesWithServiceId = await Promise.all(
-            result.packages.map(async (pkg) => {
-              const serviceRecord = allServices.find((s) => looseName(s.service_name) === looseName(pkg.service));
-              return {
-                package_id: pkg.id,
-                service_name: pkg.service,
-                remaining: pkg.remaining,
-                service_id: serviceRecord ? serviceRecord.zoho_bookings_service_id : null
-              };
-            })
-          );
-
-          const unmatched = packagesWithServiceId.filter((p) => !p.service_id).map((p) => p.service_name);
-          if (unmatched.length) {
-            console.log('Credit check: package service not found in Creator services_Report', unmatched);
-          }
-
-          // Contacts.Package_credit_value is the source of truth. When no
-          // Successful_Bookings row pins the credits to a service, offer them
-          // as general credits the customer can use on any service.
-          const usablePackages = packagesWithServiceId.filter((p) => p.service_id);
-          const packages = usablePackages.length
-            ? usablePackages
-            : [{ package_id: GENERAL_CREDIT_PACKAGE_ID, service_name: null, remaining: result.totalCredits, service_id: null }];
-
-          return jsonResponse(
-            {
-              has_credits: true,
-              total_credits: result.totalCredits,
-              packages
-            },
-            200,
-            headers
-          );
+          const credits = await getPackageCredits(env, session.phone);
+          return jsonResponse({ has_credits: credits > 0, credits }, 200, headers);
         } catch (err) {
           console.error('Credit check failed', err && err.message ? err.message : err);
           await logSyncError(env, {
@@ -983,9 +889,9 @@ export default {
       }
 
       // --- POST /api/credits/book -------------------------------------------------
-      // Books an appointment against a prepaid package credit - no payment
-      // step. Re-checks the credit balance server-side rather than trusting
-      // whatever the frontend last saw, to avoid spending a credit twice.
+      // Books an appointment with no payment step for a customer who has
+      // prepaid credits. Re-checks the balance server-side; never changes it
+      // (Zoho CRM deducts credits itself).
       if (url.pathname === '/api/credits/book' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
         const session = await verifySessionToken(env, body.session_token);
@@ -993,22 +899,18 @@ export default {
           return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
         }
 
-        const { package_id, service_id, staff_id, date, time, name, email, notes, hp_confirm } = body || {};
+        const { service_id, staff_id, date, time, name, email, notes, hp_confirm } = body || {};
         if (hp_confirm) {
           return jsonResponse({ error: 'Rejected' }, 400, headers);
         }
-        if (!package_id || !service_id || !staff_id || !date || !time || !name || !email) {
+        if (!service_id || !staff_id || !date || !time || !name || !email) {
           return jsonResponse({ error: 'Missing required booking fields' }, 400, headers);
         }
 
         const phone = session.phone;
-        const credits = await checkPackageCredits(env, phone);
-        const chosenPackage = package_id === GENERAL_CREDIT_PACKAGE_ID
-          ? { id: null, remaining: credits.totalCredits }
-          : credits.packages.find((p) => p.id === package_id);
-
-        if (!credits.hasCredits || !chosenPackage || chosenPackage.remaining <= 0) {
-          return jsonResponse({ error: 'No remaining credit on that package. Please refresh and try again.' }, 400, headers);
+        const credits = await getPackageCredits(env, phone);
+        if (credits <= 0) {
+          return jsonResponse({ error: 'You have no prepaid sessions left. Please refresh and try again.' }, 400, headers);
         }
 
         const time24 = to24Hour(time);
@@ -1074,18 +976,6 @@ export default {
                 bookingId: returnvalue.booking_id
               });
             }
-          }
-
-          // Only spend the credit once the real booking is actually confirmed.
-          try {
-            await spendPackageCredit(env, credits.contactId, credits.totalCredits, chosenPackage.id, chosenPackage.remaining);
-          } catch (err) {
-            await logSyncError(env, {
-              operation: 'Update Appointment',
-              message: 'Credit spend failed after successful booking: ' + (err && err.message ? err.message : String(err)),
-              phone,
-              bookingId: returnvalue.booking_id
-            });
           }
 
           return jsonResponse(data, 200, headers);
