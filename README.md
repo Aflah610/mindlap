@@ -18,7 +18,7 @@ mindlap-therapy/
 ├── privacy.html   terms.html                   Legal pages
 │
 ├── assets/               Images, icons, favicons (only files the site uses)
-├── (dev/ test pages are archived in Desktopmindlap-archivedev-test-pages)
+├── (dev/ test pages are archived in Desktop/mindlap-archive/dev-test-pages)
 │
 ├── worker/               Cloudflare Worker (the backend / API)
 │   ├── src/index.js      All API routes
