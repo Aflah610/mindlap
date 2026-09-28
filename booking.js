@@ -336,8 +336,9 @@
                         '<rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M2 10h20"></path></svg>' +
                     '</span>' +
                     '<span class="session-type-text">' +
-                        '<span class="session-type-name">' + escapeHtml(pkg.service_name) + '</span>' +
-                        '<span class="session-type-desc">' + pkg.remaining + ' session' + (pkg.remaining === 1 ? '' : 's') + ' remaining</span>' +
+                        '<span class="session-type-name">' + escapeHtml(pkg.service_name || 'Your prepaid sessions') + '</span>' +
+                        '<span class="session-type-desc">' + pkg.remaining + ' session' + (pkg.remaining === 1 ? '' : 's') + ' remaining' +
+                            (pkg.service_id ? '' : ', use on any service') + '</span>' +
                     '</span>' +
                     '<svg class="session-type-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
 
@@ -352,16 +353,25 @@
 
             if (creditModeBanner) {
                 creditModeBanner.hidden = false;
-                creditModeBanner.innerHTML = '<p>Booking with your package: <strong>' + escapeHtml(pkg.service_name) +
-                    '</strong> (' + pkg.remaining + ' remaining). No payment needed.</p>';
+                creditModeBanner.innerHTML = '<p>Booking with your ' +
+                    (pkg.service_name ? 'package: <strong>' + escapeHtml(pkg.service_name) + '</strong>' : '<strong>prepaid sessions</strong>') +
+                    ' (' + pkg.remaining + ' remaining). No payment needed.</p>';
             }
-            if (bookingServiceField) bookingServiceField.hidden = true;
 
             if (!servicesLoaded) {
                 await loadServices();
             }
-            serviceSelect.value = pkg.service_id;
-            serviceSelect.dispatchEvent(new Event('change'));
+
+            if (pkg.service_id) {
+                // Package is tied to one service - pick it for them.
+                if (bookingServiceField) bookingServiceField.hidden = true;
+                serviceSelect.value = pkg.service_id;
+                serviceSelect.dispatchEvent(new Event('change'));
+            } else {
+                // General credits - let them choose any service.
+                if (bookingServiceField) bookingServiceField.hidden = false;
+                serviceSelect.querySelectorAll('option').forEach((opt) => { opt.hidden = false; });
+            }
 
             goToStep('booking-step');
         }

@@ -515,6 +515,9 @@ async function crmUpdateRecord(env, moduleName, recordId, fields) {
  * { hasCredits, totalCredits, contactId, packages: [{ id, service, remaining }] }
  * packages only lists Successful_Bookings rows that still have credit left.
  */
+/** Credits from Contacts that aren't tied to a specific Successful_Bookings package. */
+const GENERAL_CREDIT_PACKAGE_ID = 'general';
+
 /** Staff may type numbers into CRM as "+919037910639", "919037910639" or "9037910639". */
 function crmPhoneVariants(phone) {
   const variants = [phone, phone.replace(/^\+/, '')];
@@ -557,7 +560,7 @@ async function checkPackageCredits(env, phone) {
 
   console.log('Credit check:', {
     totalCredits,
-    successfulBookings: bookings.length,
+    successfulBookings: bookings.map((b) => ({ service: b.Service, packageCredit: b.Package_Credit })),
     packages: packages.map((p) => ({ service: p.service, remaining: p.remaining }))
   });
   return { hasCredits: true, totalCredits, contactId: contact.id, packages };
@@ -951,11 +954,19 @@ export default {
             console.log('Credit check: package service not found in Creator services_Report', unmatched);
           }
 
+          // Contacts.Package_credit_value is the source of truth. When no
+          // Successful_Bookings row pins the credits to a service, offer them
+          // as general credits the customer can use on any service.
+          const usablePackages = packagesWithServiceId.filter((p) => p.service_id);
+          const packages = usablePackages.length
+            ? usablePackages
+            : [{ package_id: GENERAL_CREDIT_PACKAGE_ID, service_name: null, remaining: result.totalCredits, service_id: null }];
+
           return jsonResponse(
             {
               has_credits: true,
               total_credits: result.totalCredits,
-              packages: packagesWithServiceId.filter((p) => p.service_id)
+              packages
             },
             200,
             headers
@@ -992,7 +1003,9 @@ export default {
 
         const phone = session.phone;
         const credits = await checkPackageCredits(env, phone);
-        const chosenPackage = credits.packages.find((p) => p.id === package_id);
+        const chosenPackage = package_id === GENERAL_CREDIT_PACKAGE_ID
+          ? { id: null, remaining: credits.totalCredits }
+          : credits.packages.find((p) => p.id === package_id);
 
         if (!credits.hasCredits || !chosenPackage || chosenPackage.remaining <= 0) {
           return jsonResponse({ error: 'No remaining credit on that package. Please refresh and try again.' }, 400, headers);
