@@ -2808,16 +2808,6 @@ select.phone-input-prefix {
     cursor: not-allowed;
 }
 
-#payment-amount-line {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--text-main);
-}
-
-#pay-later-btn {
-    margin-top: 16px;
-}
-
 @media (max-width: 560px) {
     .booking-field-row {
         flex-direction: column;

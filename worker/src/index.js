@@ -29,9 +29,11 @@
  *                              from Contacts.Package_credit_value (read-only)
  *   POST /api/credits/book  { session_token, service_id,
  *                              staff_id, date, time, name, email, notes? }
- *   POST /api/payment/create-order  { booking_id, amount, currency? }
+ *   POST /api/payment/create-order  { session_token, service_id, staff_id, date,
+ *                                      time, name, email, notes? } -> Razorpay order
  *   POST /api/payment/verify        { razorpay_order_id, razorpay_payment_id,
- *                                      razorpay_signature, booking_id? }
+ *                                      razorpay_signature } -> books after payment
+ *   POST /api/payment/webhook       Razorpay webhook (payment.captured/authorized)
  *
  * See ../../docs/zoho-bookings-setup.md for how to configure and deploy
  * this Worker.
@@ -149,24 +151,6 @@ async function zohoPostForm(env, path, fields) {
 }
 
 // --- Razorpay -----------------------------------------------------------
-
-async function razorpayCreateOrder(env, { amount, currency, receipt, notes }) {
-  const auth = btoa(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`);
-  const res = await fetch('https://api.razorpay.com/v1/orders', {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${auth}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      amount: Math.round(amount * 100), // Razorpay wants the amount in paise
-      currency: currency || 'INR',
-      receipt,
-      notes: notes || {}
-    })
-  });
-  return res.json();
-}
 
 function hexEncode(buffer) {
   return Array.from(new Uint8Array(buffer))
@@ -525,6 +509,220 @@ async function getPackageCredits(env, phone) {
   return credits;
 }
 
+// --- Booking + payment helpers --------------------------------------------
+//
+// Paid services: the customer pays first (Razorpay), and the Zoho Bookings
+// slot is only reserved once the payment is confirmed. The booking details
+// travel in the Razorpay order's notes, so no extra storage is needed. A
+// Zoho Creator row is written up front ("Creating Appointment" / Pending)
+// and updated when the payment and booking complete.
+
+function errorText(err) {
+  return err && err.message ? err.message : String(err);
+}
+
+/** Server-side price for a Zoho Bookings service - never trust the browser's amount. */
+async function getServicePrice(env, serviceId) {
+  const data = await zohoGet(env, 'services', { workspace_id: env.ZOHO_WORKSPACE_ID });
+  const services = (data && data.response && data.response.returnvalue && data.response.returnvalue.data) || [];
+  const service = services.find((s) => String(s.id) === String(serviceId));
+  if (!service) return null;
+  return { name: service.name, price: Number(service.price) || 0, currency: service.currency || 'INR' };
+}
+
+async function isSlotAvailable(env, serviceId, staffId, date, time24) {
+  const data = await zohoGet(env, 'availableslots', {
+    service_id: serviceId,
+    staff_id: staffId,
+    selected_date: toZohoDate(date)
+  });
+  const slots = (data && data.response && data.response.returnvalue && data.response.returnvalue.data) || [];
+  return Array.isArray(slots) && slots.some((slot) => to24Hour(slot) === time24);
+}
+
+/** Writes the "Creating Appointment" row to Creator. Returns its ID, or null (logged) on failure. */
+async function createCreatorAppointment(env, { phone, name, email, serviceId, staffId, date, time24, amount, paymentStatus }) {
+  try {
+    const [customerId, serviceRecord, therapistRecord] = await Promise.all([
+      findOrCreateCustomer(env, { phone, name, email }),
+      findCreatorRecordByBookingsId(env, 'services_Report', 'zoho_bookings_service_id', serviceId),
+      findCreatorRecordByBookingsId(env, 'therapists_Report', 'zoho_bookings_staff_id', staffId)
+    ]);
+    const durationMinutes = Number(serviceRecord && serviceRecord.duration) || 60;
+
+    const created = await creatorCreate(env, 'appointments', {
+      // Customer/Therapist/Service are multi-select lookups in this form,
+      // so Zoho expects an array even though there's only ever one ID.
+      customer: [customerId],
+      therapist: therapistRecord ? [therapistRecord.ID] : undefined,
+      service: serviceRecord ? [serviceRecord.ID] : undefined,
+      appointment_date: toZohoDate(date),
+      start_time: time24,
+      end_time: addMinutesToTime(time24, durationMinutes),
+      session_mode: 'Video',
+      amount,
+      payment_status: paymentStatus,
+      booking_status: 'Creating Appointment',
+      // Mandatory on the form but not something the site collects yet.
+      Age: '0'
+    });
+    return (created && created.data && created.data.ID) || null;
+  } catch (err) {
+    await logSyncError(env, { operation: 'Create Appointment', message: errorText(err), phone });
+    return null;
+  }
+}
+
+async function updateCreatorAppointment(env, creatorId, fields, { phone, bookingId } = {}) {
+  if (!creatorId) return;
+  try {
+    await creatorUpdate(env, 'appointments_Report', creatorId, fields);
+  } catch (err) {
+    await logSyncError(env, { operation: 'Update Appointment', message: errorText(err), phone, bookingId });
+  }
+}
+
+/**
+ * Reserves the slot in Zoho Bookings. Zoho answers HTTP 200 even when the
+ * booking itself failed, so success means a booking_id came back.
+ */
+async function bookInZoho(env, { serviceId, staffId, date, time24, name, email, phone, notes }) {
+  const data = await zohoPostForm(env, 'appointment', {
+    service_id: serviceId,
+    staff_id: staffId,
+    from_time: `${toZohoDate(date)} ${time24}:00`,
+    timezone: 'Asia/Calcutta',
+    notes: notes || undefined,
+    customer_details: JSON.stringify({ name, email, phone_number: phone })
+  });
+  const returnvalue = (data && data.response && data.response.returnvalue) || {};
+  if (returnvalue.booking_id) {
+    return { ok: true, bookingId: returnvalue.booking_id, data };
+  }
+  const message = returnvalue.message || returnvalue.errormessage || 'Booking failed';
+  const slotConflict = /slot/i.test(message) && /(not available|unavailable|already|taken|booked)/i.test(message);
+  return { ok: false, message, slotConflict, data };
+}
+
+async function razorpayRequest(env, method, path, body) {
+  const auth = btoa(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`);
+  const res = await fetch(`https://api.razorpay.com/v1/${path}`, {
+    method,
+    headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(`Razorpay ${method} ${path} failed: ${(data.error && data.error.description) || res.status}`);
+  }
+  return data;
+}
+
+function constantTimeEqual(a, b) {
+  a = String(a || '');
+  b = String(b || '');
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/**
+ * Turns a successful Razorpay payment into a real booking. Safe to call more
+ * than once for the same order (the browser and the webhook both call it):
+ * the Zoho booking ID is saved on the order's notes and reused.
+ *
+ * Returns { status: 'booked' | 'refunded' | 'pending' | 'invalid', ... }
+ */
+async function finalizePaidBooking(env, orderId, paymentId) {
+  const [order, payment] = await Promise.all([
+    razorpayRequest(env, 'GET', `orders/${orderId}`),
+    razorpayRequest(env, 'GET', `payments/${paymentId}`)
+  ]);
+  const notes = order.notes || {};
+
+  if (payment.order_id !== orderId || Number(payment.amount) !== Number(order.amount)) {
+    return { status: 'invalid', message: 'Payment does not match this order.' };
+  }
+  if (notes.booking_id) {
+    return { status: 'booked', bookingId: notes.booking_id };
+  }
+  if (payment.status !== 'captured' && payment.status !== 'authorized') {
+    return { status: 'pending', message: `Payment is ${payment.status}.` };
+  }
+
+  const booking = {
+    serviceId: notes.service_id,
+    staffId: notes.staff_id,
+    date: notes.date,
+    time24: notes.time,
+    name: notes.name,
+    email: notes.email,
+    phone: notes.phone,
+    notes: [notes.customer_notes, `Paid via Razorpay. Payment ID: ${paymentId}, Order ID: ${orderId}.`]
+      .filter(Boolean)
+      .join('\n')
+  };
+  const creatorId = notes.creator_id || null;
+  const logContext = { phone: booking.phone };
+
+  const result = await bookInZoho(env, booking);
+
+  if (result.ok) {
+    // Payments that are only authorized must be captured, or Razorpay
+    // releases the money back to the customer after a few days.
+    if (payment.status === 'authorized') {
+      try {
+        await razorpayRequest(env, 'POST', `payments/${paymentId}/capture`, { amount: payment.amount, currency: payment.currency });
+      } catch (err) {
+        await logSyncError(env, { operation: 'Update Appointment', message: 'Payment capture failed: ' + errorText(err), phone: booking.phone, bookingId: result.bookingId });
+      }
+    }
+    try {
+      await razorpayRequest(env, 'PATCH', `orders/${orderId}`, { notes: { ...notes, booking_id: result.bookingId } });
+    } catch (err) {
+      console.error('Could not save booking_id on order', orderId, errorText(err));
+    }
+    await updateCreatorAppointment(env, creatorId, {
+      zoho_bookings_appointment_id: result.bookingId,
+      booking_status: 'Confirmed',
+      payment_status: 'Paid',
+      confirmed_time: creatorNow()
+    }, { ...logContext, bookingId: result.bookingId });
+    return { status: 'booked', bookingId: result.bookingId };
+  }
+
+  // The slot may have been taken by a parallel call for this same order
+  // (browser + webhook). Re-check before treating it as a real failure.
+  const latest = await razorpayRequest(env, 'GET', `orders/${orderId}`).catch(() => null);
+  if (latest && latest.notes && latest.notes.booking_id) {
+    return { status: 'booked', bookingId: latest.notes.booking_id };
+  }
+
+  // Paid but the slot couldn't be booked (usually someone took it while the
+  // customer was paying) - give the money back.
+  let refunded = false;
+  try {
+    if (payment.status === 'captured') {
+      await razorpayRequest(env, 'POST', `payments/${paymentId}/refund`, { notes: { reason: result.message.slice(0, 200) } });
+    }
+    // An uncaptured (authorized) payment is released back automatically.
+    refunded = true;
+  } catch (err) {
+    await logSyncError(env, { operation: 'Update Appointment', message: `REFUND NEEDED - payment ${paymentId}: ${errorText(err)}`, phone: booking.phone });
+  }
+  await updateCreatorAppointment(env, creatorId, {
+    booking_status: 'Failed',
+    error_message: `${result.message} (payment ${paymentId} ${refunded ? 'refunded' : 'NOT refunded - refund manually'})`
+  }, logContext);
+  await logSyncError(env, {
+    operation: 'Create Appointment',
+    message: `Paid booking failed: ${result.message}. Payment ${paymentId} ${refunded ? 'refunded automatically' : 'needs a manual refund'}.`,
+    phone: booking.phone
+  });
+  return { status: 'refunded', slotConflict: result.slotConflict, refunded, message: result.message };
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -576,14 +774,13 @@ export default {
       }
 
       // --- POST /api/book ------------------------------------------------------
-      // Writes to Zoho Creator first (the customer/appointment database),
-      // then calls Zoho Bookings to actually reserve the calendar slot, then
-      // updates that same Creator row with the outcome. A Creator hiccup
-      // never blocks a real booking - it just means that one row won't have
-      // a database record, which is logged via error_message where possible.
+      // Free services only. Paid services must go through
+      // /api/payment/create-order so the customer pays before the slot is
+      // booked. Writes to Zoho Creator first, then Zoho Bookings, then
+      // updates the Creator row with the outcome.
       if (url.pathname === '/api/book' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
-        const { service_id, staff_id, date, time, name, email, notes, timezone, hp_confirm } = body || {};
+        const { service_id, staff_id, date, time, name, email, notes, hp_confirm } = body || {};
 
         // Honeypot: real users never fill this hidden field in.
         if (hp_confirm) {
@@ -602,110 +799,34 @@ export default {
           return jsonResponse({ error: 'Missing required booking fields' }, 400, headers);
         }
 
-        const time24 = to24Hour(time);
-        let creatorAppointmentId = null;
-
-        try {
-          const [customerId, serviceRecord, therapistRecord] = await Promise.all([
-            findOrCreateCustomer(env, { phone, name, email }),
-            findCreatorRecordByBookingsId(env, 'services_Report', 'zoho_bookings_service_id', service_id),
-            findCreatorRecordByBookingsId(env, 'therapists_Report', 'zoho_bookings_staff_id', staff_id)
-          ]);
-
-          const durationMinutes = Number(serviceRecord && serviceRecord.duration) || 60;
-          const endTime24 = addMinutesToTime(time24, durationMinutes);
-
-          const created = await creatorCreate(env, 'appointments', {
-            // Customer/Therapist/Service are configured as multi-select
-            // lookups in this form, so Zoho expects an array here even
-            // though we only ever put one ID in it.
-            customer: [customerId],
-            therapist: therapistRecord ? [therapistRecord.ID] : undefined,
-            service: serviceRecord ? [serviceRecord.ID] : undefined,
-            appointment_date: toZohoDate(date),
-            start_time: time24,
-            end_time: endTime24,
-            session_mode: 'Video',
-            amount: serviceRecord ? serviceRecord.default_price : undefined,
-            payment_status: 'Pending',
-            booking_status: 'Creating Appointment',
-            // Mandatory on the form but not something the site collects yet.
-            Age: '0'
-          });
-          creatorAppointmentId = created && created.data && created.data.ID;
-        } catch (err) {
-          // Don't let a Creator problem stop a real booking attempt - just log it.
-          await logSyncError(env, {
-            operation: 'Create Appointment',
-            message: err && err.message ? err.message : String(err),
-            phone
-          });
+        const service = await getServicePrice(env, service_id);
+        if (!service) {
+          return jsonResponse({ error: 'That service is no longer available.' }, 400, headers);
+        }
+        if (service.price > 0) {
+          return jsonResponse({ error: 'This session needs payment first.', payment_required: true }, 402, headers);
         }
 
-        const fromTime = `${toZohoDate(date)} ${time24}:00`;
-        const data = await zohoPostForm(env, 'appointment', {
-          service_id,
-          staff_id,
-          from_time: fromTime,
-          timezone: timezone || 'Asia/Calcutta',
-          notes: notes || undefined,
-          customer_details: JSON.stringify({ name, email, phone_number: phone })
+        const time24 = to24Hour(time);
+        const creatorId = await createCreatorAppointment(env, {
+          phone, name, email, serviceId: service_id, staffId: staff_id, date, time24, amount: 0, paymentStatus: 'Paid'
         });
 
-        // Zoho always answers HTTP 200 with response.status "success" even
-        // when the *booking itself* failed (e.g. someone else just took the
-        // slot) - the real outcome is in response.returnvalue. A successful
-        // booking always has a booking_id; anything else is a failure, and
-        // we translate that into a proper HTTP status so the frontend can't
-        // mistake a rejected double-booking for a confirmed one.
-        const returnvalue = data && data.response && data.response.returnvalue;
+        const result = await bookInZoho(env, { serviceId: service_id, staffId: staff_id, date, time24, name, email, phone, notes });
 
-        if (returnvalue && returnvalue.booking_id) {
-          if (creatorAppointmentId) {
-            try {
-              await creatorUpdate(env, 'appointments_Report', creatorAppointmentId, {
-                zoho_bookings_appointment_id: returnvalue.booking_id,
-                booking_status: 'Confirmed',
-                confirmed_time: creatorNow()
-              });
-            } catch (err) {
-              // The real booking already succeeded - a Creator update
-              // failure here shouldn't be reported back as a failed booking,
-              // just logged so it can be fixed manually.
-              await logSyncError(env, {
-                operation: 'Update Appointment',
-                message: err && err.message ? err.message : String(err),
-                phone,
-                bookingId: returnvalue.booking_id
-              });
-            }
-          }
-          return jsonResponse(data, 200, headers);
+        if (result.ok) {
+          await updateCreatorAppointment(env, creatorId, {
+            zoho_bookings_appointment_id: result.bookingId,
+            booking_status: 'Confirmed',
+            confirmed_time: creatorNow()
+          }, { phone, bookingId: result.bookingId });
+          return jsonResponse(result.data, 200, headers);
         }
 
-        const message = (returnvalue && (returnvalue.message || returnvalue.errormessage)) || 'Booking failed';
-        const isSlotConflict = /slot/i.test(message) && /(not available|unavailable|already|taken|booked)/i.test(message);
-
-        if (creatorAppointmentId) {
-          try {
-            await creatorUpdate(env, 'appointments_Report', creatorAppointmentId, {
-              booking_status: 'Failed',
-              error_message: message
-            });
-          } catch (err) {
-            // The booking already failed for its own reason - log this
-            // second failure too so the Creator row isn't silently stuck.
-            await logSyncError(env, {
-              operation: 'Update Appointment',
-              message: err && err.message ? err.message : String(err),
-              phone
-            });
-          }
-        }
-
+        await updateCreatorAppointment(env, creatorId, { booking_status: 'Failed', error_message: result.message }, { phone });
         return jsonResponse(
-          { error: message, slot_conflict: isSlotConflict, raw: data },
-          isSlotConflict ? 409 : 400,
+          { error: result.message, slot_conflict: result.slotConflict },
+          result.slotConflict ? 409 : 400,
           headers
         );
       }
@@ -1007,25 +1128,74 @@ export default {
       }
 
       // --- POST /api/payment/create-order ---------------------------------------
+      // Step 1 of a paid booking. Checks the slot, writes a Pending row to
+      // Creator, and creates a Razorpay order for the service's real price
+      // (looked up here, never taken from the browser). The slot is NOT
+      // booked yet - that happens in finalizePaidBooking after payment.
       if (url.pathname === '/api/payment/create-order' && request.method === 'POST') {
-        const body = await request.json().catch(() => ({}));
-        const bookingId = String(body.booking_id || '').trim();
-        const amount = Number(body.amount);
-        const currency = String(body.currency || 'INR').trim();
-
-        if (!bookingId || !amount || amount <= 0) {
-          return jsonResponse({ error: 'booking_id and a positive amount are required' }, 400, headers);
+        if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
+          return jsonResponse({ error: 'Online payment is not available yet. Please book via WhatsApp.' }, 503, headers);
         }
 
-        const order = await razorpayCreateOrder(env, {
-          amount,
-          currency,
-          receipt: bookingId,
-          notes: { booking_id: bookingId }
+        const body = await request.json().catch(() => ({}));
+        const { service_id, staff_id, date, time, name, email, notes, hp_confirm } = body || {};
+        if (hp_confirm) {
+          return jsonResponse({ error: 'Rejected' }, 400, headers);
+        }
+
+        const session = await verifySessionToken(env, body.session_token);
+        if (!session) {
+          return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
+        }
+        const phone = session.phone;
+
+        if (!service_id || !staff_id || !date || !time || !name || !email) {
+          return jsonResponse({ error: 'Missing required booking fields' }, 400, headers);
+        }
+
+        const time24 = to24Hour(time);
+        const [service, slotFree] = await Promise.all([
+          getServicePrice(env, service_id),
+          isSlotAvailable(env, service_id, staff_id, date, time24)
+        ]);
+        if (!service) {
+          return jsonResponse({ error: 'That service is no longer available.' }, 400, headers);
+        }
+        if (service.price <= 0) {
+          return jsonResponse({ error: 'This session is free - no payment needed.', free: true }, 400, headers);
+        }
+        if (!slotFree) {
+          return jsonResponse({ error: 'That time was just booked by someone else. Please pick another time.', slot_conflict: true }, 409, headers);
+        }
+
+        const creatorId = await createCreatorAppointment(env, {
+          phone, name, email, serviceId: service_id, staffId: staff_id, date, time24, amount: service.price, paymentStatus: 'Pending'
         });
 
-        if (!order || !order.id) {
-          return jsonResponse({ error: (order && order.error && order.error.description) || 'Could not create payment order' }, 400, headers);
+        // Razorpay notes: max 15 keys, 256 characters each.
+        const clip = (value) => String(value || '').slice(0, 250);
+        let order;
+        try {
+          order = await razorpayRequest(env, 'POST', 'orders', {
+            amount: Math.round(service.price * 100), // paise
+            currency: service.currency,
+            receipt: clip(`mindlap-${Date.now()}`).slice(0, 40),
+            notes: {
+              service_id: clip(service_id),
+              staff_id: clip(staff_id),
+              date: clip(date),
+              time: time24,
+              name: clip(name),
+              email: clip(email),
+              phone,
+              customer_notes: clip(notes),
+              creator_id: clip(creatorId)
+            }
+          });
+        } catch (err) {
+          await updateCreatorAppointment(env, creatorId, { booking_status: 'Failed', error_message: errorText(err) }, { phone });
+          await logSyncError(env, { operation: 'Create Appointment', message: 'Razorpay order failed: ' + errorText(err), phone });
+          return jsonResponse({ error: 'Could not start the payment. Please try again.' }, 502, headers);
         }
 
         return jsonResponse(
@@ -1033,7 +1203,9 @@ export default {
             order_id: order.id,
             amount: order.amount,
             currency: order.currency,
-            key_id: env.RAZORPAY_KEY_ID
+            key_id: env.RAZORPAY_KEY_ID,
+            service_name: service.name,
+            prefill: { name, email, contact: phone }
           },
           200,
           headers
@@ -1041,43 +1213,77 @@ export default {
       }
 
       // --- POST /api/payment/verify ----------------------------------------------
+      // Step 2, called by the browser right after Razorpay Checkout succeeds.
+      // Verifies the signature, then books the slot (or refunds if it's gone).
       if (url.pathname === '/api/payment/verify' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
         const orderId = String(body.razorpay_order_id || '').trim();
         const paymentId = String(body.razorpay_payment_id || '').trim();
         const signature = String(body.razorpay_signature || '').trim();
-        const bookingId = String(body.booking_id || '').trim();
 
         if (!orderId || !paymentId || !signature) {
           return jsonResponse({ error: 'Missing payment verification fields' }, 400, headers);
         }
 
-        // Razorpay signs "order_id|payment_id" with the key secret - if our
-        // own computed signature doesn't match, the payment details were
-        // tampered with (or forged) and must be rejected.
+        // Razorpay signs "order_id|payment_id" with the key secret; a mismatch
+        // means the payment details were forged or tampered with.
         const expectedSignature = await hmacSha256Hex(env.RAZORPAY_KEY_SECRET, `${orderId}|${paymentId}`);
-        if (expectedSignature !== signature) {
-          return jsonResponse({ success: false, error: 'Payment signature verification failed' }, 400, headers);
+        if (!constantTimeEqual(expectedSignature, signature)) {
+          return jsonResponse({ success: false, error: 'Payment could not be verified.' }, 400, headers);
         }
 
-        // Best-effort: note the confirmed payment on the Zoho Bookings
-        // appointment. This is not critical to the payment itself succeeding,
-        // so a failure here does not fail the whole request.
-        if (bookingId) {
-          try {
-            await zohoPostForm(env, 'updateappointment', {
-              booking_id: bookingId,
-              action: 'edit_appointment_info',
-              data: JSON.stringify({
-                notes: `Paid via Razorpay. Payment ID: ${paymentId}, Order ID: ${orderId}.`
-              })
-            });
-          } catch (err) {
-            // Swallow - the payment itself is already verified and real.
+        const result = await finalizePaidBooking(env, orderId, paymentId);
+        if (result.status === 'booked') {
+          return jsonResponse({ success: true, booking_id: result.bookingId, payment_id: paymentId }, 200, headers);
+        }
+        if (result.status === 'refunded') {
+          return jsonResponse({
+            success: false,
+            refunded: result.refunded,
+            slot_conflict: result.slotConflict,
+            error: result.refunded
+              ? 'Your payment went through, but that time was taken just before we could book it. Your money is being refunded (usually 5-7 working days). Please pick another time.'
+              : 'Your payment went through, but we could not book that time. Our team will contact you and refund you.'
+          }, 409, headers);
+        }
+        return jsonResponse({ success: false, error: result.message || 'Payment not completed.' }, 400, headers);
+      }
+
+      // --- POST /api/payment/webhook ---------------------------------------------
+      // Razorpay calls this directly, so a booking still happens if the
+      // customer closes the tab right after paying. Configure it in the
+      // Razorpay Dashboard with events payment.captured + payment.authorized.
+      if (url.pathname === '/api/payment/webhook' && request.method === 'POST') {
+        if (!env.RAZORPAY_WEBHOOK_SECRET) {
+          return new Response('Webhook not configured', { status: 503 });
+        }
+        const rawBody = await request.text();
+        const expected = await hmacSha256Hex(env.RAZORPAY_WEBHOOK_SECRET, rawBody);
+        if (!constantTimeEqual(expected, request.headers.get('X-Razorpay-Signature'))) {
+          return new Response('Invalid signature', { status: 400 });
+        }
+
+        const event = JSON.parse(rawBody);
+        const payment = event.payload && event.payload.payment && event.payload.payment.entity;
+        if (!payment || !payment.order_id || !['payment.captured', 'payment.authorized'].includes(event.event)) {
+          return new Response('Ignored', { status: 200 });
+        }
+
+        // Give the customer's own browser the first chance to finish the
+        // booking; if it hasn't within ~2 minutes, Razorpay's retry of this
+        // webhook will do it. Avoids two parallel booking attempts.
+        const ageSeconds = Date.now() / 1000 - Number(payment.created_at || 0);
+        if (ageSeconds < 120) {
+          const order = await razorpayRequest(env, 'GET', `orders/${payment.order_id}`);
+          if (!(order.notes && order.notes.booking_id)) {
+            return new Response('Retry later', { status: 503 });
           }
+          return new Response('OK', { status: 200 });
         }
 
-        return jsonResponse({ success: true, payment_id: paymentId }, 200, headers);
+        const result = await finalizePaidBooking(env, payment.order_id, payment.id);
+        console.log('Webhook finalize', payment.order_id, result.status);
+        return new Response('OK', { status: 200 });
       }
 
       return jsonResponse({ error: 'Not found' }, 404, headers);

@@ -31,11 +31,6 @@
         const submitBtn = document.getElementById('booking-submit');
 
         const bookingStepEl = document.getElementById('booking-step');
-        const paymentStepEl = document.getElementById('payment-step');
-        const paymentAmountLine = document.getElementById('payment-amount-line');
-        const payNowBtn = document.getElementById('pay-now-btn');
-        const payLaterBtn = document.getElementById('pay-later-btn');
-        const paymentStatusEl = document.getElementById('payment-status');
 
         // --- Wizard chrome (otp -> credits/type -> details -> payment) ---
         const wizardBackBtn = document.getElementById('wizard-back-btn');
@@ -59,7 +54,7 @@
         const creditModeBanner = document.getElementById('credit-mode-banner');
         const bookingServiceField = document.getElementById('booking-service-field');
 
-        const WIZARD_STEPS = ['wizard-step-otp', 'wizard-step-credits', 'wizard-step-type', 'booking-step']; // payment-step is a post-booking outcome, not a navigable step
+        const WIZARD_STEPS = ['wizard-step-otp', 'wizard-step-credits', 'wizard-step-type', 'booking-step'];
         let currentStepIndex = 0;
         let selectedSessionType = null;
         let sessionToken = null;
@@ -85,12 +80,10 @@
                 const el = document.getElementById(id);
                 if (el) el.hidden = (id !== stepId);
             });
-            if (paymentStepEl) paymentStepEl.hidden = (stepId !== 'payment-step');
 
             if (wizardBackBtn) {
                 wizardBackBtn.hidden = (stepId === 'wizard-step-otp' || stepId === 'wizard-step-credits');
             }
-            if (wizardProgress) wizardProgress.hidden = (stepId === 'payment-step');
             renderWizardDots();
         }
 
@@ -140,7 +133,6 @@
         let servicesLoaded = false;
         let selectedSlot = null;
         let pendingStaffName = null;
-        let pendingPayment = null; // { bookingId, amount, currency }
 
         // Restrict date picker to today .. +60 days
         if (dateInput) {
@@ -169,6 +161,7 @@
             document.body.style.overflow = 'hidden';
             selectedSessionType = null;
             creditBookingMode = false;
+            if (submitBtn) submitBtn.textContent = 'Continue to payment';
             sessionTypeCards.forEach((c) => c.classList.remove('selected'));
             if (bookingServiceField) bookingServiceField.hidden = false;
             if (creditModeBanner) creditModeBanner.hidden = true;
@@ -344,6 +337,7 @@
 
         async function useCredits(credits) {
             creditBookingMode = true;
+            if (submitBtn) submitBtn.textContent = 'Confirm booking';
 
             if (creditModeBanner) {
                 creditModeBanner.hidden = false;
@@ -614,187 +608,159 @@
                     return;
                 }
 
+                const booking = {
+                    session_token: sessionToken,
+                    service_id: serviceSelect.value,
+                    staff_id: staffSelect.value,
+                    date: dateInput.value,
+                    time: selectedSlot,
+                    name: name,
+                    email: email,
+                    notes: notes,
+                    hp_confirm: hpConfirm
+                };
+
                 submitBtn.disabled = true;
-                setStatus(creditBookingMode ? 'Booking with your package…' : 'Booking your session…');
-
                 try {
-                    const endpoint = creditBookingMode ? '/api/credits/book' : '/api/book';
-                    const body = creditBookingMode
-                        ? {
-                            session_token: sessionToken,
-                            service_id: serviceSelect.value,
-                            staff_id: staffSelect.value,
-                            date: dateInput.value,
-                            time: selectedSlot,
-                            name: name,
-                            email: email,
-                            notes: notes,
-                            hp_confirm: hpConfirm
-                        }
-                        : {
-                            session_token: sessionToken,
-                            service_id: serviceSelect.value,
-                            staff_id: staffSelect.value,
-                            date: dateInput.value,
-                            time: selectedSlot,
-                            name: name,
-                            email: email,
-                            notes: notes,
-                            hp_confirm: hpConfirm,
-                            timezone: 'Asia/Calcutta'
-                        };
-
-                    const res = await fetch(BOOKING_API_BASE + endpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
-                    });
-                    const data = await res.json().catch(() => ({}));
-
-                    if (!res.ok) {
-                        if (res.status === 401 || data.reverify) {
-                            requireReverification('Your verification expired. Please verify your phone number again.');
-                        } else if (res.status === 409 || data.slot_conflict) {
-                            // Someone else booked this exact time first.
-                            setStatus('That time was just booked by someone else. Pick another time below.', 'error');
-                            loadSlots(serviceSelect.value, staffSelect.value, dateInput.value);
-                        } else {
-                            setStatus(data.error || 'Something went wrong while booking. Please try again or book via WhatsApp.', 'error');
-                        }
-                        return;
-                    }
-
-                    form.reset();
-                    fillVerifiedPhone();
-                    resetSlots();
-
                     if (creditBookingMode) {
-                        // Already paid for via the package - no payment step.
-                        setStatus("You're booked using your package! Check your email for confirmation.", 'success');
-                        setTimeout(closeModal, 2500);
-                        return;
-                    }
-
-                    setStatus("You're booked! Check your email for confirmation.", 'success');
-
-                    const returnvalue = (data.response && data.response.returnvalue) || {};
-                    const bookingId = returnvalue.booking_id;
-                    const amount = Number(returnvalue.due != null ? returnvalue.due : returnvalue.cost) || 0;
-                    const currency = returnvalue.currency || 'INR';
-
-                    if (bookingId && amount > 0) {
-                        showPaymentStep(bookingId, amount, currency);
+                        setStatus('Booking with your prepaid sessions…');
+                        await submitBooking('/api/credits/book', booking, "You're booked using your prepaid sessions! Check your email for confirmation.");
                     } else {
-                        setTimeout(closeModal, 2500);
+                        await startPaidBooking(booking);
                     }
-                } catch (err) {
-                    setStatus('Something went wrong while booking. Please try again or book via WhatsApp.', 'error');
                 } finally {
                     submitBtn.disabled = false;
                 }
             });
         }
 
-        // -----------------------------------------------------------------
-        // Payment (Razorpay), shown right after a booking is confirmed
-        // -----------------------------------------------------------------
-
-        function setPaymentStatus(message, type) {
-            if (!paymentStatusEl) return;
-            paymentStatusEl.textContent = message || '';
-            paymentStatusEl.className = 'booking-status' + (type ? ' ' + type : '');
-        }
-
-        function showPaymentStep(bookingId, amount, currency) {
-            pendingPayment = { bookingId, amount, currency };
-            if (bookingStepEl) bookingStepEl.hidden = true;
-            if (paymentStepEl) paymentStepEl.hidden = false;
-            if (wizardBackBtn) wizardBackBtn.hidden = true;
-            if (wizardProgress) wizardProgress.hidden = true;
-            setPaymentStatus('');
-            if (paymentAmountLine) {
-                const symbol = currency === 'INR' ? '₹' : currency + ' ';
-                paymentAmountLine.textContent = 'Amount due: ' + symbol + amount;
+        /** Handles the error responses shared by every booking/payment call. Returns true if handled. */
+        function handleBookingError(res, data) {
+            if (res.status === 401 || data.reverify) {
+                requireReverification('Your verification expired. Please verify your phone number again.');
+            } else if (res.status === 409 || data.slot_conflict) {
+                setStatus(data.error || 'That time was just booked by someone else. Pick another time below.', 'error');
+                loadSlots(serviceSelect.value, staffSelect.value, dateInput.value);
+            } else {
+                setStatus(data.error || 'Something went wrong while booking. Please try again or book via WhatsApp.', 'error');
             }
         }
 
-        async function startPayment() {
-            if (!pendingPayment || typeof Razorpay === 'undefined') {
-                setPaymentStatus('Payment is unavailable right now. Please pay later or contact us.', 'error');
+        function finishBooking(message) {
+            form.reset();
+            fillVerifiedPhone();
+            resetSlots();
+            setStatus(message, 'success');
+            setTimeout(closeModal, 3000);
+        }
+
+        /** No-payment bookings: prepaid credits, or a free service. */
+        async function submitBooking(endpoint, booking, successMessage) {
+            try {
+                const res = await fetch(BOOKING_API_BASE + endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(booking)
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    handleBookingError(res, data);
+                    return;
+                }
+                finishBooking(successMessage);
+            } catch (err) {
+                setStatus('Something went wrong while booking. Please try again or book via WhatsApp.', 'error');
+            }
+        }
+
+        // -----------------------------------------------------------------
+        // Paid bookings: pay first (Razorpay), and the slot is only booked
+        // once the payment succeeds.
+        // -----------------------------------------------------------------
+
+        async function startPaidBooking(booking) {
+            if (typeof Razorpay === 'undefined') {
+                setStatus('Online payment could not load. Please refresh the page or book via WhatsApp.', 'error');
                 return;
             }
 
-            payNowBtn.disabled = true;
-            setPaymentStatus('Preparing payment…');
-
+            setStatus('Preparing secure payment…');
+            let order;
             try {
-                const orderRes = await fetch(BOOKING_API_BASE + '/api/payment/create-order', {
+                const res = await fetch(BOOKING_API_BASE + '/api/payment/create-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        booking_id: pendingPayment.bookingId,
-                        amount: pendingPayment.amount,
-                        currency: pendingPayment.currency
-                    })
+                    body: JSON.stringify(booking)
                 });
-                const order = await orderRes.json().catch(() => ({}));
-
-                if (!orderRes.ok || !order.order_id) {
-                    setPaymentStatus(order.error || 'Could not start payment. Please try again.', 'error');
+                order = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    if (order.free) {
+                        setStatus('Booking your session…');
+                        await submitBooking('/api/book', booking, "You're booked! Check your email for confirmation.");
+                        return;
+                    }
+                    handleBookingError(res, order);
                     return;
                 }
+            } catch (err) {
+                setStatus('Could not start the payment. Please try again.', 'error');
+                return;
+            }
 
+            await new Promise((resolve) => {
                 const checkout = new Razorpay({
                     key: order.key_id,
                     order_id: order.order_id,
                     amount: order.amount,
                     currency: order.currency,
                     name: 'Mindlap',
-                    description: 'Therapy session booking',
+                    description: order.service_name || 'Therapy session',
+                    prefill: order.prefill,
                     theme: { color: '#4A2E80' },
                     handler: async (response) => {
-                        setPaymentStatus('Confirming payment…');
-                        try {
-                            const verifyRes = await fetch(BOOKING_API_BASE + '/api/payment/verify', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    razorpay_order_id: response.razorpay_order_id,
-                                    razorpay_payment_id: response.razorpay_payment_id,
-                                    razorpay_signature: response.razorpay_signature,
-                                    booking_id: pendingPayment.bookingId
-                                })
-                            });
-                            const verifyData = await verifyRes.json().catch(() => ({}));
-
-                            if (!verifyRes.ok || !verifyData.success) {
-                                setPaymentStatus(verifyData.error || 'Payment could not be verified. Please contact us.', 'error');
-                                return;
-                            }
-
-                            setPaymentStatus('Payment successful, thank you!', 'success');
-                            setTimeout(closeModal, 2000);
-                        } catch (err) {
-                            setPaymentStatus('Payment could not be verified. Please contact us.', 'error');
-                        }
+                        await confirmPayment(response);
+                        resolve();
                     },
                     modal: {
                         ondismiss: () => {
-                            setPaymentStatus('Payment cancelled. You can try again or pay later.', 'error');
+                            setStatus('Payment cancelled, nothing was booked or charged. You can try again.', 'error');
+                            resolve();
                         }
                     }
                 });
-
+                checkout.on('payment.failed', (response) => {
+                    const reason = response && response.error && response.error.description;
+                    setStatus('Payment failed' + (reason ? ': ' + reason : '') + '. You can try again.', 'error');
+                });
+                setStatus('Complete the payment in the Razorpay window.');
                 checkout.open();
-                setPaymentStatus('');
-            } catch (err) {
-                setPaymentStatus('Could not start payment. Please try again.', 'error');
-            } finally {
-                payNowBtn.disabled = false;
-            }
+            });
         }
 
-        if (payNowBtn) payNowBtn.addEventListener('click', startPayment);
-        if (payLaterBtn) payLaterBtn.addEventListener('click', closeModal);
+        async function confirmPayment(response) {
+            setStatus('Payment received, booking your session… please don\'t close this window.');
+            try {
+                const res = await fetch(BOOKING_API_BASE + '/api/payment/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature
+                    })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.success) {
+                    handleBookingError(res, data);
+                    return;
+                }
+                finishBooking("Payment successful and you're booked! Check your email for confirmation.");
+            } catch (err) {
+                // The payment went through; the server-side webhook will still
+                // finish the booking even if this request failed.
+                setStatus('Your payment went through, but we could not confirm the booking here. You will get a confirmation email shortly; if not, contact us on WhatsApp with payment ID ' +
+                    response.razorpay_payment_id + '.', 'error');
+            }
+        }
     });
 })();
