@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Sessions Test - Internal Only</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="../index.css">
+    <style>
+        body {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .sessions-test-card {
+            width: 100%;
+            max-width: 480px;
+            margin-top: 24px;
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-medium);
+            padding: 32px;
+        }
+        .sessions-test-card h1 {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+        .sessions-test-card .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        .otp-step[hidden] { display: none; }
+        .otp-substep[hidden] { display: none; }
+        .otp-substep {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .otp-verified-badge {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: var(--success-light);
+            color: var(--success-color);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+        .otp-verified-badge.show { display: flex; }
+        .otp-resend {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            align-self: flex-start;
+            padding: 0;
+        }
+        .otp-resend:disabled { color: var(--text-light); cursor: not-allowed; }
+
+        .sessions-section { margin-top: 20px; }
+        .sessions-section h2 {
+            font-size: 1rem;
+            font-family: var(--font-heading);
+            margin-bottom: 12px;
+            color: var(--primary-color);
+        }
+        .session-card {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border-light);
+            background: var(--bg-calm);
+            margin-bottom: 10px;
+        }
+        .session-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .session-card-service {
+            font-weight: 700;
+            font-size: 0.92rem;
+            color: var(--text-main);
+        }
+        .session-card-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: var(--radius-round);
+            background: var(--bg-lavender);
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .session-card-meta {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .sessions-empty {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sessions-test-card">
+        <h1>My Sessions (test)</h1>
+        <p class="subtitle">Internal test page, not linked from the site. Verify a phone number, then see its past and upcoming sessions pulled live from Zoho Creator.</p>
+
+        <div id="otp-verified-badge" class="otp-verified-badge">
+            <span>&#10003;</span>
+            <span>Phone verified</span>
+        </div>
+
+        <div class="otp-step" id="otp-step-phone">
+            <div class="booking-field">
+                <label for="otp-phone">Phone number</label>
+                <div class="phone-input-group">
+                    <select id="otp-country" class="phone-input-prefix" aria-label="Country code">
+                        <option value="+91" selected>&#127470;&#127475; +91 India</option>
+                        <option value="+971">&#127462;&#127466; +971 UAE</option>
+                        <option value="+966">&#127480;&#127462; +966 Saudi Arabia</option>
+                        <option value="+974">&#127478;&#127462; +974 Qatar</option>
+                        <option value="+968">&#127476;&#127474; +968 Oman</option>
+                        <option value="+965">&#127472;&#127484; +965 Kuwait</option>
+                        <option value="+973">&#127463;&#127469; +973 Bahrain</option>
+                        <option value="+1">&#127482;&#127480; +1 USA / Canada</option>
+                        <option value="+44">&#127468;&#127463; +44 UK</option>
+                        <option value="+61">&#127462;&#127482; +61 Australia</option>
+                        <option value="+64">&#127475;&#127487; +64 New Zealand</option>
+                        <option value="+65">&#127480;&#127468; +65 Singapore</option>
+                        <option value="+60">&#127474;&#127486; +60 Malaysia</option>
+                        <option value="+49">&#127465;&#127466; +49 Germany</option>
+                        <option value="+353">&#127470;&#127466; +353 Ireland</option>
+                        <option value="+94">&#127473;&#127472; +94 Sri Lanka</option>
+                        <option value="+977">&#127475;&#127477; +977 Nepal</option>
+                        <option value="+880">&#127463;&#127465; +880 Bangladesh</option>
+                    </select>
+                    <input type="tel" id="otp-phone" inputmode="tel" maxlength="20" placeholder="98765 43210" autocomplete="tel-national">
+                </div>
+            </div>
+            <button type="button" id="otp-send-btn" class="btn btn-primary">Send code on WhatsApp</button>
+        </div>
+
+        <div class="otp-step" id="otp-step-code" hidden>
+            <div class="booking-field">
+                <label for="otp-code">Enter the 6-digit code</label>
+                <input type="text" id="otp-code" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code">
+            </div>
+            <button type="button" id="otp-verify-btn" class="btn btn-primary">Verify code</button>
+            <button type="button" id="otp-resend-btn" class="otp-resend">Resend code</button>
+        </div>
+
+        <p id="otp-status" class="booking-status" role="status"></p>
+
+        <div id="sessions-wrap" hidden>
+            <div class="sessions-section">
+                <h2>Upcoming</h2>
+                <div id="upcoming-list"></div>
+            </div>
+            <div class="sessions-section">
+                <h2>Past</h2>
+                <div id="past-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="sessions-test.js?v=1.4"></script>
+</body>
+</html>
