@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify your number | Book Online | Mindlap</title>
+    <title>Choose your therapist | Book Online | Mindlap</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/webp" href="/assets/favicon.webp">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="/book/book.css?v=4">
 </head>
 
-<body class="book-page" data-page="verify">
+<body class="book-page" data-page="therapist">
 
     <header class="book-topbar">
         <div class="book-topbar-inner">
@@ -55,52 +55,21 @@
 
         <main class="book-main">
             <div class="book-card">
-                <h1 class="book-title">Book your session</h1>
-                <p class="book-lead">First, let's verify your WhatsApp number. It keeps your bookings private, and if you have prepaid sessions we'll find them for you.</p>
+                <div class="book-verified-chip" id="book-verified-chip" hidden>
+                    <span aria-hidden="true">&#10003;</span>
+                    <span>Verified <span data-phone></span></span>
+                    <button type="button">Change</button>
+                </div>
+                <h1 class="book-title">Who would you like to talk to?</h1>
+                <p class="book-lead">Choose your therapist. Next, you'll pick the kind of session and a time that suits you.</p>
     
-                <div class="book-stack" id="otp-phone-step">
-                    <div class="booking-field">
-                        <label for="otp-phone">WhatsApp number</label>
-                        <div class="phone-input-group">
-                            <select id="otp-country" class="phone-input-prefix" aria-label="Country code">
-                                <option value="+91" selected>&#127470;&#127475; +91 India</option>
-                                <option value="+971">&#127462;&#127466; +971 UAE</option>
-                                <option value="+966">&#127480;&#127462; +966 Saudi Arabia</option>
-                                <option value="+974">&#127478;&#127462; +974 Qatar</option>
-                                <option value="+968">&#127476;&#127474; +968 Oman</option>
-                                <option value="+965">&#127472;&#127484; +965 Kuwait</option>
-                                <option value="+973">&#127463;&#127469; +973 Bahrain</option>
-                                <option value="+1">&#127482;&#127480; +1 USA / Canada</option>
-                                <option value="+44">&#127468;&#127463; +44 UK</option>
-                                <option value="+61">&#127462;&#127482; +61 Australia</option>
-                                <option value="+64">&#127475;&#127487; +64 New Zealand</option>
-                                <option value="+65">&#127480;&#127468; +65 Singapore</option>
-                                <option value="+60">&#127474;&#127486; +60 Malaysia</option>
-                                <option value="+49">&#127465;&#127466; +49 Germany</option>
-                                <option value="+353">&#127470;&#127466; +353 Ireland</option>
-                                <option value="+94">&#127473;&#127472; +94 Sri Lanka</option>
-                                <option value="+977">&#127475;&#127477; +977 Nepal</option>
-                                <option value="+880">&#127463;&#127465; +880 Bangladesh</option>
-                            </select>
-                            <input type="tel" id="otp-phone" inputmode="tel" maxlength="14" placeholder="98765 43210" autocomplete="tel-national">
-                        </div>
-                    </div>
-                    <button type="button" id="otp-send-btn" class="btn btn-primary btn-lg">Send code on WhatsApp</button>
+                <div class="modal-cta-box therapist-note" id="therapist-note" hidden></div>
+    
+                <div class="option-grid therapist-grid" id="therapist-list" role="radiogroup" aria-label="Therapists">
+                    <div class="option-skeleton"></div><div class="option-skeleton"></div>
                 </div>
     
-                <div class="book-stack" id="otp-code-step" hidden>
-                    <div class="booking-field">
-                        <label for="otp-code">Enter the 6-digit code sent to <strong id="otp-sent-to"></strong></label>
-                        <input type="text" id="otp-code" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code">
-                    </div>
-                    <button type="button" id="otp-verify-btn" class="btn btn-primary btn-lg">Verify and continue</button>
-                    <div class="otp-links">
-                        <button type="button" id="otp-resend-btn" class="otp-resend">Resend code</button>
-                        <button type="button" id="otp-change-btn" class="otp-resend">Change number</button>
-                    </div>
-                </div>
-    
-                <p id="otp-status" class="booking-status" role="status"></p>
+                <p id="therapist-status" class="booking-status" role="status"></p>
             </div>
             <p class="book-help">Prefer to chat? <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session." target="_blank" rel="noopener">Book on WhatsApp</a></p>
         </main>

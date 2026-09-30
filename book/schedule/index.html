@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/index.css?v=126">
-    <link rel="stylesheet" href="/book/book.css?v=3">
+    <link rel="stylesheet" href="/index.css?v=127">
+    <link rel="stylesheet" href="/book/book.css?v=4">
 </head>
 
 <body class="book-page" data-page="schedule">
@@ -61,39 +61,32 @@
                     <span>Verified <span data-phone></span></span>
                     <button type="button">Change</button>
                 </div>
-                <h1 class="book-title">Find a time that suits you</h1>
-                <p class="book-lead">Choose your session, the therapist you'd like to meet, and a time. All sessions are online.</p>
+                <h1 class="book-title">Choose a date and time</h1>
+                <p class="book-lead" id="schedule-with">All sessions are online.</p>
     
                 <div class="modal-cta-box" id="credit-banner" hidden>
                     <p>Booking with your prepaid sessions (<strong data-credits></strong> left). No payment needed.</p>
                 </div>
     
-                <section class="pick-block" aria-labelledby="pick-service">
-                    <h2 class="pick-label" id="pick-service"><span class="pick-num">1</span>Session</h2>
-                    <div class="option-grid" id="service-list" role="radiogroup" aria-labelledby="pick-service">
-                        <div class="option-skeleton"></div><div class="option-skeleton"></div>
-                    </div>
-                </section>
-    
-                <section class="pick-block" id="staff-block" aria-labelledby="pick-staff" hidden>
-                    <h2 class="pick-label" id="pick-staff"><span class="pick-num">2</span>Therapist</h2>
-                    <div class="option-grid" id="staff-list" role="radiogroup" aria-labelledby="pick-staff"></div>
-                </section>
-    
-                <section class="pick-block" id="date-block" aria-labelledby="pick-date" hidden>
-                    <h2 class="pick-label" id="pick-date"><span class="pick-num">3</span>Date<small id="date-month"></small></h2>
+                <section class="pick-block" id="date-block" aria-labelledby="pick-date">
+                    <h2 class="pick-label" id="pick-date"><span class="pick-num">1</span>Date<small id="date-month"></small></h2>
                     <div class="date-strip" id="date-strip" role="radiogroup" aria-labelledby="pick-date"></div>
                 </section>
     
                 <section class="pick-block" id="time-block" aria-labelledby="pick-time" hidden>
-                    <h2 class="pick-label" id="pick-time"><span class="pick-num">4</span>Time<small>India time (IST)</small></h2>
+                    <h2 class="pick-label" id="pick-time"><span class="pick-num">2</span>Time<small>India time (IST)</small></h2>
                     <div class="slot-groups" id="booking-slots"></div>
+                </section>
+    
+                <section class="pick-block" id="session-block" aria-labelledby="pick-session" hidden>
+                    <h2 class="pick-label" id="pick-session"><span class="pick-num">3</span>Session</h2>
+                    <div class="option-grid" id="session-list" role="radiogroup" aria-labelledby="pick-session"></div>
                 </section>
     
                 <p id="schedule-status" class="booking-status" role="status"></p>
     
                 <div class="step-footer">
-                    <div class="step-footer-summary" id="schedule-summary">Pick a session, therapist, date and time.</div>
+                    <div class="step-footer-summary" id="schedule-summary">Pick a date to see open times.</div>
                     <button type="button" id="schedule-next" class="btn btn-primary btn-lg" disabled>Continue</button>
                 </div>
             </div>
@@ -101,7 +94,7 @@
         </main>
     </div>
 
-    <script src="/book/book.js?v=3"></script>
+    <script src="/book/book.js?v=4"></script>
 </body>
 
 </html>

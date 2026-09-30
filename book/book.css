@@ -1386,3 +1386,53 @@ body.book-page {
 @keyframes hold-pulse {
     50% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0.05); }
 }
+
+/* ------------------------------------------------------------------
+   Therapist + session options
+   ------------------------------------------------------------------ */
+.option-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.option-tags span {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    background: var(--bg-lavender);
+    border-radius: var(--radius-round);
+    padding: 2px 9px;
+}
+
+.option-kicker {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+}
+
+.option-card.unavailable,
+.option-card:disabled,
+.session-type-card.unavailable,
+.session-type-card:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    border-color: var(--border-light);
+    background: var(--bg-calm);
+}
+
+.therapist-note a {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.book-lead a {
+    color: var(--primary-color);
+    font-weight: 700;
+    white-space: nowrap;
+}

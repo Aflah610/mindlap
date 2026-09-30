@@ -3433,6 +3433,25 @@ select.phone-input-prefix {
     margin-bottom: 32px;
 }
 
+.profile-cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
+
+.btn-ghost-white {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid rgba(255, 255, 255, 0.7);
+}
+
+.btn-ghost-white:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
 /* Responsiveness for Profile Pages */
 @media (max-width: 992px) {
     .profile-hero-grid {

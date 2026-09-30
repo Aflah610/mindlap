@@ -2,8 +2,9 @@
    Mindlap - Book Online, one page per step:
      /book/               verify phone (WhatsApp OTP)
      /book/credits/       prepaid sessions found (Zoho CRM)
+     /book/therapist/     choose a therapist (skipped when coming from a profile)
      /book/session-type/  individual or couple
-     /book/schedule/      service, therapist, date, time
+     /book/schedule/      date, time, then single session or package
      /book/details/       name, email, notes
      /book/checkout/      review + pay (Razorpay) or confirm (prepaid)
      /book/confirmation/  outcome
@@ -21,6 +22,7 @@
     const PATHS = {
         verify: '/book/',
         credits: '/book/credits/',
+        therapist: '/book/therapist/',
         type: '/book/session-type/',
         schedule: '/book/schedule/',
         details: '/book/details/',
@@ -248,7 +250,7 @@
     function renderStepper(activeIndex) {
         const el = $('book-stepper');
         if (!el) return;
-        const labels = ['Verify', 'Session', 'Schedule', 'Details', 'Payment'];
+        const labels = ['Verify', 'Therapist', 'Session', 'Date & time', 'Details', 'Payment'];
         el.innerHTML = labels.map((label, i) => {
             const cls = i < activeIndex ? 'done' : i === activeIndex ? 'active' : '';
             const mark = i < activeIndex ? '&#10003;' : String(i + 1);
@@ -284,6 +286,9 @@
 
     function initVerify() {
         renderStepper(0);
+
+        const wanted = new URLSearchParams(window.location.search).get('therapist');
+        if (wanted) save({ preferredTherapist: wanted.slice(0, 60) });
 
         const state = load();
         if (tokenValid(state.token)) {
@@ -398,8 +403,9 @@
                     setStatus(statusEl, data.error || 'Incorrect or expired code.', 'error');
                     return;
                 }
+                const preferredTherapist = load().preferredTherapist || null;
                 signOut();
-                save({ token: data.session_token, phone: data.phone || fullPhone() });
+                save({ token: data.session_token, phone: data.phone || fullPhone(), preferredTherapist });
                 setStatus(statusEl, 'Verified! Checking for prepaid sessions…', 'success');
                 await routeAfterVerify(data.session_token);
             } catch (err) {
@@ -442,7 +448,7 @@
             }
         } catch (err) { /* fall through */ }
         save({ credits: 0, creditMode: false });
-        go(PATHS.type);
+        go(PATHS.therapist);
     }
 
     // -----------------------------------------------------------------
@@ -453,7 +459,7 @@
         const state = guard();
         if (!state) return;
         if (!(state.credits > 0)) {
-            go(PATHS.type);
+            go(PATHS.therapist);
             return;
         }
         renderStepper(1);
@@ -464,86 +470,256 @@
 
         $('use-credits-btn').addEventListener('click', () => {
             save({ creditMode: true, sessionType: 'any' });
-            clearFrom(SCHEDULE_KEYS);
-            go(PATHS.schedule);
+            clearFrom(['serviceId', 'serviceName', 'price', 'currency', 'duration', 'date', 'time']);
+            go(PATHS.therapist);
         });
         $('pay-new-btn').addEventListener('click', () => {
+            if (load().creditMode) clearFrom(['sessionType', 'serviceId', 'serviceName', 'price', 'currency', 'duration']);
             save({ creditMode: false });
-            go(PATHS.type);
+            go(PATHS.therapist);
         });
     }
 
     // -----------------------------------------------------------------
-    // Step 2b: /book/session-type/
+    // Services and therapists (from Zoho Bookings)
     // -----------------------------------------------------------------
 
-    function initType() {
+    /** 'individual' | 'couple' | null, from the Zoho service name. Packages must include one of these words. */
+    function serviceType(name) {
+        const n = String(name || '').toLowerCase();
+        return /couple/.test(n) ? 'couple' : /individual/.test(n) ? 'individual' : null;
+    }
+
+    function isPackage(name) {
+        return /package/i.test(String(name || ''));
+    }
+
+    function serviceMinutes(service) {
+        const m = String((service && service.duration) || '').match(/\d+/);
+        return m ? Number(m[0]) : 60;
+    }
+
+    function offeredBy(service, staffId) {
+        return (service.assigned_staffs || []).map(String).includes(String(staffId));
+    }
+
+    /**
+     * What this customer can book with this therapist: services of the chosen
+     * type (single sessions and packages). Prepaid credits cover one single
+     * session of either type.
+     */
+    function bookableServices(services, staffId, state) {
+        return services.filter((s) => {
+            const type = serviceType(s.name);
+            if (!type || !offeredBy(s, staffId)) return false;
+            return state.creditMode ? !isPackage(s.name) : type === state.sessionType;
+        });
+    }
+
+    const PROFILE_PHOTOS = {
+        anasooya: '/assets/anasooya.webp',
+        athira: '/assets/athira_bg.jpeg',
+        gouri: '/assets/gouri.webp',
+        rashin: '/assets/rashin.webp',
+        sajitha: '/assets/sajitha.webp',
+        theresa: '/assets/theresa.webp'
+    };
+
+    function firstName(name) {
+        return String(name || '').trim().split(/[\s-]+/)[0].toLowerCase();
+    }
+
+    function therapistPhoto(person) {
+        if (/^https:\/\//.test(person.photo || '')) return person.photo;
+        return PROFILE_PHOTOS[firstName(person.name)] || '';
+    }
+
+    function avatarHtml(person) {
+        const photo = therapistPhoto(person);
+        return '<span class="option-avatar">' +
+            (photo ? '<img src="' + escapeHtml(photo) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
+            escapeHtml(String(person.name || '?').trim().charAt(0).toUpperCase()) + '</span>';
+    }
+
+    // -----------------------------------------------------------------
+    // Step 2: /book/therapist/
+    // -----------------------------------------------------------------
+
+    async function initTherapist() {
         const state = guard();
         if (!state) return;
         renderStepper(1);
         showVerifiedChip(state);
 
-        const back = $('type-back');
-        if (back && state.credits > 0) {
-            back.hidden = false;
-            back.href = PATHS.credits;
+        const list = $('therapist-list');
+        const statusEl = $('therapist-status');
+        const note = $('therapist-note');
+
+        let staff = [];
+        let services = [];
+        try {
+            [staff, services] = await Promise.all([get('/api/staff'), get('/api/services')]);
+        } catch (err) {
+            list.innerHTML = '';
+            setStatus(statusEl, 'Could not load therapists right now. Please try again shortly or book on WhatsApp.', 'error');
+            return;
         }
 
-        document.querySelectorAll('[data-session-type]').forEach((card) => {
-            if (card.getAttribute('data-session-type') === state.sessionType) card.classList.add('selected');
-            card.addEventListener('click', () => {
-                const type = card.getAttribute('data-session-type');
-                if (type !== load().sessionType) clearFrom(SCHEDULE_KEYS);
-                save({ sessionType: type, creditMode: false });
-                go(PATHS.schedule);
-            });
+        const offers = (person) => {
+            const types = new Set(services
+                .filter((s) => offeredBy(s, person.id) && serviceType(s.name) && (!state.creditMode || !isPackage(s.name)))
+                .map((s) => serviceType(s.name)));
+            return ['individual', 'couple'].filter((t) => types.has(t));
+        };
+        const bookable = staff.filter((p) => offers(p).length);
+
+        function choose(person, skipHistory) {
+            if (String(person.id) !== String(load().staffId)) clearFrom(SCHEDULE_KEYS.concat(['hold']));
+            save({ staffId: String(person.id), staffName: person.name, staffPhoto: therapistPhoto(person), preferredTherapist: null });
+            const next = state.creditMode ? PATHS.schedule : PATHS.type;
+            if (skipHistory) window.location.replace(next);
+            else go(next);
+        }
+
+        // Came from a therapist's profile page: continue with them if they can be booked online.
+        const wanted = state.preferredTherapist;
+        if (wanted) {
+            const match = bookable.find((p) => firstName(p.name) === firstName(wanted));
+            if (match) {
+                choose(match, true);
+                return;
+            }
+            save({ preferredTherapist: null });
+            note.hidden = false;
+            note.innerHTML = '<p>' + escapeHtml(wanted) + ' isn\'t available for online booking yet. Please choose another therapist below, or ' +
+                '<a href="' + escapeHtml(WHATSAPP_URL) + '" target="_blank" rel="noopener">book with ' + escapeHtml(wanted) + ' on WhatsApp</a>.</p>';
+        }
+
+        if (!bookable.length) {
+            list.innerHTML = '';
+            setStatus(statusEl, 'No therapists are open for online booking right now. Please book on WhatsApp.', 'error');
+            return;
+        }
+
+        const label = { individual: 'Individual', couple: 'Couple' };
+        list.innerHTML = bookable.map((p) =>
+            '<button type="button" class="option-card" role="radio" aria-checked="' + (String(p.id) === String(state.staffId)) + '" data-value="' + escapeHtml(p.id) + '">' +
+                avatarHtml(p) +
+                '<span class="option-body">' +
+                    '<span class="option-title">' + escapeHtml(p.name) + '</span>' +
+                    '<span class="option-meta">' + escapeHtml(p.designation || 'Psychologist') + '</span>' +
+                    '<span class="option-tags">' + offers(p).map((t) => '<span>' + label[t] + '</span>').join('') + '</span>' +
+                '</span>' +
+            '</button>'
+        ).join('');
+        list.querySelectorAll('.option-card').forEach((card) => {
+            card.addEventListener('click', () => choose(bookable.find((p) => String(p.id) === card.dataset.value)));
         });
     }
 
     // -----------------------------------------------------------------
-    // Step 3: /book/schedule/
+    // Step 3: /book/session-type/
     // -----------------------------------------------------------------
 
-    function initSchedule() {
-        const state = guard([[['sessionType'], PATHS.type]]);
+    async function initType() {
+        const state = guard([[['staffId'], PATHS.therapist]]);
         if (!state) return;
         renderStepper(2);
         showVerifiedChip(state);
 
-        $('schedule-back').href = state.creditMode ? PATHS.credits : PATHS.type;
+        const back = $('type-back');
+        if (back) {
+            back.hidden = false;
+            back.href = PATHS.therapist;
+        }
+
+        const cards = document.querySelectorAll('[data-session-type]');
+        cards.forEach((card) => {
+            if (card.getAttribute('data-session-type') === state.sessionType) card.classList.add('selected');
+            card.addEventListener('click', () => {
+                if (card.disabled) return;
+                const type = card.getAttribute('data-session-type');
+                if (type !== load().sessionType) clearFrom(['serviceId', 'serviceName', 'price', 'currency', 'duration']);
+                save({ sessionType: type, creditMode: false });
+                go(PATHS.schedule);
+            });
+        });
+
+        // Grey out a type this therapist doesn't offer online.
+        try {
+            const services = await get('/api/services');
+            cards.forEach((card) => {
+                const type = card.getAttribute('data-session-type');
+                const has = bookableServices(services, state.staffId, { sessionType: type }).length > 0;
+                if (!has) {
+                    card.disabled = true;
+                    card.classList.add('unavailable');
+                    card.querySelector('.session-type-desc').textContent = 'Not offered online by ' + state.staffName + '.';
+                }
+            });
+        } catch (err) { /* leave both enabled; the next step explains if nothing is bookable */ }
+    }
+
+    // -----------------------------------------------------------------
+    // Step 4: /book/schedule/ - date, then time, then session
+    // -----------------------------------------------------------------
+
+    function initSchedule() {
+        const state = guard([[['staffId'], PATHS.therapist], [['sessionType'], PATHS.type]]);
+        if (!state) return;
+        renderStepper(3);
+        showVerifiedChip(state);
+
+        $('schedule-back').href = state.creditMode ? PATHS.therapist : PATHS.type;
+        $('schedule-with').innerHTML = 'With <strong>' + escapeHtml(state.staffName) + '</strong> · ' +
+            (state.creditMode ? 'prepaid session' : state.sessionType === 'couple' ? 'couple therapy' : 'individual therapy') +
+            ' · online. <a href="' + PATHS.therapist + '">Change therapist</a>';
         if (state.creditMode) {
             const banner = $('credit-banner');
             banner.hidden = false;
             banner.querySelector('[data-credits]').textContent = state.credits;
         }
 
-        const serviceList = $('service-list');
-        const staffList = $('staff-list');
         const dateStrip = $('date-strip');
         const slotsWrap = $('booking-slots');
+        const sessionList = $('session-list');
         const statusEl = $('schedule-status');
         const nextBtn = $('schedule-next');
         const footerSummary = $('schedule-summary');
         const DAYS_AHEAD = 30;
 
-        let services = [];
-        let staff = [];
-        const pick = {
-            service: null,
-            staff: null,
-            date: state.date || null,
-            time: state.time || null
-        };
-        let slotsRequest = 0;
-        let hold = state.hold || null; // { staffId, date, time, until }
+        let candidates = [];
+        const slotsByService = {}; // serviceId -> minutes[] for the current date
+        let times = []; // half-hour times (minutes) open for at least one candidate
+        let dateRequest = 0;
         let holding = false;
+        let hold = state.hold || null; // { staffId, date, time, until }
+        const pick = { date: state.date || null, time: state.time || null, service: null };
+
+        function slotMinutes(slot) {
+            const m = String(slot).trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+            if (!m) return -1;
+            let h = Number(m[1]);
+            const ap = (m[3] || '').toUpperCase();
+            if (ap === 'PM' && h !== 12) h += 12;
+            if (ap === 'AM' && h === 12) h = 0;
+            return h * 60 + Number(m[2]);
+        }
+
+        function slotLabel(minutes) {
+            const h24 = Math.floor(minutes / 60);
+            const suffix = h24 >= 12 ? 'PM' : 'AM';
+            const h12 = h24 % 12 || 12;
+            return String(h12).padStart(2, '0') + ':' + String(minutes % 60).padStart(2, '0') + ' ' + suffix;
+        }
+
+        const niceTime = (t) => String(t).replace(/^0/, '');
 
         function holdMatchesPick() {
-            return hold && pick.staff && pick.time && hold.staffId === String(pick.staff.id) &&
+            return hold && pick.time && hold.staffId === String(state.staffId) &&
                 hold.date === pick.date && hold.time === pick.time && hold.until > Date.now();
         }
 
-        /** Drops our hold when the customer moves on to a different therapist/date. */
         function releaseIfStale() {
             if (hold && !holdMatchesPick()) {
                 post('/api/slots/release', { session_token: state.token }).catch(() => {});
@@ -552,148 +728,45 @@
             }
         }
 
-        function matchesType(name) {
-            if (state.creditMode) return true;
-            const n = String(name || '').toLowerCase();
-            return state.sessionType === 'couple' ? /couple|package/.test(n) : /individual|package/.test(n);
-        }
-
-        function minutesOf(service) {
-            const m = String((service && service.duration) || '').match(/\d+/);
-            return m ? Number(m[0]) : 60;
-        }
-
-        function initialOf(name) {
-            return escapeHtml(String(name || '?').trim().charAt(0).toUpperCase());
-        }
-
-        function avatarHtml(person) {
-            const photo = /^https:\/\//.test(person.photo || '') ? person.photo : '';
-            return '<span class="option-avatar">' +
-                (photo ? '<img src="' + escapeHtml(photo) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
-                initialOf(person.name) + '</span>';
-        }
-
-        function setChecked(container, value) {
-            container.querySelectorAll('[role="radio"]').forEach((el) => {
-                el.setAttribute('aria-checked', String(el.dataset.value === String(value)));
-            });
-        }
-
         function refresh() {
-            const ready = pick.service && pick.staff && pick.date && pick.time && holdMatchesPick();
+            const ready = pick.date && pick.time && pick.service && holdMatchesPick();
             nextBtn.disabled = !ready || holding;
             if (ready) {
                 const line = escapeHtml(pick.service.name) + (state.creditMode ? ' · prepaid' : ' · ' + money(pick.service.price, pick.service.currency));
                 runHoldCountdown(hold.until, (left) => {
-                    footerSummary.innerHTML = '<strong>' + escapeHtml(shortDate(pick.date) + ', ' + pick.time.replace(/^0/, '')) + '</strong>' +
+                    footerSummary.innerHTML = '<strong>' + escapeHtml(shortDate(pick.date) + ', ' + niceTime(pick.time)) + '</strong>' +
                         '<span class="hold-inline">Held for you · ' + clock(left) + '</span> ' + line;
                 }, () => {
                     pick.time = null;
                     hold = null;
                     save({ hold: null });
                     setStatus(statusEl, 'Your 10-minute hold ended, so the time was released. Please pick a time again.', 'error');
-                    loadSlots();
+                    renderTimes();
+                    renderSessions();
+                    refresh();
                 });
             } else {
                 clearInterval(holdTimer);
-                footerSummary.textContent = !pick.service ? 'Pick a session to begin.'
-                    : !pick.staff ? 'Now choose your therapist.'
-                        : !pick.date ? 'Pick a date.' : 'Pick a time.';
+                footerSummary.textContent = !pick.date ? 'Pick a date to see open times.'
+                    : !pick.time ? 'Pick a time.'
+                        : !pick.service ? 'Choose your session.' : 'Holding your time…';
             }
             renderSummary(Object.assign({}, state, {
                 serviceName: pick.service && pick.service.name,
                 price: pick.service ? Number(pick.service.price) || 0 : undefined,
                 currency: pick.service && pick.service.currency,
-                staffName: pick.staff && pick.staff.name,
                 date: pick.date,
                 time: pick.time
             }));
         }
 
-        // -- 1. Session -------------------------------------------------
-        function renderServices() {
-            serviceList.innerHTML = services.map((s) =>
-                '<button type="button" class="option-card" role="radio" aria-checked="false" data-value="' + escapeHtml(s.id) + '">' +
-                    '<span class="option-body">' +
-                        '<span class="option-title">' + escapeHtml(s.name) + '</span>' +
-                        '<span class="option-meta">' + minutesOf(s) + ' min · online</span>' +
-                        (state.creditMode ? '<span class="option-meta">Covered by your prepaid sessions</span>'
-                            : '<span class="option-price">' + escapeHtml(money(s.price, s.currency)) + '</span>') +
-                    '</span>' +
-                '</button>'
-            ).join('');
-            serviceList.querySelectorAll('.option-card').forEach((card) => {
-                card.addEventListener('click', () => chooseService(card.dataset.value));
-            });
-        }
-
-        async function chooseService(id, keepStaffId) {
-            const service = services.find((s) => String(s.id) === String(id));
-            if (!service) return;
-            if (!pick.service || String(pick.service.id) !== String(id)) {
-                pick.staff = null;
-                pick.time = null;
-                releaseIfStale();
-            }
-            pick.service = service;
-            setChecked(serviceList, id);
-            setStatus(statusEl, '');
-            refresh();
-            await loadStaff(keepStaffId);
-        }
-
-        // -- 2. Therapist -----------------------------------------------
-        async function loadStaff(keepStaffId) {
-            $('staff-block').hidden = false;
-            staffList.innerHTML = '<div class="option-skeleton"></div>';
-            try {
-                staff = await get('/api/staff', { service_id: pick.service.id });
-            } catch (err) {
-                staff = [];
-            }
-            if (!staff.length) {
-                staffList.innerHTML = '<p class="booking-slots-empty">No therapist is available for this session right now. Please try another session or book on WhatsApp.</p>';
-                return;
-            }
-            staffList.innerHTML = staff.map((p) =>
-                '<button type="button" class="option-card" role="radio" aria-checked="false" data-value="' + escapeHtml(p.id) + '">' +
-                    avatarHtml(p) +
-                    '<span class="option-body">' +
-                        '<span class="option-title">' + escapeHtml(p.name) + '</span>' +
-                        '<span class="option-meta">' + escapeHtml(p.designation || 'Psychologist') + '</span>' +
-                    '</span>' +
-                '</button>'
-            ).join('');
-            staffList.querySelectorAll('.option-card').forEach((card) => {
-                card.addEventListener('click', () => chooseStaff(card.dataset.value));
-            });
-
-            const keep = keepStaffId && staff.find((p) => String(p.id) === String(keepStaffId));
-            if (keep) chooseStaff(keep.id, true);
-            else if (staff.length === 1) chooseStaff(staff[0].id);
-        }
-
-        function chooseStaff(id, restoring) {
-            const person = staff.find((p) => String(p.id) === String(id));
-            if (!person) return;
-            if (!restoring && (!pick.staff || String(pick.staff.id) !== String(id))) pick.time = null;
-            pick.staff = person;
-            setChecked(staffList, id);
-            releaseIfStale();
-            refresh();
-            renderDates();
-        }
-
-        // -- 3. Date ----------------------------------------------------
+        // -- 1. Date ----------------------------------------------------
         function renderDates() {
-            $('date-block').hidden = false;
             const today = new Date();
             const chips = [];
             for (let i = 0; i < DAYS_AHEAD; i++) {
                 const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
-                const iso = localIso(d);
-                chips.push('<button type="button" class="date-chip" role="radio" aria-checked="false" data-value="' + iso + '" aria-label="' +
+                chips.push('<button type="button" class="date-chip" role="radio" aria-checked="false" data-value="' + localIso(d) + '" aria-label="' +
                     escapeHtml(d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })) + '">' +
                     '<span class="dow">' + (i === 0 ? 'Today' : i === 1 ? 'Tmrw' : d.toLocaleDateString('en-IN', { weekday: 'short' })) + '</span>' +
                     '<span class="dom">' + d.getDate() + '</span>' +
@@ -704,16 +777,17 @@
             dateStrip.querySelectorAll('.date-chip').forEach((chip) => {
                 chip.addEventListener('click', () => chooseDate(chip.dataset.value));
             });
-
             const valid = pick.date && dateStrip.querySelector('[data-value="' + pick.date + '"]');
             chooseDate(valid ? pick.date : localIso(today), true);
         }
 
-        function chooseDate(iso, restoring) {
-            if (!restoring && pick.date !== iso) pick.time = null;
+        async function chooseDate(iso, restoring) {
+            if (!restoring && pick.date !== iso) {
+                pick.time = null;
+                pick.service = null;
+            }
             pick.date = iso;
-            setChecked(dateStrip, iso);
-            releaseIfStale();
+            dateStrip.querySelectorAll('[role="radio"]').forEach((el) => el.setAttribute('aria-checked', String(el.dataset.value === iso)));
             const chip = dateStrip.querySelector('[data-value="' + iso + '"]');
             if (chip) {
                 // Slide only the strip; scrollIntoView would also scroll the page.
@@ -723,110 +797,125 @@
                 }
                 $('date-month').textContent = longDate(iso);
             }
+            releaseIfStale();
+            setStatus(statusEl, '');
             refresh();
-            loadSlots();
+
+            $('time-block').hidden = false;
+            $('session-block').hidden = !pick.time;
+            slotsWrap.innerHTML = '<p class="booking-slots-loading">Finding open times…</p>';
+            const request = ++dateRequest;
+            const results = await Promise.all(candidates.map((s) =>
+                get('/api/availability', { service_id: s.id, staff_id: state.staffId, date: iso })
+                    .then((slots) => [s.id, (Array.isArray(slots) ? slots : []).map(slotMinutes).filter((m) => m >= 0)])
+                    .catch(() => [s.id, []])
+            ));
+            if (request !== dateRequest) return; // a newer date was picked meanwhile
+            results.forEach(([id, mins]) => { slotsByService[id] = mins; });
+
+            // Half-hour start times only (10:00, 10:30 ...), open for at least one session option.
+            const open = new Set();
+            results.forEach(([, mins]) => mins.filter((m) => m % 30 === 0).forEach((m) => open.add(m)));
+            // Our own held time is hidden from availability (holds hide times from everyone) - keep it.
+            if (hold && hold.until > Date.now() && hold.staffId === String(state.staffId) && hold.date === iso) open.add(slotMinutes(hold.time));
+            times = Array.from(open).sort((a, b) => a - b);
+            if (pick.time && !times.includes(slotMinutes(pick.time))) {
+                pick.time = null;
+                pick.service = null;
+            }
+            renderTimes();
+            renderSessions();
+            refresh();
         }
 
-        // -- 4. Time ----------------------------------------------------
+        // -- 2. Time ----------------------------------------------------
         const GROUPS = [
             ['Morning', (m) => m < 12 * 60, '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2"></path>'],
             ['Afternoon', (m) => m >= 12 * 60 && m < 17 * 60, '<circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>'],
             ['Evening', (m) => m >= 17 * 60, '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>']
         ];
 
-        function slotMinutes(slot) {
-            const m = String(slot).trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
-            if (!m) return 0;
-            let h = Number(m[1]);
-            const ap = (m[3] || '').toUpperCase();
-            if (ap === 'PM' && h !== 12) h += 12;
-            if (ap === 'AM' && h === 12) h = 0;
-            return h * 60 + Number(m[2]);
-        }
-
-        function nextDayButton(message) {
-            slotsWrap.innerHTML = '<p class="booking-slots-empty">' + escapeHtml(message) + '</p>' +
-                '<button type="button" class="link-btn" id="slots-next-day">Try the next day &rarr;</button>';
-            $('slots-next-day').addEventListener('click', () => {
-                const d = parseIsoDate(pick.date);
-                d.setDate(d.getDate() + 1);
-                const iso = localIso(d);
-                if (dateStrip.querySelector('[data-value="' + iso + '"]')) chooseDate(iso);
-            });
-        }
-
-        async function loadSlots() {
-            $('time-block').hidden = false;
-            const request = ++slotsRequest;
-            slotsWrap.innerHTML = '<p class="booking-slots-loading">Finding open times…</p>';
-            let slots = [];
-            try {
-                slots = await get('/api/availability', { service_id: pick.service.id, staff_id: pick.staff.id, date: pick.date });
-            } catch (err) {
-                if (request === slotsRequest) nextDayButton('Could not load times for this day.');
+        function renderTimes() {
+            if (!times.length) {
+                slotsWrap.innerHTML = '<p class="booking-slots-empty">No open times on ' + escapeHtml(shortDate(pick.date)) + '.</p>' +
+                    '<button type="button" class="link-btn" id="slots-next-day">Try the next day &rarr;</button>';
+                $('slots-next-day').addEventListener('click', () => {
+                    const d = parseIsoDate(pick.date);
+                    d.setDate(d.getDate() + 1);
+                    const iso = localIso(d);
+                    if (dateStrip.querySelector('[data-value="' + iso + '"]')) chooseDate(iso);
+                });
                 return;
             }
-            if (request !== slotsRequest) return; // a newer date/therapist was picked meanwhile
-            if (!Array.isArray(slots) || !slots.length) {
-                pick.time = null;
-                refresh();
-                nextDayButton('No open times on ' + shortDate(pick.date) + '.');
-                return;
-            }
-            if (hold && hold.until > Date.now() && hold.staffId === String(pick.staff.id) && hold.date === pick.date && !slots.includes(hold.time)) {
-                slots = slots.concat(hold.time).sort((a, b) => slotMinutes(a) - slotMinutes(b));
-            }
-            if (pick.time && !slots.includes(pick.time)) pick.time = null;
-
+            const current = pick.time ? slotMinutes(pick.time) : -1;
             slotsWrap.innerHTML = GROUPS.map(([label, test, icon]) => {
-                const inGroup = slots.filter((s) => test(slotMinutes(s)));
+                const inGroup = times.filter(test);
                 if (!inGroup.length) return '';
                 return '<div class="slot-group">' +
                     '<p class="slot-group-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + icon + '</svg>' + label + '</p>' +
-                    '<div class="booking-slots">' + inGroup.map((s) =>
-                        '<button type="button" class="booking-slot' + (s === pick.time ? ' selected' : '') + '" data-value="' + escapeHtml(s) + '">' + escapeHtml(s.replace(/^0/, '')) + '</button>'
+                    '<div class="booking-slots">' + inGroup.map((m) =>
+                        '<button type="button" class="booking-slot' + (m === current ? ' selected' : '') + '" data-value="' + m + '">' + escapeHtml(niceTime(slotLabel(m))) + '</button>'
                     ).join('') + '</div></div>';
             }).join('');
             slotsWrap.querySelectorAll('.booking-slot').forEach((btn) => {
-                btn.addEventListener('click', () => holdSlot(btn));
+                btn.addEventListener('click', () => chooseTime(Number(btn.dataset.value), btn));
             });
-            refresh();
         }
 
-        /** Tapping a time asks the server to hold it for this customer. */
-        async function holdSlot(btn) {
+        /** Which session options can start at this time (own held time: let the server decide). */
+        function openAt(minutes) {
+            const ownHold = hold && hold.until > Date.now() && hold.date === pick.date && slotMinutes(hold.time) === minutes;
+            return candidates.filter((s) => ownHold || (slotsByService[s.id] || []).includes(minutes));
+        }
+
+        async function holdFor(service, time) {
+            const { res, data } = await post('/api/slots/hold', {
+                session_token: state.token,
+                service_id: service.id,
+                staff_id: state.staffId,
+                date: pick.date,
+                time
+            });
+            if (handleAuthError(res, data)) return null;
+            if (!res.ok || !data.held) return { error: data.error || 'That time is no longer available. Please pick another.' };
+            hold = {
+                staffId: String(state.staffId),
+                date: pick.date,
+                time,
+                until: data.held_until || Date.now() + (data.hold_minutes || 10) * 60 * 1000
+            };
+            save({ hold });
+            return { ok: true };
+        }
+
+        async function chooseTime(minutes, btn) {
             if (holding) return;
-            const time = btn.dataset.value;
+            const time = slotLabel(minutes);
+            const options = openAt(minutes);
+            // Keep the session they already picked if it fits this time; otherwise hold with the first that does.
+            const service = (pick.service && options.find((s) => s.id === pick.service.id)) || options[0];
+            if (!service) return;
+
             holding = true;
             slotsWrap.querySelectorAll('.booking-slot').forEach((el) => el.classList.remove('selected'));
             btn.classList.add('selected', 'holding');
             pick.time = time;
             setStatus(statusEl, '');
-            footerSummary.textContent = 'Holding ' + time.replace(/^0/, '') + ' for you…';
+            footerSummary.textContent = 'Holding ' + niceTime(time) + ' for you…';
             nextBtn.disabled = true;
             try {
-                const { res, data } = await post('/api/slots/hold', {
-                    session_token: state.token,
-                    service_id: pick.service.id,
-                    staff_id: pick.staff.id,
-                    date: pick.date,
-                    time
-                });
-                if (handleAuthError(res, data)) return;
-                if (!res.ok || !data.held) {
+                const result = await holdFor(service, time);
+                if (!result) return;
+                if (result.error) {
                     pick.time = null;
-                    setStatus(statusEl, data.error || 'That time is no longer available. Please pick another.', 'error');
-                    holding = false;
-                    loadSlots();
+                    setStatus(statusEl, result.error, 'error');
+                    chooseDate(pick.date, true);
                     return;
                 }
-                hold = {
-                    staffId: String(pick.staff.id),
-                    date: pick.date,
-                    time,
-                    until: data.held_until || Date.now() + (data.hold_minutes || 10) * 60 * 1000
-                };
-                save({ hold });
+                if (pick.service && !options.some((s) => s.id === pick.service.id)) pick.service = null;
+                if (!pick.service && options.length === 1) pick.service = options[0];
+                renderSessions();
+                if (!pick.service) $('session-block').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch (err) {
                 pick.time = null;
                 btn.classList.remove('selected');
@@ -838,9 +927,65 @@
             }
         }
 
+        // -- 3. Session (single or package) -------------------------------
+        function renderSessions() {
+            const block = $('session-block');
+            if (!pick.time) {
+                block.hidden = true;
+                return;
+            }
+            block.hidden = false;
+            const open = openAt(slotMinutes(pick.time)).map((s) => s.id);
+            const ordered = candidates.slice().sort((a, b) => (isPackage(a.name) - isPackage(b.name)) || (Number(a.price) - Number(b.price)));
+            sessionList.innerHTML = ordered.map((s) => {
+                const available = open.includes(s.id);
+                return '<button type="button" class="option-card' + (available ? '' : ' unavailable') + '" role="radio" aria-checked="' +
+                    String(!!pick.service && pick.service.id === s.id) + '" data-value="' + escapeHtml(s.id) + '"' + (available ? '' : ' disabled') + '>' +
+                    '<span class="option-body">' +
+                        '<span class="option-kicker">' + (isPackage(s.name) ? 'Package' : 'Single session') + '</span>' +
+                        '<span class="option-title">' + escapeHtml(s.name) + '</span>' +
+                        '<span class="option-meta">' + serviceMinutes(s) + ' min per session · online</span>' +
+                        (available
+                            ? (state.creditMode ? '<span class="option-meta">Covered by your prepaid sessions</span>'
+                                : '<span class="option-price">' + escapeHtml(money(s.price, s.currency)) + '</span>')
+                            : '<span class="option-meta">Not available at ' + escapeHtml(niceTime(pick.time)) + '</span>') +
+                    '</span>' +
+                '</button>';
+            }).join('');
+            sessionList.querySelectorAll('.option-card:not([disabled])').forEach((card) => {
+                card.addEventListener('click', () => chooseSession(candidates.find((s) => s.id === card.dataset.value)));
+            });
+        }
+
+        async function chooseSession(service) {
+            if (holding || !service) return;
+            const previous = pick.service;
+            pick.service = service;
+            renderSessions();
+            refresh();
+            // Re-hold with this option's length (a 90-minute package needs more of the calendar than 60 minutes).
+            if (previous && previous.id === service.id) return;
+            holding = true;
+            nextBtn.disabled = true;
+            try {
+                const result = await holdFor(service, pick.time);
+                if (result && result.error) {
+                    pick.service = null;
+                    setStatus(statusEl, service.name + ' isn\'t available at ' + niceTime(pick.time) + '. Please choose another option or time.', 'error');
+                }
+            } catch (err) {
+                setStatus(statusEl, 'Network error, please choose the session again.', 'error');
+                pick.service = null;
+            } finally {
+                holding = false;
+                renderSessions();
+                refresh();
+            }
+        }
+
         nextBtn.addEventListener('click', () => {
-            if (!(pick.service && pick.staff && pick.date && pick.time && holdMatchesPick())) {
-                setStatus(statusEl, 'Please choose a session, therapist, date and time.', 'error');
+            if (!(pick.date && pick.time && pick.service && holdMatchesPick())) {
+                setStatus(statusEl, 'Please choose a date, time and session.', 'error');
                 return;
             }
             save({
@@ -848,9 +993,7 @@
                 serviceName: pick.service.name,
                 price: Number(pick.service.price) || 0,
                 currency: pick.service.currency || 'INR',
-                duration: minutesOf(pick.service),
-                staffId: pick.staff.id,
-                staffName: pick.staff.name,
+                duration: serviceMinutes(pick.service),
                 date: pick.date,
                 time: pick.time
             });
@@ -859,23 +1002,19 @@
 
         (async () => {
             try {
-                services = (await get('/api/services')).filter((s) => matchesType(s.name));
+                candidates = bookableServices(await get('/api/services'), state.staffId, state);
             } catch (err) {
-                services = [];
-                serviceList.innerHTML = '';
                 setStatus(statusEl, 'Could not load sessions right now. Please try again shortly or book on WhatsApp.', 'error');
                 return;
             }
-            if (!services.length) {
-                serviceList.innerHTML = '';
-                setStatus(statusEl, 'No bookable sessions were found. Please book on WhatsApp instead.', 'error');
+            if (!candidates.length) {
+                $('date-block').hidden = true;
+                setStatus(statusEl, state.staffName + ' has no ' + (state.creditMode ? '' : state.sessionType + ' ') +
+                    'sessions open for online booking. Please choose another therapist or book on WhatsApp.', 'error');
                 return;
             }
-            renderServices();
-            const keep = services.find((s) => String(s.id) === String(state.serviceId));
-            if (keep) chooseService(keep.id, state.staffId);
-            else if (services.length === 1) chooseService(services[0].id);
-            else refresh();
+            pick.service = candidates.find((s) => String(s.id) === String(state.serviceId)) || null;
+            renderDates();
         })();
     }
 
@@ -886,7 +1025,7 @@
     function initDetails() {
         const state = guard([[['sessionType'], PATHS.type], [SCHEDULE_KEYS.filter((k) => k !== 'price'), PATHS.schedule]]);
         if (!state) return;
-        renderStepper(3);
+        renderStepper(4);
         showHoldBanner(state);
 
         $('details-phone').value = state.phone || '';
@@ -930,7 +1069,7 @@
             [['name', 'email'], PATHS.details]
         ]);
         if (!state) return;
-        renderStepper(4);
+        renderStepper(5);
         showHoldBanner(state);
 
         const date = parseIsoDate(state.date);
@@ -1190,6 +1329,7 @@
     const PAGES = {
         verify: initVerify,
         credits: initCredits,
+        therapist: initTherapist,
         type: initType,
         schedule: initSchedule,
         details: initDetails,
