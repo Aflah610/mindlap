@@ -29,11 +29,11 @@
  *                              from Contacts.Package_credit_value (read-only)
  *   POST /api/credits/book  { session_token, service_id,
  *                              staff_id, date, time, name, email, notes? }
- *   POST /api/payment/create-order  { session_token, service_id, staff_id, date,
- *                                      time, name, email, notes? } -> Razorpay order
- *   POST /api/payment/verify        { razorpay_order_id, razorpay_payment_id,
- *                                      razorpay_signature } -> books after payment
- *   POST /api/payment/webhook       Razorpay webhook (payment.captured/authorized)
+ *   POST /api/payment/create-link   { session_token, service_id, staff_id, date,
+ *                                      time, name, email, notes? } -> { payment_url }
+ *   GET  /api/payment/callback      Razorpay redirects here after payment; books
+ *                                      the slot, then redirects to mindlap.in
+ *   POST /api/payment/webhook       Razorpay webhook (payment_link.paid)
  *
  * See ../../docs/zoho-bookings-setup.md for how to configure and deploy
  * this Worker.
@@ -511,9 +511,9 @@ async function getPackageCredits(env, phone) {
 
 // --- Booking + payment helpers --------------------------------------------
 //
-// Paid services: the customer pays first (Razorpay), and the Zoho Bookings
-// slot is only reserved once the payment is confirmed. The booking details
-// travel in the Razorpay order's notes, so no extra storage is needed. A
+// Paid services: the customer pays first on a Razorpay Payment Link, and the
+// Zoho Bookings slot is only reserved once the payment is confirmed. The
+// booking details travel in the link's notes, so no extra storage is needed. A
 // Zoho Creator row is written up front ("Creating Appointment" / Pending)
 // and updated when the payment and booking complete.
 
@@ -628,24 +628,25 @@ function constantTimeEqual(a, b) {
 }
 
 /**
- * Turns a successful Razorpay payment into a real booking. Safe to call more
- * than once for the same order (the browser and the webhook both call it):
- * the Zoho booking ID is saved on the order's notes and reused.
+ * Turns a successful payment on a Razorpay Payment Link into a real booking.
+ * Safe to call more than once for the same payment (the redirect back from
+ * Razorpay and the webhook can both call it): the Zoho booking ID is saved
+ * on the payment's notes and reused.
  *
  * Returns { status: 'booked' | 'refunded' | 'pending' | 'invalid', ... }
  */
-async function finalizePaidBooking(env, orderId, paymentId) {
-  const [order, payment] = await Promise.all([
-    razorpayRequest(env, 'GET', `orders/${orderId}`),
+async function finalizePaidBooking(env, paymentLinkId, paymentId) {
+  const [link, payment] = await Promise.all([
+    razorpayRequest(env, 'GET', `payment_links/${paymentLinkId}`),
     razorpayRequest(env, 'GET', `payments/${paymentId}`)
   ]);
-  const notes = order.notes || {};
+  const notes = link.notes || {};
 
-  if (payment.order_id !== orderId || Number(payment.amount) !== Number(order.amount)) {
-    return { status: 'invalid', message: 'Payment does not match this order.' };
+  if (!notes.service_id || Number(payment.amount) !== Number(link.amount)) {
+    return { status: 'invalid', message: 'Payment does not match this booking.' };
   }
-  if (notes.booking_id) {
-    return { status: 'booked', bookingId: notes.booking_id };
+  if (payment.notes && payment.notes.booking_id) {
+    return { status: 'booked', bookingId: payment.notes.booking_id };
   }
   if (payment.status !== 'captured' && payment.status !== 'authorized') {
     return { status: 'pending', message: `Payment is ${payment.status}.` };
@@ -659,9 +660,7 @@ async function finalizePaidBooking(env, orderId, paymentId) {
     name: notes.name,
     email: notes.email,
     phone: notes.phone,
-    notes: [notes.customer_notes, `Paid via Razorpay. Payment ID: ${paymentId}, Order ID: ${orderId}.`]
-      .filter(Boolean)
-      .join('\n')
+    notes: [notes.customer_notes, `Paid via Razorpay. Payment ID: ${paymentId}.`].filter(Boolean).join('\n')
   };
   const creatorId = notes.creator_id || null;
   const logContext = { phone: booking.phone };
@@ -679,9 +678,9 @@ async function finalizePaidBooking(env, orderId, paymentId) {
       }
     }
     try {
-      await razorpayRequest(env, 'PATCH', `orders/${orderId}`, { notes: { ...notes, booking_id: result.bookingId } });
+      await razorpayRequest(env, 'PATCH', `payments/${paymentId}`, { notes: { ...(payment.notes || {}), booking_id: result.bookingId } });
     } catch (err) {
-      console.error('Could not save booking_id on order', orderId, errorText(err));
+      console.error('Could not save booking_id on payment', paymentId, errorText(err));
     }
     await updateCreatorAppointment(env, creatorId, {
       zoho_bookings_appointment_id: result.bookingId,
@@ -692,9 +691,9 @@ async function finalizePaidBooking(env, orderId, paymentId) {
     return { status: 'booked', bookingId: result.bookingId };
   }
 
-  // The slot may have been taken by a parallel call for this same order
-  // (browser + webhook). Re-check before treating it as a real failure.
-  const latest = await razorpayRequest(env, 'GET', `orders/${orderId}`).catch(() => null);
+  // The slot may have been taken by a parallel call for this same payment
+  // (redirect + webhook). Re-check before treating it as a real failure.
+  const latest = await razorpayRequest(env, 'GET', `payments/${paymentId}`).catch(() => null);
   if (latest && latest.notes && latest.notes.booking_id) {
     return { status: 'booked', bookingId: latest.notes.booking_id };
   }
@@ -775,7 +774,7 @@ export default {
 
       // --- POST /api/book ------------------------------------------------------
       // Free services only. Paid services must go through
-      // /api/payment/create-order so the customer pays before the slot is
+      // /api/payment/create-link so the customer pays before the slot is
       // booked. Writes to Zoho Creator first, then Zoho Bookings, then
       // updates the Creator row with the outcome.
       if (url.pathname === '/api/book' && request.method === 'POST') {
@@ -1127,12 +1126,13 @@ export default {
         );
       }
 
-      // --- POST /api/payment/create-order ---------------------------------------
+      // --- POST /api/payment/create-link ----------------------------------------
       // Step 1 of a paid booking. Checks the slot, writes a Pending row to
-      // Creator, and creates a Razorpay order for the service's real price
-      // (looked up here, never taken from the browser). The slot is NOT
+      // Creator, and creates a Razorpay Payment Link for the service's real
+      // price (looked up here, never taken from the browser). The browser
+      // then redirects to Razorpay's hosted payment page. The slot is NOT
       // booked yet - that happens in finalizePaidBooking after payment.
-      if (url.pathname === '/api/payment/create-order' && request.method === 'POST') {
+      if (url.pathname === '/api/payment/create-link' && request.method === 'POST') {
         if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
           return jsonResponse({ error: 'Online payment is not available yet. Please book via WhatsApp.' }, 503, headers);
         }
@@ -1174,12 +1174,22 @@ export default {
 
         // Razorpay notes: max 15 keys, 256 characters each.
         const clip = (value) => String(value || '').slice(0, 250);
-        let order;
+        let link;
         try {
-          order = await razorpayRequest(env, 'POST', 'orders', {
+          link = await razorpayRequest(env, 'POST', 'payment_links', {
             amount: Math.round(service.price * 100), // paise
             currency: service.currency,
-            receipt: clip(`mindlap-${Date.now()}`).slice(0, 40),
+            accept_partial: false,
+            reference_id: `ML${Date.now()}${Math.floor(Math.random() * 1000)}`,
+            description: `${service.name} - ${date} ${time24}`.slice(0, 2048),
+            customer: { name: clip(name), email: clip(email), contact: phone },
+            notify: { sms: false, email: false },
+            reminder_enable: false,
+            // Must be at least 15 minutes ahead; long enough to pay, short
+            // enough that a stale link can't be paid for a slot hours later.
+            expire_by: Math.floor(Date.now() / 1000) + 20 * 60,
+            callback_url: `${url.origin}/api/payment/callback`,
+            callback_method: 'get',
             notes: {
               service_id: clip(service_id),
               staff_id: clip(staff_id),
@@ -1194,65 +1204,52 @@ export default {
           });
         } catch (err) {
           await updateCreatorAppointment(env, creatorId, { booking_status: 'Failed', error_message: errorText(err) }, { phone });
-          await logSyncError(env, { operation: 'Create Appointment', message: 'Razorpay order failed: ' + errorText(err), phone });
+          await logSyncError(env, { operation: 'Create Appointment', message: 'Razorpay payment link failed: ' + errorText(err), phone });
           return jsonResponse({ error: 'Could not start the payment. Please try again.' }, 502, headers);
         }
 
-        return jsonResponse(
-          {
-            order_id: order.id,
-            amount: order.amount,
-            currency: order.currency,
-            key_id: env.RAZORPAY_KEY_ID,
-            service_name: service.name,
-            prefill: { name, email, contact: phone }
-          },
-          200,
-          headers
-        );
+        return jsonResponse({ payment_url: link.short_url }, 200, headers);
       }
 
-      // --- POST /api/payment/verify ----------------------------------------------
-      // Step 2, called by the browser right after Razorpay Checkout succeeds.
-      // Verifies the signature, then books the slot (or refunds if it's gone).
-      if (url.pathname === '/api/payment/verify' && request.method === 'POST') {
-        const body = await request.json().catch(() => ({}));
-        const orderId = String(body.razorpay_order_id || '').trim();
-        const paymentId = String(body.razorpay_payment_id || '').trim();
-        const signature = String(body.razorpay_signature || '').trim();
+      // --- GET /api/payment/callback -----------------------------------------------
+      // Razorpay sends the customer here after the hosted payment page.
+      // Verifies the signature, books the slot (or refunds if it's gone),
+      // then redirects back to mindlap.in with the outcome.
+      if (url.pathname === '/api/payment/callback' && request.method === 'GET') {
+        const site = (env.ALLOWED_ORIGIN || '').split(',')[0].trim() || 'https://mindlap.in';
+        const back = (params) => Response.redirect(`${site}/?${new URLSearchParams(params).toString()}`, 303);
 
-        if (!orderId || !paymentId || !signature) {
-          return jsonResponse({ error: 'Missing payment verification fields' }, 400, headers);
+        const q = url.searchParams;
+        const paymentId = q.get('razorpay_payment_id') || '';
+        const linkId = q.get('razorpay_payment_link_id') || '';
+        const referenceId = q.get('razorpay_payment_link_reference_id') || '';
+        const linkStatus = q.get('razorpay_payment_link_status') || '';
+        const signature = q.get('razorpay_signature') || '';
+
+        if (!paymentId || !linkId || linkStatus !== 'paid') {
+          return back({ booking: 'cancelled' });
         }
 
-        // Razorpay signs "order_id|payment_id" with the key secret; a mismatch
-        // means the payment details were forged or tampered with.
-        const expectedSignature = await hmacSha256Hex(env.RAZORPAY_KEY_SECRET, `${orderId}|${paymentId}`);
-        if (!constantTimeEqual(expectedSignature, signature)) {
-          return jsonResponse({ success: false, error: 'Payment could not be verified.' }, 400, headers);
+        const expected = await hmacSha256Hex(env.RAZORPAY_KEY_SECRET, `${linkId}|${referenceId}|${linkStatus}|${paymentId}`);
+        if (!constantTimeEqual(expected, signature)) {
+          return back({ booking: 'error' });
         }
 
-        const result = await finalizePaidBooking(env, orderId, paymentId);
-        if (result.status === 'booked') {
-          return jsonResponse({ success: true, booking_id: result.bookingId, payment_id: paymentId }, 200, headers);
+        try {
+          const result = await finalizePaidBooking(env, linkId, paymentId);
+          if (result.status === 'booked') return back({ booking: 'success' });
+          if (result.status === 'refunded') return back({ booking: result.refunded ? 'refunded' : 'failed', payment: paymentId });
+          return back({ booking: 'error', payment: paymentId });
+        } catch (err) {
+          await logSyncError(env, { operation: 'Create Appointment', message: `Payment callback failed for ${paymentId}: ${errorText(err)}` });
+          return back({ booking: 'error', payment: paymentId });
         }
-        if (result.status === 'refunded') {
-          return jsonResponse({
-            success: false,
-            refunded: result.refunded,
-            slot_conflict: result.slotConflict,
-            error: result.refunded
-              ? 'Your payment went through, but that time was taken just before we could book it. Your money is being refunded (usually 5-7 working days). Please pick another time.'
-              : 'Your payment went through, but we could not book that time. Our team will contact you and refund you.'
-          }, 409, headers);
-        }
-        return jsonResponse({ success: false, error: result.message || 'Payment not completed.' }, 400, headers);
       }
 
       // --- POST /api/payment/webhook ---------------------------------------------
       // Razorpay calls this directly, so a booking still happens if the
       // customer closes the tab right after paying. Configure it in the
-      // Razorpay Dashboard with events payment.captured + payment.authorized.
+      // Razorpay Dashboard with the event payment_link.paid.
       if (url.pathname === '/api/payment/webhook' && request.method === 'POST') {
         if (!env.RAZORPAY_WEBHOOK_SECRET) {
           return new Response('Webhook not configured', { status: 503 });
@@ -1264,25 +1261,26 @@ export default {
         }
 
         const event = JSON.parse(rawBody);
+        const link = event.payload && event.payload.payment_link && event.payload.payment_link.entity;
         const payment = event.payload && event.payload.payment && event.payload.payment.entity;
-        if (!payment || !payment.order_id || !['payment.captured', 'payment.authorized'].includes(event.event)) {
+        if (event.event !== 'payment_link.paid' || !link || !payment) {
           return new Response('Ignored', { status: 200 });
         }
 
-        // Give the customer's own browser the first chance to finish the
+        // Give the customer's own redirect the first chance to finish the
         // booking; if it hasn't within ~2 minutes, Razorpay's retry of this
         // webhook will do it. Avoids two parallel booking attempts.
         const ageSeconds = Date.now() / 1000 - Number(payment.created_at || 0);
         if (ageSeconds < 120) {
-          const order = await razorpayRequest(env, 'GET', `orders/${payment.order_id}`);
-          if (!(order.notes && order.notes.booking_id)) {
+          const latest = await razorpayRequest(env, 'GET', `payments/${payment.id}`);
+          if (!(latest.notes && latest.notes.booking_id)) {
             return new Response('Retry later', { status: 503 });
           }
           return new Response('OK', { status: 200 });
         }
 
-        const result = await finalizePaidBooking(env, payment.order_id, payment.id);
-        console.log('Webhook finalize', payment.order_id, result.status);
+        const result = await finalizePaidBooking(env, link.id, payment.id);
+        console.log('Webhook finalize', link.id, result.status);
         return new Response('OK', { status: 200 });
       }
 

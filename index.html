@@ -824,6 +824,13 @@
                 <p id="wizard-otp-status" class="booking-status" role="status"></p>
               </div>
 
+              <!-- Outcome after returning from Razorpay -->
+              <div class="wizard-step" id="wizard-step-result" hidden>
+                <h2 class="booking-modal-title" id="booking-result-title"></h2>
+                <p class="booking-modal-subtitle" id="booking-result-text"></p>
+                <button type="button" id="booking-result-close" class="btn btn-primary btn-lg booking-submit-btn">Done</button>
+              </div>
+
               <!-- Step: prepaid package credits found -->
               <div class="wizard-step" id="wizard-step-credits" hidden>
                 <h2 class="booking-modal-title">You have sessions ready to use</h2>
@@ -978,8 +985,7 @@
 
     <!-- Custom JS Script -->
     <script src="index.js?v=19.0"></script>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="booking.js?v=8.0"></script>
+    <script src="booking.js?v=8.1"></script>
 </body>
 
 </html>

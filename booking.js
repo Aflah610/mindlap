@@ -162,6 +162,9 @@
             selectedSessionType = null;
             creditBookingMode = false;
             if (submitBtn) submitBtn.textContent = 'Continue to payment';
+            const resultStep = document.getElementById('wizard-step-result');
+            if (resultStep) resultStep.hidden = true;
+            if (wizardProgress) wizardProgress.hidden = false;
             sessionTypeCards.forEach((c) => c.classList.remove('selected'));
             if (bookingServiceField) bookingServiceField.hidden = false;
             if (creditModeBanner) creditModeBanner.hidden = true;
@@ -679,88 +682,71 @@
         // -----------------------------------------------------------------
 
         async function startPaidBooking(booking) {
-            if (typeof Razorpay === 'undefined') {
-                setStatus('Online payment could not load. Please refresh the page or book via WhatsApp.', 'error');
-                return;
-            }
-
-            setStatus('Preparing secure payment…');
-            let order;
+            setStatus('Taking you to Razorpay secure payment…');
             try {
-                const res = await fetch(BOOKING_API_BASE + '/api/payment/create-order', {
+                const res = await fetch(BOOKING_API_BASE + '/api/payment/create-link', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(booking)
                 });
-                order = await res.json().catch(() => ({}));
-                if (!res.ok) {
-                    if (order.free) {
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.payment_url) {
+                    if (data.free) {
                         setStatus('Booking your session…');
                         await submitBooking('/api/book', booking, "You're booked! Check your email for confirmation.");
                         return;
                     }
-                    handleBookingError(res, order);
-                    return;
-                }
-            } catch (err) {
-                setStatus('Could not start the payment. Please try again.', 'error');
-                return;
-            }
-
-            await new Promise((resolve) => {
-                const checkout = new Razorpay({
-                    key: order.key_id,
-                    order_id: order.order_id,
-                    amount: order.amount,
-                    currency: order.currency,
-                    name: 'Mindlap',
-                    description: order.service_name || 'Therapy session',
-                    prefill: order.prefill,
-                    theme: { color: '#4A2E80' },
-                    handler: async (response) => {
-                        await confirmPayment(response);
-                        resolve();
-                    },
-                    modal: {
-                        ondismiss: () => {
-                            setStatus('Payment cancelled, nothing was booked or charged. You can try again.', 'error');
-                            resolve();
-                        }
-                    }
-                });
-                checkout.on('payment.failed', (response) => {
-                    const reason = response && response.error && response.error.description;
-                    setStatus('Payment failed' + (reason ? ': ' + reason : '') + '. You can try again.', 'error');
-                });
-                setStatus('Complete the payment in the Razorpay window.');
-                checkout.open();
-            });
-        }
-
-        async function confirmPayment(response) {
-            setStatus('Payment received, booking your session… please don\'t close this window.');
-            try {
-                const res = await fetch(BOOKING_API_BASE + '/api/payment/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        razorpay_order_id: response.razorpay_order_id,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature
-                    })
-                });
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok || !data.success) {
                     handleBookingError(res, data);
                     return;
                 }
-                finishBooking("Payment successful and you're booked! Check your email for confirmation.");
+                window.location.href = data.payment_url;
             } catch (err) {
-                // The payment went through; the server-side webhook will still
-                // finish the booking even if this request failed.
-                setStatus('Your payment went through, but we could not confirm the booking here. You will get a confirmation email shortly; if not, contact us on WhatsApp with payment ID ' +
-                    response.razorpay_payment_id + '.', 'error');
+                setStatus('Could not start the payment. Please try again.', 'error');
             }
         }
+
+        // -----------------------------------------------------------------
+        // Coming back from Razorpay: /?booking=success|refunded|failed|cancelled|error
+        // -----------------------------------------------------------------
+
+        const BOOKING_RESULTS = {
+            success: ["You're booked!", 'Your payment was successful and your session is confirmed. Check your email for the details.'],
+            refunded: ['That time was just taken', 'Your payment went through, but someone booked that time moments before you. Your money is being refunded automatically (usually 5-7 working days). Please book another time.'],
+            failed: ["We couldn't complete your booking", 'Your payment went through, but we could not book the session. Our team will contact you and refund you.'],
+            cancelled: ['Payment not completed', 'Nothing was booked or charged. You can try booking again whenever you like.'],
+            error: ['Something went wrong', "We couldn't confirm your booking automatically. If money was taken, contact us on WhatsApp and we'll sort it out right away."]
+        };
+
+        function showBookingResult() {
+            const params = new URLSearchParams(window.location.search);
+            const outcome = params.get('booking');
+            if (!outcome || !BOOKING_RESULTS[outcome]) return;
+
+            const [title, text] = BOOKING_RESULTS[outcome];
+            const payment = params.get('payment');
+            document.getElementById('booking-result-title').textContent = title;
+            document.getElementById('booking-result-text').textContent = text + (payment && outcome !== 'success' ? ' Payment ID: ' + payment : '');
+
+            WIZARD_STEPS.forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.hidden = true;
+            });
+            document.getElementById('wizard-step-result').hidden = false;
+            if (wizardBackBtn) wizardBackBtn.hidden = true;
+            if (wizardProgress) wizardProgress.hidden = true;
+
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+
+            params.delete('booking');
+            params.delete('payment');
+            const rest = params.toString();
+            history.replaceState(null, '', window.location.pathname + (rest ? '?' + rest : '') + window.location.hash);
+        }
+
+        const resultCloseBtn = document.getElementById('booking-result-close');
+        if (resultCloseBtn) resultCloseBtn.addEventListener('click', closeModal);
+        showBookingResult();
     });
 })();
