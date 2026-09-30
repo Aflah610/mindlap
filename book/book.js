@@ -484,10 +484,9 @@
     // Services and therapists (from Zoho Bookings)
     // -----------------------------------------------------------------
 
-    /** 'individual' | 'couple' | null, from the Zoho service name. Packages must include one of these words. */
+    /** From the Zoho service name: anything mentioning "couple" is couple therapy, everything else is individual. */
     function serviceType(name) {
-        const n = String(name || '').toLowerCase();
-        return /couple/.test(n) ? 'couple' : /individual/.test(n) ? 'individual' : null;
+        return /couple/i.test(String(name || '')) ? 'couple' : 'individual';
     }
 
     function isPackage(name) {
