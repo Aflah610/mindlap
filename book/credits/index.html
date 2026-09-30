@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your prepaid sessions | Book Online | Mindlap</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/webp" href="/assets/favicon.webp">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/index.css?v=126">
+    <link rel="stylesheet" href="/book/book.css?v=1">
+</head>
+
+<body class="book-page" data-page="credits">
+
+    <header class="book-topbar">
+        <div class="book-topbar-inner">
+            <a href="/" class="book-topbar-logo"><img src="/assets/logo.webp" alt="Mindlap" width="127" height="38"></a>
+            <nav class="book-topbar-links">
+                <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session." target="_blank" rel="noopener"><span class="hide-sm">Need help?</span> WhatsApp us</a>
+                <a href="/">Back to site</a>
+            </nav>
+        </div>
+    </header>
+
+    <ol class="book-stepper" id="book-stepper" aria-label="Booking progress"></ol>
+
+    <main class="book-main">
+        <div class="book-card">
+            <div class="book-verified-chip" id="book-verified-chip" hidden>
+                <span aria-hidden="true">&#10003;</span>
+                <span>Verified <span data-phone></span></span>
+                <button type="button">Change</button>
+            </div>
+            <h1 class="book-title">Welcome back! You have sessions ready</h1>
+            <p class="book-lead">You have <strong id="credits-count"></strong> left on your package. Use one now with no payment, or pay for a new session.</p>
+
+            <div class="session-type-grid">
+                <button type="button" class="session-type-card" id="use-credits-btn">
+                    <span class="session-type-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M2 10h20"></path></svg>
+                    </span>
+                    <span class="session-type-text">
+                        <span class="session-type-name">Use a prepaid session</span>
+                        <span class="session-type-desc">Book now, no payment needed.</span>
+                    </span>
+                    <svg class="session-type-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
+                <button type="button" class="session-type-card" id="pay-new-btn">
+                    <span class="session-type-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                    </span>
+                    <span class="session-type-text">
+                        <span class="session-type-name">Pay for a new session</span>
+                        <span class="session-type-desc">Keep your prepaid sessions for later.</span>
+                    </span>
+                    <svg class="session-type-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
+            </div>
+        </div>
+        <p class="book-help">Prefer to chat? <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session." target="_blank" rel="noopener">Book on WhatsApp</a></p>
+    </main>
+
+    <script src="/book/book.js?v=1"></script>
+</body>
+
+</html>
