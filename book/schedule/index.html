@@ -4,16 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Choose a time | Book Online | Mindlap</title>
+    <title>Pick a time | Book Online | Mindlap</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/webp" href="/assets/favicon.webp">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css?v=126">
-    <link rel="stylesheet" href="/book/book.css?v=1">
+    <link rel="stylesheet" href="/book/book.css?v=2">
 </head>
 
 <body class="book-page" data-page="schedule">
@@ -28,61 +28,80 @@
         </div>
     </header>
 
-    <ol class="book-stepper" id="book-stepper" aria-label="Booking progress"></ol>
+    <div class="book-shell">
+        <aside class="book-aside" aria-label="Booking progress">
+            <div class="book-aside-inner">
+                <div class="book-aside-intro">
+                    <p class="book-aside-eyebrow">a calmer mind starts here</p>
+                    <h2 class="book-aside-title">Book your session in a few simple steps</h2>
+                </div>
 
-    <main class="book-main">
-        <a class="book-back" href="/book/session-type/" id="schedule-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>Back</a>
-        <div class="book-card">
-            <div class="book-verified-chip" id="book-verified-chip" hidden>
-                <span aria-hidden="true">&#10003;</span>
-                <span>Verified <span data-phone></span></span>
-                <button type="button">Change</button>
+                <ol class="book-stepper" id="book-stepper"></ol>
+
+                <div class="book-summary" id="book-summary" hidden>
+                    <h2>Your booking</h2>
+                    <dl id="book-summary-list"></dl>
+                </div>
+
+                <ul class="book-trust">
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><span>Private and confidential, always</span></li>
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>Qualified, caring psychologists</span></li>
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg><span>Secure payments by Razorpay</span></li>
+                </ul>
+
+                <p class="book-aside-help">Questions? <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session." target="_blank" rel="noopener">Chat with us on WhatsApp</a></p>
             </div>
-            <h1 class="book-title">Choose a time</h1>
-            <p class="book-lead">Pick a service, therapist and a time that works for you.</p>
+        </aside>
 
-            <div class="modal-cta-box" id="credit-banner" hidden>
-                <p>Booking with your prepaid sessions (<strong data-credits></strong> left). No payment needed.</p>
-            </div>
-
-            <div class="booking-form">
-                <div class="booking-field">
-                    <label for="booking-service">Service</label>
-                    <select id="booking-service">
-                        <option value="">Loading…</option>
-                    </select>
+        <main class="book-main">
+            <a class="book-back" href="/book/session-type/" id="schedule-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>Back</a>
+            <div class="book-card">
+                <div class="book-verified-chip" id="book-verified-chip" hidden>
+                    <span aria-hidden="true">&#10003;</span>
+                    <span>Verified <span data-phone></span></span>
+                    <button type="button">Change</button>
                 </div>
-
-                <div class="booking-field">
-                    <label for="booking-staff">Therapist</label>
-                    <select id="booking-staff" disabled>
-                        <option value="">Select a service first</option>
-                    </select>
+                <h1 class="book-title">Find a time that suits you</h1>
+                <p class="book-lead">Choose your session, the therapist you'd like to meet, and a time. All sessions are online.</p>
+    
+                <div class="modal-cta-box" id="credit-banner" hidden>
+                    <p>Booking with your prepaid sessions (<strong data-credits></strong> left). No payment needed.</p>
                 </div>
-
-                <div class="booking-field">
-                    <label for="booking-date">Date</label>
-                    <input type="date" id="booking-date">
-                </div>
-
-                <div class="booking-field">
-                    <label>Available times</label>
-                    <div id="booking-slots" class="booking-slots">
-                        <p class="booking-slots-empty">Choose a service, therapist and date to see available times.</p>
+    
+                <section class="pick-block" aria-labelledby="pick-service">
+                    <h2 class="pick-label" id="pick-service"><span class="pick-num">1</span>Session</h2>
+                    <div class="option-grid" id="service-list" role="radiogroup" aria-labelledby="pick-service">
+                        <div class="option-skeleton"></div><div class="option-skeleton"></div>
                     </div>
-                </div>
-
+                </section>
+    
+                <section class="pick-block" id="staff-block" aria-labelledby="pick-staff" hidden>
+                    <h2 class="pick-label" id="pick-staff"><span class="pick-num">2</span>Therapist</h2>
+                    <div class="option-grid" id="staff-list" role="radiogroup" aria-labelledby="pick-staff"></div>
+                </section>
+    
+                <section class="pick-block" id="date-block" aria-labelledby="pick-date" hidden>
+                    <h2 class="pick-label" id="pick-date"><span class="pick-num">3</span>Date<small id="date-month"></small></h2>
+                    <div class="date-strip" id="date-strip" role="radiogroup" aria-labelledby="pick-date"></div>
+                </section>
+    
+                <section class="pick-block" id="time-block" aria-labelledby="pick-time" hidden>
+                    <h2 class="pick-label" id="pick-time"><span class="pick-num">4</span>Time<small>India time (IST)</small></h2>
+                    <div class="slot-groups" id="booking-slots"></div>
+                </section>
+    
                 <p id="schedule-status" class="booking-status" role="status"></p>
-
-                <div class="book-actions">
-                    <button type="button" id="schedule-next" class="btn btn-primary btn-lg">Continue</button>
+    
+                <div class="step-footer">
+                    <div class="step-footer-summary" id="schedule-summary">Pick a session, therapist, date and time.</div>
+                    <button type="button" id="schedule-next" class="btn btn-primary btn-lg" disabled>Continue</button>
                 </div>
             </div>
-        </div>
-        <p class="book-help">Prefer to chat? <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session." target="_blank" rel="noopener">Book on WhatsApp</a></p>
-    </main>
+            <p class="book-help">Prefer to chat? <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session." target="_blank" rel="noopener">Book on WhatsApp</a></p>
+        </main>
+    </div>
 
-    <script src="/book/book.js?v=1"></script>
+    <script src="/book/book.js?v=2"></script>
 </body>
 
 </html>

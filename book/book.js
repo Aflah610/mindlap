@@ -157,6 +157,35 @@
         return date ? date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : iso;
     }
 
+    function shortDate(iso) {
+        const date = parseIsoDate(iso);
+        return date ? date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) : iso;
+    }
+
+    /** Fills the "Your booking" card in the side panel with whatever has been chosen so far. */
+    function renderSummary(state) {
+        const box = $('book-summary');
+        const list = $('book-summary-list');
+        if (!box || !list) return;
+        const typeLabel = state.creditMode ? 'Prepaid session'
+            : state.sessionType === 'couple' ? 'Couple therapy'
+                : state.sessionType === 'individual' ? 'Individual therapy' : '';
+        const rows = [
+            ['Type', typeLabel],
+            ['Session', state.serviceName],
+            ['Therapist', state.staffName],
+            ['When', state.date && state.time ? shortDate(state.date) + ', ' + String(state.time).replace(/^0/, '') : '']
+        ].filter(([, value]) => value);
+        let total = '';
+        if (state.creditMode && state.serviceName) total = 'Prepaid';
+        else if (state.serviceName && state.price !== undefined && state.price !== null) total = money(state.price, state.currency);
+
+        box.hidden = !rows.length;
+        list.innerHTML = rows.map(([label, value]) =>
+            '<div><dt>' + label + '</dt><dd>' + escapeHtml(value) + '</dd></div>'
+        ).join('') + (total ? '<div class="book-summary-total"><dt>Total</dt><dd>' + escapeHtml(total) + '</dd></div>' : '');
+    }
+
     function localIso(date) {
         return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
     }
@@ -433,25 +462,24 @@
             banner.querySelector('[data-credits]').textContent = state.credits;
         }
 
-        const serviceSelect = $('booking-service');
-        const staffSelect = $('booking-staff');
-        const dateInput = $('booking-date');
+        const serviceList = $('service-list');
+        const staffList = $('staff-list');
+        const dateStrip = $('date-strip');
         const slotsWrap = $('booking-slots');
         const statusEl = $('schedule-status');
         const nextBtn = $('schedule-next');
+        const footerSummary = $('schedule-summary');
+        const DAYS_AHEAD = 30;
+
         let services = [];
-        let selectedSlot = state.time || null;
-
-        const today = new Date();
-        const max = new Date();
-        max.setDate(max.getDate() + 60);
-        dateInput.min = localIso(today);
-        dateInput.max = localIso(max);
-
-        function emptySlots(message) {
-            selectedSlot = null;
-            slotsWrap.innerHTML = '<p class="booking-slots-empty">' + (message || 'Choose a service, therapist and date to see available times.') + '</p>';
-        }
+        let staff = [];
+        const pick = {
+            service: null,
+            staff: null,
+            date: state.date || null,
+            time: state.time || null
+        };
+        let slotsRequest = 0;
 
         function matchesType(name) {
             if (state.creditMode) return true;
@@ -459,134 +487,270 @@
             return state.sessionType === 'couple' ? /couple|package/.test(n) : /individual|package/.test(n);
         }
 
-        async function loadServices() {
-            serviceSelect.innerHTML = '<option value="">Loading…</option>';
-            try {
-                services = (await get('/api/services')).filter((s) => matchesType(s.name));
-                if (!services.length) {
-                    serviceSelect.innerHTML = '<option value="">No services available</option>';
-                    setStatus(statusEl, 'No bookable services were found. Please book via WhatsApp instead.', 'error');
-                    return;
-                }
-                serviceSelect.innerHTML = '<option value="">Select a service</option>' + services.map((s) =>
-                    '<option value="' + escapeHtml(s.id) + '">' + escapeHtml(s.name) +
-                    (state.creditMode ? '' : ' - ' + escapeHtml(money(s.price, s.currency))) + '</option>'
-                ).join('');
-                const keep = services.find((s) => String(s.id) === String(state.serviceId));
-                if (keep) {
-                    serviceSelect.value = keep.id;
-                    await loadStaff(keep.id, state.staffId);
-                } else if (services.length === 1) {
-                    serviceSelect.value = services[0].id;
-                    await loadStaff(services[0].id);
-                }
-            } catch (err) {
-                serviceSelect.innerHTML = '<option value="">Unavailable</option>';
-                setStatus(statusEl, 'Could not load services right now. Please try again shortly or book via WhatsApp.', 'error');
-            }
+        function minutesOf(service) {
+            const m = String((service && service.duration) || '').match(/\d+/);
+            return m ? Number(m[0]) : 60;
         }
 
-        async function loadStaff(serviceId, keepStaffId) {
-            staffSelect.innerHTML = '<option value="">Loading…</option>';
-            staffSelect.disabled = true;
-            emptySlots();
-            try {
-                const staff = await get('/api/staff', { service_id: serviceId });
-                if (!staff.length) {
-                    staffSelect.innerHTML = '<option value="">No therapists available</option>';
-                    return;
-                }
-                staffSelect.innerHTML = '<option value="">Select a therapist</option>' + staff.map((s) =>
-                    '<option value="' + escapeHtml(s.id) + '">' + escapeHtml(s.name) + '</option>'
-                ).join('');
-                staffSelect.disabled = false;
-                if (keepStaffId && staff.some((s) => String(s.id) === String(keepStaffId))) {
-                    staffSelect.value = keepStaffId;
-                    if (state.date) {
-                        dateInput.value = state.date;
-                        await loadSlots();
-                    }
-                }
-            } catch (err) {
-                staffSelect.innerHTML = '<option value="">Unavailable</option>';
-                setStatus(statusEl, 'Could not load therapists for this service.', 'error');
+        function initialOf(name) {
+            return escapeHtml(String(name || '?').trim().charAt(0).toUpperCase());
+        }
+
+        function avatarHtml(person) {
+            const photo = /^https:\/\//.test(person.photo || '') ? person.photo : '';
+            return '<span class="option-avatar">' +
+                (photo ? '<img src="' + escapeHtml(photo) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
+                initialOf(person.name) + '</span>';
+        }
+
+        function setChecked(container, value) {
+            container.querySelectorAll('[role="radio"]').forEach((el) => {
+                el.setAttribute('aria-checked', String(el.dataset.value === String(value)));
+            });
+        }
+
+        function refresh() {
+            const ready = pick.service && pick.staff && pick.date && pick.time;
+            nextBtn.disabled = !ready;
+            if (ready) {
+                footerSummary.innerHTML = '<strong>' + escapeHtml(shortDate(pick.date) + ', ' + pick.time) + '</strong>' +
+                    escapeHtml(pick.service.name) + (state.creditMode ? ' · prepaid' : ' · ' + money(pick.service.price, pick.service.currency));
+            } else {
+                footerSummary.textContent = !pick.service ? 'Pick a session to begin.'
+                    : !pick.staff ? 'Now choose your therapist.'
+                        : !pick.date ? 'Pick a date.' : 'Pick a time.';
             }
+            renderSummary(Object.assign({}, state, {
+                serviceName: pick.service && pick.service.name,
+                price: pick.service ? Number(pick.service.price) || 0 : undefined,
+                currency: pick.service && pick.service.currency,
+                staffName: pick.staff && pick.staff.name,
+                date: pick.date,
+                time: pick.time
+            }));
+        }
+
+        // -- 1. Session -------------------------------------------------
+        function renderServices() {
+            serviceList.innerHTML = services.map((s) =>
+                '<button type="button" class="option-card" role="radio" aria-checked="false" data-value="' + escapeHtml(s.id) + '">' +
+                    '<span class="option-body">' +
+                        '<span class="option-title">' + escapeHtml(s.name) + '</span>' +
+                        '<span class="option-meta">' + minutesOf(s) + ' min · online</span>' +
+                        (state.creditMode ? '<span class="option-meta">Covered by your prepaid sessions</span>'
+                            : '<span class="option-price">' + escapeHtml(money(s.price, s.currency)) + '</span>') +
+                    '</span>' +
+                '</button>'
+            ).join('');
+            serviceList.querySelectorAll('.option-card').forEach((card) => {
+                card.addEventListener('click', () => chooseService(card.dataset.value));
+            });
+        }
+
+        async function chooseService(id, keepStaffId) {
+            const service = services.find((s) => String(s.id) === String(id));
+            if (!service) return;
+            if (!pick.service || String(pick.service.id) !== String(id)) {
+                pick.staff = null;
+                pick.time = null;
+            }
+            pick.service = service;
+            setChecked(serviceList, id);
+            setStatus(statusEl, '');
+            refresh();
+            await loadStaff(keepStaffId);
+        }
+
+        // -- 2. Therapist -----------------------------------------------
+        async function loadStaff(keepStaffId) {
+            $('staff-block').hidden = false;
+            staffList.innerHTML = '<div class="option-skeleton"></div>';
+            try {
+                staff = await get('/api/staff', { service_id: pick.service.id });
+            } catch (err) {
+                staff = [];
+            }
+            if (!staff.length) {
+                staffList.innerHTML = '<p class="booking-slots-empty">No therapist is available for this session right now. Please try another session or book on WhatsApp.</p>';
+                return;
+            }
+            staffList.innerHTML = staff.map((p) =>
+                '<button type="button" class="option-card" role="radio" aria-checked="false" data-value="' + escapeHtml(p.id) + '">' +
+                    avatarHtml(p) +
+                    '<span class="option-body">' +
+                        '<span class="option-title">' + escapeHtml(p.name) + '</span>' +
+                        '<span class="option-meta">' + escapeHtml(p.designation || 'Psychologist') + '</span>' +
+                    '</span>' +
+                '</button>'
+            ).join('');
+            staffList.querySelectorAll('.option-card').forEach((card) => {
+                card.addEventListener('click', () => chooseStaff(card.dataset.value));
+            });
+
+            const keep = keepStaffId && staff.find((p) => String(p.id) === String(keepStaffId));
+            if (keep) chooseStaff(keep.id, true);
+            else if (staff.length === 1) chooseStaff(staff[0].id);
+        }
+
+        function chooseStaff(id, restoring) {
+            const person = staff.find((p) => String(p.id) === String(id));
+            if (!person) return;
+            if (!restoring && (!pick.staff || String(pick.staff.id) !== String(id))) pick.time = null;
+            pick.staff = person;
+            setChecked(staffList, id);
+            refresh();
+            renderDates();
+        }
+
+        // -- 3. Date ----------------------------------------------------
+        function renderDates() {
+            $('date-block').hidden = false;
+            const today = new Date();
+            const chips = [];
+            for (let i = 0; i < DAYS_AHEAD; i++) {
+                const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+                const iso = localIso(d);
+                chips.push('<button type="button" class="date-chip" role="radio" aria-checked="false" data-value="' + iso + '" aria-label="' +
+                    escapeHtml(d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })) + '">' +
+                    '<span class="dow">' + (i === 0 ? 'Today' : i === 1 ? 'Tmrw' : d.toLocaleDateString('en-IN', { weekday: 'short' })) + '</span>' +
+                    '<span class="dom">' + d.getDate() + '</span>' +
+                    '<span class="mon">' + d.toLocaleDateString('en-IN', { month: 'short' }) + '</span>' +
+                    '</button>');
+            }
+            dateStrip.innerHTML = chips.join('');
+            dateStrip.querySelectorAll('.date-chip').forEach((chip) => {
+                chip.addEventListener('click', () => chooseDate(chip.dataset.value));
+            });
+
+            const valid = pick.date && dateStrip.querySelector('[data-value="' + pick.date + '"]');
+            chooseDate(valid ? pick.date : localIso(today), true);
+        }
+
+        function chooseDate(iso, restoring) {
+            if (!restoring && pick.date !== iso) pick.time = null;
+            pick.date = iso;
+            setChecked(dateStrip, iso);
+            const chip = dateStrip.querySelector('[data-value="' + iso + '"]');
+            if (chip) {
+                // Slide only the strip; scrollIntoView would also scroll the page.
+                const left = chip.offsetLeft - dateStrip.offsetLeft;
+                if (left < dateStrip.scrollLeft || left + chip.offsetWidth > dateStrip.scrollLeft + dateStrip.clientWidth) {
+                    dateStrip.scrollLeft = left - 8;
+                }
+                $('date-month').textContent = longDate(iso);
+            }
+            refresh();
+            loadSlots();
+        }
+
+        // -- 4. Time ----------------------------------------------------
+        const GROUPS = [
+            ['Morning', (m) => m < 12 * 60, '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2"></path>'],
+            ['Afternoon', (m) => m >= 12 * 60 && m < 17 * 60, '<circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>'],
+            ['Evening', (m) => m >= 17 * 60, '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>']
+        ];
+
+        function slotMinutes(slot) {
+            const m = String(slot).trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+            if (!m) return 0;
+            let h = Number(m[1]);
+            const ap = (m[3] || '').toUpperCase();
+            if (ap === 'PM' && h !== 12) h += 12;
+            if (ap === 'AM' && h === 12) h = 0;
+            return h * 60 + Number(m[2]);
+        }
+
+        function nextDayButton(message) {
+            slotsWrap.innerHTML = '<p class="booking-slots-empty">' + escapeHtml(message) + '</p>' +
+                '<button type="button" class="link-btn" id="slots-next-day">Try the next day &rarr;</button>';
+            $('slots-next-day').addEventListener('click', () => {
+                const d = parseIsoDate(pick.date);
+                d.setDate(d.getDate() + 1);
+                const iso = localIso(d);
+                if (dateStrip.querySelector('[data-value="' + iso + '"]')) chooseDate(iso);
+            });
         }
 
         async function loadSlots() {
-            if (!serviceSelect.value || !staffSelect.value || !dateInput.value) {
-                emptySlots();
+            $('time-block').hidden = false;
+            const request = ++slotsRequest;
+            slotsWrap.innerHTML = '<p class="booking-slots-loading">Finding open times…</p>';
+            let slots = [];
+            try {
+                slots = await get('/api/availability', { service_id: pick.service.id, staff_id: pick.staff.id, date: pick.date });
+            } catch (err) {
+                if (request === slotsRequest) nextDayButton('Could not load times for this day.');
                 return;
             }
-            const keep = selectedSlot;
-            selectedSlot = null;
-            slotsWrap.innerHTML = '<p class="booking-slots-loading">Loading available times…</p>';
-            try {
-                const slots = await get('/api/availability', {
-                    service_id: serviceSelect.value,
-                    staff_id: staffSelect.value,
-                    date: dateInput.value
-                });
-                if (!slots.length) {
-                    emptySlots('No slots available on this date. Try another date.');
-                    return;
-                }
-                slotsWrap.innerHTML = '';
-                slots.forEach((slot) => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'booking-slot';
-                    btn.textContent = slot;
-                    if (slot === keep) {
-                        btn.classList.add('selected');
-                        selectedSlot = slot;
-                    }
-                    btn.addEventListener('click', () => {
-                        slotsWrap.querySelectorAll('.booking-slot').forEach((el) => el.classList.remove('selected'));
-                        btn.classList.add('selected');
-                        selectedSlot = slot;
-                        setStatus(statusEl, '');
-                    });
-                    slotsWrap.appendChild(btn);
-                });
-            } catch (err) {
-                emptySlots('Could not load available times. Please try a different date.');
+            if (request !== slotsRequest) return; // a newer date/therapist was picked meanwhile
+            if (!Array.isArray(slots) || !slots.length) {
+                pick.time = null;
+                refresh();
+                nextDayButton('No open times on ' + shortDate(pick.date) + '.');
+                return;
             }
+            if (pick.time && !slots.includes(pick.time)) pick.time = null;
+
+            slotsWrap.innerHTML = GROUPS.map(([label, test, icon]) => {
+                const inGroup = slots.filter((s) => test(slotMinutes(s)));
+                if (!inGroup.length) return '';
+                return '<div class="slot-group">' +
+                    '<p class="slot-group-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + icon + '</svg>' + label + '</p>' +
+                    '<div class="booking-slots">' + inGroup.map((s) =>
+                        '<button type="button" class="booking-slot' + (s === pick.time ? ' selected' : '') + '" data-value="' + escapeHtml(s) + '">' + escapeHtml(s.replace(/^0/, '')) + '</button>'
+                    ).join('') + '</div></div>';
+            }).join('');
+            slotsWrap.querySelectorAll('.booking-slot').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    slotsWrap.querySelectorAll('.booking-slot').forEach((el) => el.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    pick.time = btn.dataset.value;
+                    setStatus(statusEl, '');
+                    refresh();
+                });
+            });
+            refresh();
         }
 
-        serviceSelect.addEventListener('change', () => {
-            selectedSlot = null;
-            if (serviceSelect.value) {
-                loadStaff(serviceSelect.value);
-            } else {
-                staffSelect.innerHTML = '<option value="">Select a service first</option>';
-                staffSelect.disabled = true;
-                emptySlots();
-            }
-        });
-        staffSelect.addEventListener('change', () => { selectedSlot = null; loadSlots(); });
-        dateInput.addEventListener('change', () => { selectedSlot = null; loadSlots(); });
-
         nextBtn.addEventListener('click', () => {
-            if (!serviceSelect.value || !staffSelect.value || !dateInput.value || !selectedSlot) {
-                setStatus(statusEl, 'Please choose a service, therapist, date and time.', 'error');
+            if (!(pick.service && pick.staff && pick.date && pick.time)) {
+                setStatus(statusEl, 'Please choose a session, therapist, date and time.', 'error');
                 return;
             }
-            const service = services.find((s) => String(s.id) === String(serviceSelect.value)) || {};
             save({
-                serviceId: serviceSelect.value,
-                serviceName: service.name || serviceSelect.selectedOptions[0].textContent,
-                price: Number(service.price) || 0,
-                currency: service.currency || 'INR',
-                staffId: staffSelect.value,
-                staffName: staffSelect.selectedOptions[0].textContent,
-                date: dateInput.value,
-                time: selectedSlot
+                serviceId: pick.service.id,
+                serviceName: pick.service.name,
+                price: Number(pick.service.price) || 0,
+                currency: pick.service.currency || 'INR',
+                duration: minutesOf(pick.service),
+                staffId: pick.staff.id,
+                staffName: pick.staff.name,
+                date: pick.date,
+                time: pick.time
             });
             go(PATHS.details);
         });
 
-        loadServices();
+        (async () => {
+            try {
+                services = (await get('/api/services')).filter((s) => matchesType(s.name));
+            } catch (err) {
+                services = [];
+                serviceList.innerHTML = '';
+                setStatus(statusEl, 'Could not load sessions right now. Please try again shortly or book on WhatsApp.', 'error');
+                return;
+            }
+            if (!services.length) {
+                serviceList.innerHTML = '';
+                setStatus(statusEl, 'No bookable sessions were found. Please book on WhatsApp instead.', 'error');
+                return;
+            }
+            renderServices();
+            const keep = services.find((s) => String(s.id) === String(state.serviceId));
+            if (keep) chooseService(keep.id, state.staffId);
+            else if (services.length === 1) chooseService(services[0].id);
+            else refresh();
+        })();
     }
 
     // -----------------------------------------------------------------
@@ -602,7 +766,7 @@
         $('details-name').value = state.name || '';
         $('details-email').value = state.email || '';
         $('details-notes').value = state.notes || '';
-        $('details-when').textContent = state.serviceName + ' · ' + longDate(state.date) + ', ' + state.time;
+        $('details-when').textContent = state.serviceName + ' · ' + longDate(state.date) + ', ' + String(state.time).replace(/^0/, '');
         $('details-change-number').addEventListener('click', () => {
             signOut();
             go(PATHS.verify);
@@ -906,7 +1070,9 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
-        const init = PAGES[document.body.getAttribute('data-page')];
+        const page = document.body.getAttribute('data-page');
+        if (page !== 'verify' && page !== 'confirmation') renderSummary(load());
+        const init = PAGES[page];
         if (init) init();
     });
 })();

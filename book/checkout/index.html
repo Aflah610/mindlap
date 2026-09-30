@@ -11,9 +11,9 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css?v=126">
-    <link rel="stylesheet" href="/book/book.css?v=1">
+    <link rel="stylesheet" href="/book/book.css?v=2">
 </head>
 
 <body class="book-page" data-page="checkout">
@@ -28,77 +28,78 @@
         </div>
     </header>
 
-    <ol class="book-stepper" id="book-stepper" aria-label="Booking progress"></ol>
-
-    <main class="book-main wide">
-        <a class="book-back" href="/book/details/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>Back</a>
-        <div class="checkout-grid">
-            <section class="book-card">
-                <h1 class="book-title">Almost there, review and confirm</h1>
-                <p class="book-lead">Check everything below. Your session is booked only once you confirm.</p>
-
-                <div class="review-section">
-                    <div class="review-section-head">
-                        <h2>Session</h2>
-                        <a href="/book/schedule/">Change</a>
-                    </div>
-                    <div class="review-session">
-                        <div class="review-date-tile" aria-hidden="true">
-                            <span class="month" id="review-month"></span>
-                            <span class="day" id="review-day"></span>
+    <div class="book-shell solo">
+        <ol class="book-stepper" id="book-stepper" aria-label="Booking progress"></ol>
+        <main class="book-main wide">
+            <a class="book-back" href="/book/details/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>Back</a>
+            <div class="checkout-grid">
+                <section class="book-card">
+                    <h1 class="book-title">Almost there, review and confirm</h1>
+                    <p class="book-lead">Check everything below. Your session is booked only once you confirm.</p>
+    
+                    <div class="review-section">
+                        <div class="review-section-head">
+                            <h2>Session</h2>
+                            <a href="/book/schedule/">Change</a>
                         </div>
-                        <div>
-                            <div class="review-session-name" id="review-service"></div>
-                            <div class="review-session-meta" id="review-when"></div>
-                            <div class="review-session-meta" id="review-therapist"></div>
+                        <div class="review-session">
+                            <div class="review-date-tile" aria-hidden="true">
+                                <span class="month" id="review-month"></span>
+                                <span class="day" id="review-day"></span>
+                            </div>
+                            <div>
+                                <div class="review-session-name" id="review-service"></div>
+                                <div class="review-session-meta" id="review-when"></div>
+                                <div class="review-session-meta" id="review-therapist"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="review-section">
-                    <div class="review-section-head">
-                        <h2>Your details</h2>
-                        <a href="/book/details/">Change</a>
+    
+                    <div class="review-section">
+                        <div class="review-section-head">
+                            <h2>Your details</h2>
+                            <a href="/book/details/">Change</a>
+                        </div>
+                        <dl class="review-list">
+                            <div><dt>Name</dt><dd id="review-name"></dd></div>
+                            <div><dt>Email</dt><dd id="review-email"></dd></div>
+                            <div><dt>WhatsApp</dt><dd id="review-phone"></dd></div>
+                            <div id="review-notes-row" hidden><dt>Notes</dt><dd id="review-notes"></dd></div>
+                        </dl>
                     </div>
-                    <dl class="review-list">
-                        <div><dt>Name</dt><dd id="review-name"></dd></div>
-                        <div><dt>Email</dt><dd id="review-email"></dd></div>
-                        <div><dt>WhatsApp</dt><dd id="review-phone"></dd></div>
-                        <div id="review-notes-row" hidden><dt>Notes</dt><dd id="review-notes"></dd></div>
-                    </dl>
-                </div>
-            </section>
-
-            <aside class="book-card pay-card">
-                <h2 class="pay-heading" id="pay-heading">Payment summary</h2>
-                <div class="pay-lines">
-                    <div class="pay-line"><span>Session fee</span><span id="pay-fee"></span></div>
-                    <div class="pay-line" id="pay-credit-line" hidden><span>Prepaid sessions left</span><span id="pay-credit-left"></span></div>
-                </div>
-                <div class="pay-total"><span>Total</span><strong id="pay-total"></strong></div>
-
-                <label class="pay-consent">
-                    <input type="checkbox" id="pay-consent">
-                    <span>I agree to the <a href="/terms.html" target="_blank">Terms &amp; Conditions</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>, and consent to online therapy.</span>
-                </label>
-
-                <button type="button" id="pay-btn" class="btn btn-primary btn-lg btn-block">Continue</button>
-                <p id="pay-status" class="booking-status" role="status"></p>
-
-                <div id="pay-online-info">
-                    <div class="pay-methods" aria-label="Payment methods">
-                        <span>UPI</span><span>Cards</span><span>Netbanking</span><span>Wallets</span>
+                </section>
+    
+                <aside class="book-card pay-card">
+                    <h2 class="pay-heading" id="pay-heading">Payment summary</h2>
+                    <div class="pay-lines">
+                        <div class="pay-line"><span>Session fee</span><span id="pay-fee"></span></div>
+                        <div class="pay-line" id="pay-credit-line" hidden><span>Prepaid sessions left</span><span id="pay-credit-left"></span></div>
                     </div>
-                    <p class="pay-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><span>Secure payment by Razorpay. Your card and UPI details never reach Mindlap.</span></p>
-                    <p class="pay-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg><span>Your slot is booked only after your payment succeeds. If the time is taken meanwhile, you're refunded automatically.</span></p>
-                </div>
-
-            </aside>
-        </div>
-    </main>
+                    <div class="pay-total"><span>Total</span><strong id="pay-total"></strong></div>
+    
+                    <label class="pay-consent">
+                        <input type="checkbox" id="pay-consent">
+                        <span>I agree to the <a href="/terms.html" target="_blank">Terms &amp; Conditions</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>, and consent to online therapy.</span>
+                    </label>
+    
+                    <button type="button" id="pay-btn" class="btn btn-primary btn-lg btn-block">Continue</button>
+                    <p id="pay-status" class="booking-status" role="status"></p>
+    
+                    <div id="pay-online-info">
+                        <div class="pay-methods" aria-label="Payment methods">
+                            <span>UPI</span><span>Cards</span><span>Netbanking</span><span>Wallets</span>
+                        </div>
+                        <p class="pay-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><span>Secure payment by Razorpay. Your card and UPI details never reach Mindlap.</span></p>
+                        <p class="pay-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg><span>Your slot is booked only after your payment succeeds. If the time is taken meanwhile, you're refunded automatically.</span></p>
+                    </div>
+    
+                </aside>
+            </div>
+        </main>
+    </div>
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="/book/book.js?v=1"></script>
+    <script src="/book/book.js?v=2"></script>
 </body>
 
 </html>

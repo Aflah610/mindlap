@@ -11,9 +11,9 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css?v=126">
-    <link rel="stylesheet" href="/book/book.css?v=1">
+    <link rel="stylesheet" href="/book/book.css?v=2">
 </head>
 
 <body class="book-page" data-page="confirmation">
@@ -28,17 +28,19 @@
         </div>
     </header>
 
-    <main class="book-main">
-        <div class="book-card">
-            <div class="result-icon" id="result-icon" aria-hidden="true"></div>
-            <h1 class="book-title" id="result-title">Checking your booking…</h1>
-            <p class="book-lead" id="result-text"></p>
-            <div class="result-summary" id="result-summary" hidden></div>
-            <div class="result-actions" id="result-actions"></div>
-        </div>
-    </main>
+    <div class="book-shell solo">
+        <main class="book-main">
+            <div class="book-card">
+                <div class="result-icon" id="result-icon" aria-hidden="true"></div>
+                <h1 class="book-title" id="result-title">Checking your booking…</h1>
+                <p class="book-lead" id="result-text"></p>
+                <div class="result-summary" id="result-summary" hidden></div>
+                <div class="result-actions" id="result-actions"></div>
+            </div>
+        </main>
+    </div>
 
-    <script src="/book/book.js?v=1"></script>
+    <script src="/book/book.js?v=2"></script>
 </body>
 
 </html>
