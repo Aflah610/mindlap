@@ -18,7 +18,9 @@
  * Routes:
  *   GET  /api/services                       -> Zoho "services" list
  *   GET  /api/staff?service_id=...            -> Zoho "staffs" list
- *   GET  /api/availability?service_id=&staff_id=&date=YYYY-MM-DD
+ *   GET  /api/availability?service_id=&staff_id=&date=YYYY-MM-DD  (hides held times)
+ *   POST /api/slots/hold    { session_token, service_id, staff_id, date, time }
+ *   POST /api/slots/release { session_token }
  *   POST /api/book  { session_token, service_id, staff_id, date, time, name, email,
  *                      notes?, timezone? }
  *   POST /api/otp/send    { phone }
@@ -521,13 +523,126 @@ function errorText(err) {
   return err && err.message ? err.message : String(err);
 }
 
-/** Server-side price for a Zoho Bookings service - never trust the browser's amount. */
-async function getServicePrice(env, serviceId) {
+let cachedServices = null; // { list, fetchedAt }
+
+async function getServicesList(env) {
+  if (cachedServices && Date.now() - cachedServices.fetchedAt < 5 * 60 * 1000) return cachedServices.list;
   const data = await zohoGet(env, 'services', { workspace_id: env.ZOHO_WORKSPACE_ID });
-  const services = (data && data.response && data.response.returnvalue && data.response.returnvalue.data) || [];
+  const list = (data && data.response && data.response.returnvalue && data.response.returnvalue.data) || [];
+  if (list.length) cachedServices = { list, fetchedAt: Date.now() };
+  return list;
+}
+
+/** Server-side price and length for a Zoho Bookings service - never trust the browser's values. */
+async function getServicePrice(env, serviceId) {
+  const services = await getServicesList(env);
   const service = services.find((s) => String(s.id) === String(serviceId));
   if (!service) return null;
-  return { name: service.name, price: Number(service.price) || 0, currency: service.currency || 'INR' };
+  const minutes = Number((String(service.duration || '').match(/\d+/) || [])[0]) || 60;
+  return { name: service.name, price: Number(service.price) || 0, currency: service.currency || 'INR', duration: minutes };
+}
+
+// --- Slot holds -------------------------------------------------------------
+//
+// Picking a time holds it for that verified phone number so nobody else can
+// take it while they fill in details and pay. Holds live in one Durable
+// Object (SlotHolds), which handles requests one at a time - so two people
+// tapping the same time at the same moment can't both get it. One hold per
+// phone: picking a new time replaces the old hold. Holds expire on their own.
+
+const HOLD_MINUTES = 10;
+const PAYMENT_HOLD_MINUTES = 20; // Razorpay Checkout can take a while (UPI apps, OTPs)
+
+function timeToMinutes(time24) {
+  const [h, m] = String(time24).split(':').map(Number);
+  return h * 60 + m;
+}
+
+async function holdsCall(env, op, payload) {
+  const stub = env.SLOT_HOLDS.get(env.SLOT_HOLDS.idFromName('global'));
+  const res = await stub.fetch('https://slot-holds/' + op, { method: 'POST', body: JSON.stringify(payload) });
+  return res.json();
+}
+
+/** Holds (or re-holds / extends) a slot for this phone. { ok, expiresAt } - ok is false if someone else holds it. */
+async function claimSlot(env, { phone, staffId, date, time24, duration, minutes }) {
+  if (!env.SLOT_HOLDS) return { ok: true };
+  const start = timeToMinutes(time24);
+  return holdsCall(env, 'hold', {
+    phone,
+    staffId: String(staffId),
+    date,
+    start,
+    end: start + (duration || 60),
+    ttlMs: (minutes || HOLD_MINUTES) * 60 * 1000
+  });
+}
+
+async function releaseSlot(env, phone) {
+  if (!env.SLOT_HOLDS || !phone) return;
+  try {
+    await holdsCall(env, 'release', { phone });
+  } catch (err) {
+    console.error('Could not release slot hold', errorText(err));
+  }
+}
+
+/** Removes slots that overlap someone's active hold (for a session of `duration` minutes). */
+async function withoutHeldSlots(env, staffId, date, slots, duration) {
+  if (!env.SLOT_HOLDS || !Array.isArray(slots) || !slots.length) return slots;
+  const { holds } = await holdsCall(env, 'list', { staffId: String(staffId), date });
+  if (!holds || !holds.length) return slots;
+  return slots.filter((slot) => {
+    const start = timeToMinutes(to24Hour(slot));
+    const end = start + duration;
+    return !holds.some((h) => h.start < end && start < h.end);
+  });
+}
+
+export class SlotHolds {
+  constructor(state) {
+    this.state = state;
+  }
+
+  async load() {
+    const now = Date.now();
+    const holds = ((await this.state.storage.get('holds')) || []).filter((h) => h.expiresAt > now);
+    return holds;
+  }
+
+  async fetch(request) {
+    const op = new URL(request.url).pathname.slice(1);
+    const body = await request.json().catch(() => ({}));
+    let holds = await this.load();
+    const reply = (data) => new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
+
+    if (op === 'hold') {
+      const { phone, staffId, date, start, end, ttlMs } = body;
+      const taken = holds.some((h) => h.phone !== phone && h.staffId === staffId && h.date === date && h.start < end && start < h.end);
+      if (taken) return reply({ ok: false });
+      const mine = holds.find((h) => h.phone === phone && h.staffId === staffId && h.date === date && h.start === start);
+      const expiresAt = Math.max(Date.now() + ttlMs, mine ? mine.expiresAt : 0);
+      holds = holds.filter((h) => h.phone !== phone);
+      holds.push({ phone, staffId, date, start, end, expiresAt });
+      await this.state.storage.put('holds', holds);
+      return reply({ ok: true, expiresAt });
+    }
+
+    if (op === 'release') {
+      await this.state.storage.put('holds', holds.filter((h) => h.phone !== body.phone));
+      return reply({ ok: true });
+    }
+
+    if (op === 'list') {
+      return reply({
+        holds: holds
+          .filter((h) => h.staffId === body.staffId && h.date === body.date)
+          .map(({ start, end }) => ({ start, end }))
+      });
+    }
+
+    return reply({ error: 'unknown op' });
+  }
 }
 
 async function isSlotAvailable(env, serviceId, staffId, date, time24) {
@@ -667,6 +782,8 @@ async function finalizePaidBooking(env, orderId, paymentId) {
   const logContext = { phone: booking.phone };
 
   const result = await bookInZoho(env, booking);
+  // Booked or not, this customer's hold has done its job.
+  await releaseSlot(env, booking.phone);
 
   if (result.ok) {
     // Payments that are only authorized must be captured, or Razorpay
@@ -770,7 +887,57 @@ export default {
           staff_id: staffId,
           selected_date: toZohoDate(date)
         });
+        const returnvalue = data && data.response && data.response.returnvalue;
+        if (returnvalue && Array.isArray(returnvalue.data) && returnvalue.data.length) {
+          try {
+            const service = await getServicePrice(env, serviceId);
+            returnvalue.data = await withoutHeldSlots(env, staffId, date, returnvalue.data, (service && service.duration) || 60);
+          } catch (err) {
+            // Holds are a courtesy; never block showing times because of them.
+            console.error('Slot hold filter failed', errorText(err));
+          }
+        }
         return jsonResponse(data, 200, headers);
+      }
+
+      // --- POST /api/slots/hold ---------------------------------------------------
+      // Holds a time for this verified phone for HOLD_MINUTES while they finish
+      // booking. Picking another time replaces the hold.
+      if (url.pathname === '/api/slots/hold' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const session = await verifySessionToken(env, body.session_token);
+        if (!session) {
+          return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
+        }
+        const { service_id, staff_id, date, time } = body;
+        if (!service_id || !staff_id || !date || !time) {
+          return jsonResponse({ error: 'service_id, staff_id, date and time are required' }, 400, headers);
+        }
+        const time24 = to24Hour(time);
+        const [service, slotFree] = await Promise.all([
+          getServicePrice(env, service_id),
+          isSlotAvailable(env, service_id, staff_id, date, time24)
+        ]);
+        if (!service) {
+          return jsonResponse({ error: 'That session is no longer available.' }, 400, headers);
+        }
+        const takenMessage = 'Someone just picked this time. Please choose another.';
+        if (!slotFree) {
+          return jsonResponse({ error: takenMessage, slot_conflict: true }, 409, headers);
+        }
+        const hold = await claimSlot(env, { phone: session.phone, staffId: staff_id, date, time24, duration: service.duration });
+        if (!hold.ok) {
+          return jsonResponse({ error: takenMessage, slot_conflict: true }, 409, headers);
+        }
+        return jsonResponse({ held: true, held_until: hold.expiresAt || null, hold_minutes: HOLD_MINUTES }, 200, headers);
+      }
+
+      // --- POST /api/slots/release ------------------------------------------------
+      if (url.pathname === '/api/slots/release' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const session = await verifySessionToken(env, body.session_token);
+        if (session) await releaseSlot(env, session.phone);
+        return jsonResponse({ released: true }, 200, headers);
       }
 
       // --- POST /api/book ------------------------------------------------------
@@ -808,11 +975,17 @@ export default {
         }
 
         const time24 = to24Hour(time);
+        const claim = await claimSlot(env, { phone, staffId: staff_id, date, time24, duration: service.duration, minutes: 5 });
+        if (!claim.ok) {
+          return jsonResponse({ error: 'That time is being booked by someone else. Please pick another time.', slot_conflict: true }, 409, headers);
+        }
+
         const creatorId = await createCreatorAppointment(env, {
           phone, name, email, serviceId: service_id, staffId: staff_id, date, time24, amount: 0, paymentStatus: 'Paid'
         });
 
         const result = await bookInZoho(env, { serviceId: service_id, staffId: staff_id, date, time24, name, email, phone, notes });
+        await releaseSlot(env, phone);
 
         if (result.ok) {
           await updateCreatorAppointment(env, creatorId, {
@@ -1035,6 +1208,11 @@ export default {
         }
 
         const time24 = to24Hour(time);
+        const service = await getServicePrice(env, service_id);
+        const claim = await claimSlot(env, { phone, staffId: staff_id, date, time24, duration: service && service.duration, minutes: 5 });
+        if (!claim.ok) {
+          return jsonResponse({ error: 'That time is being booked by someone else. Please pick another time.', slot_conflict: true }, 409, headers);
+        }
         let creatorAppointmentId = null;
 
         try {
@@ -1078,6 +1256,7 @@ export default {
           notes: notes || undefined,
           customer_details: JSON.stringify({ name, email, phone_number: phone })
         });
+        await releaseSlot(env, phone);
 
         const returnvalue = data && data.response && data.response.returnvalue;
 
@@ -1166,6 +1345,14 @@ export default {
         }
         if (!slotFree) {
           return jsonResponse({ error: 'That time was just booked by someone else. Please pick another time.', slot_conflict: true }, 409, headers);
+        }
+        // Keep the slot for this customer while they pay (re-holds it if their
+        // earlier hold ran out and nobody else took it meanwhile).
+        const claim = await claimSlot(env, {
+          phone, staffId: staff_id, date, time24, duration: service.duration, minutes: PAYMENT_HOLD_MINUTES
+        });
+        if (!claim.ok) {
+          return jsonResponse({ error: 'Your hold on this time ran out and someone else picked it. Please choose another time.', slot_conflict: true }, 409, headers);
         }
 
         const creatorId = await createCreatorAppointment(env, {

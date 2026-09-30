@@ -162,6 +162,61 @@
         return date ? date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) : iso;
     }
 
+    /** The time this customer is holding, if it matches their chosen slot and hasn't run out. */
+    function activeHold(state) {
+        const h = state.hold;
+        if (!h || h.staffId !== String(state.staffId) || h.date !== state.date || h.time !== state.time) return null;
+        return h.until > Date.now() ? h : null;
+    }
+
+    function clock(ms) {
+        const total = Math.max(0, Math.round(ms / 1000));
+        return Math.floor(total / 60) + ':' + String(total % 60).padStart(2, '0');
+    }
+
+    let holdTimer = null;
+
+    /** Ticks a countdown into `render(msLeft)` until the hold ends, then calls `onEnd`. */
+    function runHoldCountdown(until, render, onEnd) {
+        clearInterval(holdTimer);
+        const tick = () => {
+            const left = until - Date.now();
+            if (left <= 0) {
+                clearInterval(holdTimer);
+                onEnd();
+                return;
+            }
+            render(left);
+        };
+        tick();
+        holdTimer = setInterval(tick, 1000);
+    }
+
+    /** "We're holding 11:00 AM for you" banner on the details and checkout pages. */
+    function showHoldBanner(state) {
+        const card = document.querySelector('.book-card');
+        if (!card || !state.hold) return;
+        const banner = document.createElement('div');
+        banner.className = 'hold-banner';
+        banner.setAttribute('role', 'status');
+        card.insertBefore(banner, card.firstChild);
+        const time = String(state.time).replace(/^0/, '');
+        const ended = () => {
+            banner.classList.add('ended');
+            banner.innerHTML = '<span class="hold-dot"></span><span>Your hold on ' + escapeHtml(time) +
+                ' has ended. We\'ll check it\'s still free when you continue.</span>';
+        };
+        const hold = activeHold(state);
+        if (!hold) {
+            ended();
+            return;
+        }
+        runHoldCountdown(hold.until, (left) => {
+            banner.innerHTML = '<span class="hold-dot"></span><span>We\'re holding <strong>' + escapeHtml(time) +
+                '</strong> for you</span><span class="hold-clock">' + clock(left) + '</span>';
+        }, ended);
+    }
+
     /** Fills the "Your booking" card in the side panel with whatever has been chosen so far. */
     function renderSummary(state) {
         const box = $('book-summary');
@@ -480,6 +535,22 @@
             time: state.time || null
         };
         let slotsRequest = 0;
+        let hold = state.hold || null; // { staffId, date, time, until }
+        let holding = false;
+
+        function holdMatchesPick() {
+            return hold && pick.staff && pick.time && hold.staffId === String(pick.staff.id) &&
+                hold.date === pick.date && hold.time === pick.time && hold.until > Date.now();
+        }
+
+        /** Drops our hold when the customer moves on to a different therapist/date. */
+        function releaseIfStale() {
+            if (hold && !holdMatchesPick()) {
+                post('/api/slots/release', { session_token: state.token }).catch(() => {});
+                hold = null;
+                save({ hold: null });
+            }
+        }
 
         function matchesType(name) {
             if (state.creditMode) return true;
@@ -510,12 +581,22 @@
         }
 
         function refresh() {
-            const ready = pick.service && pick.staff && pick.date && pick.time;
-            nextBtn.disabled = !ready;
+            const ready = pick.service && pick.staff && pick.date && pick.time && holdMatchesPick();
+            nextBtn.disabled = !ready || holding;
             if (ready) {
-                footerSummary.innerHTML = '<strong>' + escapeHtml(shortDate(pick.date) + ', ' + pick.time) + '</strong>' +
-                    escapeHtml(pick.service.name) + (state.creditMode ? ' · prepaid' : ' · ' + money(pick.service.price, pick.service.currency));
+                const line = escapeHtml(pick.service.name) + (state.creditMode ? ' · prepaid' : ' · ' + money(pick.service.price, pick.service.currency));
+                runHoldCountdown(hold.until, (left) => {
+                    footerSummary.innerHTML = '<strong>' + escapeHtml(shortDate(pick.date) + ', ' + pick.time.replace(/^0/, '')) + '</strong>' +
+                        '<span class="hold-inline">Held for you · ' + clock(left) + '</span> ' + line;
+                }, () => {
+                    pick.time = null;
+                    hold = null;
+                    save({ hold: null });
+                    setStatus(statusEl, 'Your 10-minute hold ended, so the time was released. Please pick a time again.', 'error');
+                    loadSlots();
+                });
             } else {
+                clearInterval(holdTimer);
                 footerSummary.textContent = !pick.service ? 'Pick a session to begin.'
                     : !pick.staff ? 'Now choose your therapist.'
                         : !pick.date ? 'Pick a date.' : 'Pick a time.';
@@ -553,6 +634,7 @@
             if (!pick.service || String(pick.service.id) !== String(id)) {
                 pick.staff = null;
                 pick.time = null;
+                releaseIfStale();
             }
             pick.service = service;
             setChecked(serviceList, id);
@@ -598,6 +680,7 @@
             if (!restoring && (!pick.staff || String(pick.staff.id) !== String(id))) pick.time = null;
             pick.staff = person;
             setChecked(staffList, id);
+            releaseIfStale();
             refresh();
             renderDates();
         }
@@ -630,6 +713,7 @@
             if (!restoring && pick.date !== iso) pick.time = null;
             pick.date = iso;
             setChecked(dateStrip, iso);
+            releaseIfStale();
             const chip = dateStrip.querySelector('[data-value="' + iso + '"]');
             if (chip) {
                 // Slide only the strip; scrollIntoView would also scroll the page.
@@ -689,6 +773,9 @@
                 nextDayButton('No open times on ' + shortDate(pick.date) + '.');
                 return;
             }
+            if (hold && hold.until > Date.now() && hold.staffId === String(pick.staff.id) && hold.date === pick.date && !slots.includes(hold.time)) {
+                slots = slots.concat(hold.time).sort((a, b) => slotMinutes(a) - slotMinutes(b));
+            }
             if (pick.time && !slots.includes(pick.time)) pick.time = null;
 
             slotsWrap.innerHTML = GROUPS.map(([label, test, icon]) => {
@@ -701,19 +788,58 @@
                     ).join('') + '</div></div>';
             }).join('');
             slotsWrap.querySelectorAll('.booking-slot').forEach((btn) => {
-                btn.addEventListener('click', () => {
-                    slotsWrap.querySelectorAll('.booking-slot').forEach((el) => el.classList.remove('selected'));
-                    btn.classList.add('selected');
-                    pick.time = btn.dataset.value;
-                    setStatus(statusEl, '');
-                    refresh();
-                });
+                btn.addEventListener('click', () => holdSlot(btn));
             });
             refresh();
         }
 
+        /** Tapping a time asks the server to hold it for this customer. */
+        async function holdSlot(btn) {
+            if (holding) return;
+            const time = btn.dataset.value;
+            holding = true;
+            slotsWrap.querySelectorAll('.booking-slot').forEach((el) => el.classList.remove('selected'));
+            btn.classList.add('selected', 'holding');
+            pick.time = time;
+            setStatus(statusEl, '');
+            footerSummary.textContent = 'Holding ' + time.replace(/^0/, '') + ' for you…';
+            nextBtn.disabled = true;
+            try {
+                const { res, data } = await post('/api/slots/hold', {
+                    session_token: state.token,
+                    service_id: pick.service.id,
+                    staff_id: pick.staff.id,
+                    date: pick.date,
+                    time
+                });
+                if (handleAuthError(res, data)) return;
+                if (!res.ok || !data.held) {
+                    pick.time = null;
+                    setStatus(statusEl, data.error || 'That time is no longer available. Please pick another.', 'error');
+                    holding = false;
+                    loadSlots();
+                    return;
+                }
+                hold = {
+                    staffId: String(pick.staff.id),
+                    date: pick.date,
+                    time,
+                    until: data.held_until || Date.now() + (data.hold_minutes || 10) * 60 * 1000
+                };
+                save({ hold });
+            } catch (err) {
+                pick.time = null;
+                btn.classList.remove('selected');
+                setStatus(statusEl, 'Network error, please tap the time again.', 'error');
+            } finally {
+                btn.classList.remove('holding');
+                holding = false;
+                refresh();
+            }
+        }
+
         nextBtn.addEventListener('click', () => {
-            if (!(pick.service && pick.staff && pick.date && pick.time)) {
+            if (!(pick.service && pick.staff && pick.date && pick.time && holdMatchesPick())) {
                 setStatus(statusEl, 'Please choose a session, therapist, date and time.', 'error');
                 return;
             }
@@ -761,6 +887,7 @@
         const state = guard([[['sessionType'], PATHS.type], [SCHEDULE_KEYS.filter((k) => k !== 'price'), PATHS.schedule]]);
         if (!state) return;
         renderStepper(3);
+        showHoldBanner(state);
 
         $('details-phone').value = state.phone || '';
         $('details-name').value = state.name || '';
@@ -804,6 +931,7 @@
         ]);
         if (!state) return;
         renderStepper(4);
+        showHoldBanner(state);
 
         const date = parseIsoDate(state.date);
         $('review-month').textContent = date ? date.toLocaleDateString('en-IN', { month: 'short' }) : '';

@@ -2,6 +2,16 @@ name = "mindlap-booking-api"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
 
+# Slot holds: one Durable Object keeps "this time is being booked by X" for a
+# few minutes so two customers can't pick the same slot at once.
+[[durable_objects.bindings]]
+name = "SLOT_HOLDS"
+class_name = "SlotHolds"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SlotHolds"]
+
 # Non-secret configuration. Safe to commit.
 [vars]
 # Zoho data center for your account: "com" (US/global), "in" (India),
