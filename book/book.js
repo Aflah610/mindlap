@@ -2,7 +2,7 @@
    Mindlap - Book Online, one page per step:
      /book/               verify phone (WhatsApp OTP)
      /book/credits/       prepaid sessions found (Zoho CRM)
-     /book/therapist/     choose a therapist (skipped when coming from a profile)
+     (therapist)          chosen on the site's own therapist cards / profile pages
      /book/session-type/  individual or couple
      /book/schedule/      date, time, then single session or package
      /book/details/       name, email, notes
@@ -22,7 +22,7 @@
     const PATHS = {
         verify: '/book/',
         credits: '/book/credits/',
-        therapist: '/book/therapist/',
+        therapist: '/#therapists',
         type: '/book/session-type/',
         schedule: '/book/schedule/',
         details: '/book/details/',
@@ -442,13 +442,18 @@
             const { res, data } = await post('/api/credits/check', { session_token: token });
             if (handleAuthError(res, data)) return;
             if (res.ok && data.has_credits && data.credits > 0) {
+                const firstTime = load().creditMode === undefined;
                 save({ credits: data.credits });
-                go(PATHS.credits);
+                if (firstTime) {
+                    go(PATHS.credits);
+                    return;
+                }
+                await continueWithTherapist();
                 return;
             }
         } catch (err) { /* fall through */ }
         save({ credits: 0, creditMode: false });
-        go(PATHS.therapist);
+        await continueWithTherapist();
     }
 
     // -----------------------------------------------------------------
@@ -459,7 +464,7 @@
         const state = guard();
         if (!state) return;
         if (!(state.credits > 0)) {
-            go(PATHS.therapist);
+            continueWithTherapist();
             return;
         }
         renderStepper(1);
@@ -471,12 +476,12 @@
         $('use-credits-btn').addEventListener('click', () => {
             save({ creditMode: true, sessionType: 'any' });
             clearFrom(['serviceId', 'serviceName', 'price', 'currency', 'duration', 'date', 'time']);
-            go(PATHS.therapist);
+            continueWithTherapist();
         });
         $('pay-new-btn').addEventListener('click', () => {
             if (load().creditMode) clearFrom(['sessionType', 'serviceId', 'serviceName', 'price', 'currency', 'duration']);
             save({ creditMode: false });
-            go(PATHS.therapist);
+            continueWithTherapist();
         });
     }
 
@@ -515,105 +520,57 @@
         });
     }
 
-    const PROFILE_PHOTOS = {
-        anasooya: '/assets/anasooya.webp',
-        athira: '/assets/athira_bg.jpeg',
-        gouri: '/assets/gouri.webp',
-        rashin: '/assets/rashin.webp',
-        sajitha: '/assets/sajitha.webp',
-        theresa: '/assets/theresa.webp'
+    /**
+     * Site therapists (profile first name) that can be booked online, and the
+     * Zoho Bookings staff whose calendar they use. Add a line per therapist
+     * once they exist in Zoho; until then their buttons stay on WhatsApp.
+     */
+    const ONLINE_THERAPISTS = {
+        rashin: { zohoStaff: 'nasheel', profile: '/rashin.html', photo: '/assets/rashin.webp' }
     };
 
     function firstName(name) {
         return String(name || '').trim().split(/[\s-]+/)[0].toLowerCase();
     }
 
-    function therapistPhoto(person) {
-        if (/^https:\/\//.test(person.photo || '')) return person.photo;
-        return PROFILE_PHOTOS[firstName(person.name)] || '';
-    }
-
-    function avatarHtml(person) {
-        const photo = therapistPhoto(person);
-        return '<span class="option-avatar">' +
-            (photo ? '<img src="' + escapeHtml(photo) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
-            escapeHtml(String(person.name || '?').trim().charAt(0).toUpperCase()) + '</span>';
-    }
-
-    // -----------------------------------------------------------------
-    // Step 2: /book/therapist/
-    // -----------------------------------------------------------------
-
-    async function initTherapist() {
-        const state = guard();
-        if (!state) return;
-        renderStepper(1);
-        showVerifiedChip(state);
-
-        const list = $('therapist-list');
-        const statusEl = $('therapist-status');
-        const note = $('therapist-note');
-
-        let staff = [];
-        let services = [];
-        try {
-            [staff, services] = await Promise.all([get('/api/staff'), get('/api/services')]);
-        } catch (err) {
-            list.innerHTML = '';
-            setStatus(statusEl, 'Could not load therapists right now. Please try again shortly or book on WhatsApp.', 'error');
-            return;
-        }
-
-        const offers = (person) => {
-            const types = new Set(services
-                .filter((s) => offeredBy(s, person.id) && serviceType(s.name) && (!state.creditMode || !isPackage(s.name)))
-                .map((s) => serviceType(s.name)));
-            return ['individual', 'couple'].filter((t) => types.has(t));
-        };
-        const bookable = staff.filter((p) => offers(p).length);
-
-        function choose(person, skipHistory) {
-            if (String(person.id) !== String(load().staffId)) clearFrom(SCHEDULE_KEYS.concat(['hold']));
-            save({ staffId: String(person.id), staffName: person.name, staffPhoto: therapistPhoto(person), preferredTherapist: null });
-            const next = state.creditMode ? PATHS.schedule : PATHS.type;
-            if (skipHistory) window.location.replace(next);
-            else go(next);
-        }
-
-        // Came from a therapist's profile page: continue with them if they can be booked online.
+    /**
+     * Continues with the therapist chosen on the site (preferredTherapist, set
+     * by /book/?therapist=Name). Without one, sends the customer to the
+     * therapist cards on the home page to pick someone.
+     */
+    async function continueWithTherapist() {
+        const state = load();
         const wanted = state.preferredTherapist;
-        if (wanted) {
-            const match = bookable.find((p) => firstName(p.name) === firstName(wanted));
-            if (match) {
-                choose(match, true);
-                return;
-            }
-            save({ preferredTherapist: null });
-            note.hidden = false;
-            note.innerHTML = '<p>' + escapeHtml(wanted) + ' isn\'t available for online booking yet. Please choose another therapist below, or ' +
-                '<a href="' + escapeHtml(WHATSAPP_URL) + '" target="_blank" rel="noopener">book with ' + escapeHtml(wanted) + ' on WhatsApp</a>.</p>';
-        }
-
-        if (!bookable.length) {
-            list.innerHTML = '';
-            setStatus(statusEl, 'No therapists are open for online booking right now. Please book on WhatsApp.', 'error');
+        const known = state.staffId && !wanted;
+        if (known) {
+            go(state.creditMode ? PATHS.schedule : PATHS.type);
             return;
         }
-
-        const label = { individual: 'Individual', couple: 'Couple' };
-        list.innerHTML = bookable.map((p) =>
-            '<button type="button" class="option-card" role="radio" aria-checked="' + (String(p.id) === String(state.staffId)) + '" data-value="' + escapeHtml(p.id) + '">' +
-                avatarHtml(p) +
-                '<span class="option-body">' +
-                    '<span class="option-title">' + escapeHtml(p.name) + '</span>' +
-                    '<span class="option-meta">' + escapeHtml(p.designation || 'Psychologist') + '</span>' +
-                    '<span class="option-tags">' + offers(p).map((t) => '<span>' + label[t] + '</span>').join('') + '</span>' +
-                '</span>' +
-            '</button>'
-        ).join('');
-        list.querySelectorAll('.option-card').forEach((card) => {
-            card.addEventListener('click', () => choose(bookable.find((p) => String(p.id) === card.dataset.value)));
+        const entry = wanted && ONLINE_THERAPISTS[firstName(wanted)];
+        if (!entry) {
+            save({ preferredTherapist: null });
+            go(PATHS.therapist);
+            return;
+        }
+        let staff = [];
+        try {
+            staff = await get('/api/staff');
+        } catch (err) { /* handled below */ }
+        const match = staff.find((p) => firstName(p.name) === entry.zohoStaff);
+        if (!match) {
+            save({ preferredTherapist: null });
+            go(PATHS.therapist);
+            return;
+        }
+        if (String(match.id) !== String(state.staffId) || wanted !== state.staffName) clearFrom(SCHEDULE_KEYS.concat(['hold']));
+        save({
+            staffId: String(match.id),
+            staffName: wanted,
+            staffPhoto: entry.photo,
+            staffProfile: entry.profile,
+            preferredTherapist: null
         });
+        window.location.replace(state.creditMode ? PATHS.schedule : PATHS.type);
     }
 
     // -----------------------------------------------------------------
@@ -629,7 +586,7 @@
         const back = $('type-back');
         if (back) {
             back.hidden = false;
-            back.href = PATHS.therapist;
+            back.href = state.staffProfile || PATHS.therapist;
         }
 
         const cards = document.querySelectorAll('[data-session-type]');
@@ -669,7 +626,7 @@
         renderStepper(3);
         showVerifiedChip(state);
 
-        $('schedule-back').href = state.creditMode ? PATHS.therapist : PATHS.type;
+        $('schedule-back').href = state.creditMode ? PATHS.credits : PATHS.type;
         $('schedule-with').innerHTML = 'With <strong>' + escapeHtml(state.staffName) + '</strong> · ' +
             (state.creditMode ? 'prepaid session' : state.sessionType === 'couple' ? 'couple therapy' : 'individual therapy') +
             ' · online. <a href="' + PATHS.therapist + '">Change therapist</a>';
@@ -1328,7 +1285,6 @@
     const PAGES = {
         verify: initVerify,
         credits: initCredits,
-        therapist: initTherapist,
         type: initType,
         schedule: initSchedule,
         details: initDetails,
