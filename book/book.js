@@ -1107,21 +1107,29 @@
             const paymentId = encodeURIComponent(response.razorpay_payment_id);
             payBtn.textContent = 'Booking your session…';
             setStatus(statusEl, 'Payment received. Booking your session, please keep this page open.');
-            try {
-                const { res, data } = await post('/api/payment/verify', {
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature
-                });
-                if (res.ok && data.success) {
-                    go(PATHS.confirmation + '?booking=success');
-                } else {
-                    go(PATHS.confirmation + '?booking=' + (data.refunded ? 'refunded' : 'failed') + '&payment=' + paymentId);
+            // Retrying is safe: the server never books the same payment twice.
+            const waits = [0, 2000, 4000, 8000];
+            let last = {};
+            for (const wait of waits) {
+                if (wait) await new Promise((r) => setTimeout(r, wait));
+                try {
+                    const { res, data } = await post('/api/payment/verify', {
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature
+                    });
+                    if (res.ok && data.success) {
+                        go(PATHS.confirmation + '?booking=success');
+                        return;
+                    }
+                    last = data;
+                    if (res.status === 409) break; // slot really gone: refunded (or refund flagged for the team)
+                } catch (err) {
+                    last = { network: true };
                 }
-            } catch (err) {
-                // The payment went through; the server-side webhook still finishes the booking.
-                go(PATHS.confirmation + '?booking=error&payment=' + paymentId);
             }
+            const outcome = last.refunded ? 'refunded' : last.slot_conflict ? 'failed' : 'error';
+            go(PATHS.confirmation + '?booking=' + outcome + '&payment=' + paymentId);
         }
 
         /** Opens Razorpay Checkout on this page. The slot is booked only after payment (see confirmPayment). */

@@ -1419,7 +1419,20 @@ export default {
           return jsonResponse({ success: false, error: 'Payment could not be verified.' }, 400, headers);
         }
 
-        const result = await finalizePaidBooking(env, orderId, paymentId);
+        let result;
+        try {
+          result = await finalizePaidBooking(env, orderId, paymentId);
+        } catch (err) {
+          // Usually a brief Zoho/Razorpay hiccup; the browser retries, and the
+          // retry is safe because finalizePaidBooking never books twice.
+          console.error('Payment verify failed', paymentId, errorText(err));
+          await logSyncError(env, { operation: 'Create Appointment', message: `Paid booking attempt failed for ${paymentId}: ${errorText(err)}` });
+          return jsonResponse({ success: false, retry: true, error: 'Still confirming your booking…' }, 503, headers);
+        }
+        if (result.status !== 'booked') console.log('Payment verify outcome', paymentId, JSON.stringify(result));
+        if (result.status === 'pending') {
+          return jsonResponse({ success: false, retry: true, error: result.message }, 202, headers);
+        }
         if (result.status === 'booked') {
           return jsonResponse({ success: true, booking_id: result.bookingId, payment_id: paymentId }, 200, headers);
         }
