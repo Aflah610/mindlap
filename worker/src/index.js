@@ -36,6 +36,8 @@
  *   POST /api/payment/verify        { razorpay_order_id, razorpay_payment_id,
  *                                      razorpay_signature } -> books after payment
  *   POST /api/payment/webhook       Razorpay webhook (payment.captured/authorized)
+ *   POST /api/payment/waiting       { session_token } -> paid sessions still needing a time
+ *   POST /api/payment/rebook        { session_token, order_id, date, time } -> book a new time, no new payment
  *
  * See ../../docs/zoho-bookings-setup.md for how to configure and deploy
  * this Worker.
@@ -587,6 +589,12 @@ async function releaseSlot(env, phone) {
   }
 }
 
+async function waitingRebooks(env, phone) {
+  if (!env.SLOT_HOLDS || !phone) return [];
+  const { items } = await holdsCall(env, 'rebook-list', { phone });
+  return items || [];
+}
+
 /** Removes slots that overlap someone's active hold (for a session of `duration` minutes). */
 async function withoutHeldSlots(env, staffId, date, slots, duration) {
   if (!env.SLOT_HOLDS || !Array.isArray(slots) || !slots.length) return slots;
@@ -639,6 +647,34 @@ export class SlotHolds {
           .filter((h) => h.staffId === body.staffId && h.date === body.date)
           .map(({ start, end }) => ({ start, end }))
       });
+    }
+
+    // Paid sessions that still need a date/time, per phone number.
+    if (op === 'rebook-add' || op === 'rebook-remove' || op === 'rebook-list') {
+      const key = 'rebook:' + body.phone;
+      let items = (await this.state.storage.get(key)) || [];
+      if (op === 'rebook-add') {
+        items = items.filter((i) => i.orderId !== body.item.orderId).concat(body.item);
+        await this.state.storage.put(key, items);
+      } else if (op === 'rebook-remove') {
+        items = items.filter((i) => i.orderId !== body.orderId);
+        if (items.length) await this.state.storage.put(key, items);
+        else await this.state.storage.delete(key);
+      }
+      return reply({ items });
+    }
+
+    // Short lock so the same paid order can't be rebooked twice at once.
+    if (op === 'lock' || op === 'unlock') {
+      const key = 'lock:' + body.key;
+      if (op === 'unlock') {
+        await this.state.storage.delete(key);
+        return reply({ ok: true });
+      }
+      const until = await this.state.storage.get(key);
+      if (until && until > Date.now()) return reply({ ok: false });
+      await this.state.storage.put(key, Date.now() + (body.ttlMs || 60000));
+      return reply({ ok: true });
     }
 
     return reply({ error: 'unknown op' });
@@ -747,7 +783,9 @@ function constantTimeEqual(a, b) {
  * than once for the same order (the browser and the webhook both call it):
  * the Zoho booking ID is saved on the order's notes and reused.
  *
- * Returns { status: 'booked' | 'refunded' | 'pending' | 'invalid', ... }
+ * Returns { status: 'booked' | 'needs_rebook' | 'pending' | 'invalid', ... }
+ * 'needs_rebook': the payment is kept and the customer picks a new time
+ * (/api/payment/rebook) - there are no automatic refunds.
  */
 async function finalizePaidBooking(env, orderId, paymentId) {
   const [order, payment] = await Promise.all([
@@ -761,6 +799,9 @@ async function finalizePaidBooking(env, orderId, paymentId) {
   }
   if (notes.booking_id) {
     return { status: 'booked', bookingId: notes.booking_id };
+  }
+  if (notes.needs_rebook) {
+    return { status: 'needs_rebook', orderId };
   }
   if (payment.status !== 'captured' && payment.status !== 'authorized') {
     return { status: 'pending', message: `Payment is ${payment.status}.` };
@@ -816,28 +857,48 @@ async function finalizePaidBooking(env, orderId, paymentId) {
     return { status: 'booked', bookingId: latest.notes.booking_id };
   }
 
-  // Paid but the slot couldn't be booked (usually someone took it while the
-  // customer was paying) - give the money back.
-  let refunded = false;
-  try {
-    if (payment.status === 'captured') {
-      await razorpayRequest(env, 'POST', `payments/${paymentId}/refund`, { notes: { reason: result.message.slice(0, 200) } });
+  // Paid but the time couldn't be booked (usually someone took it while the
+  // customer was paying). Keep the payment and let them choose a new time.
+  if (payment.status === 'authorized') {
+    // Uncaptured payments go back to the customer after a few days.
+    try {
+      await razorpayRequest(env, 'POST', `payments/${paymentId}/capture`, { amount: payment.amount, currency: payment.currency });
+    } catch (err) {
+      await logSyncError(env, { operation: 'Update Appointment', message: `Payment capture failed for ${paymentId}: ${errorText(err)}`, phone: booking.phone });
     }
-    // An uncaptured (authorized) payment is released back automatically.
-    refunded = true;
+  }
+  try {
+    await razorpayRequest(env, 'PATCH', `orders/${orderId}`, { notes: { ...notes, needs_rebook: '1' } });
   } catch (err) {
-    await logSyncError(env, { operation: 'Update Appointment', message: `REFUND NEEDED - payment ${paymentId}: ${errorText(err)}`, phone: booking.phone });
+    console.error('Could not mark order for rebooking', orderId, errorText(err));
+  }
+  if (env.SLOT_HOLDS) {
+    await holdsCall(env, 'rebook-add', {
+      phone: booking.phone,
+      item: {
+        orderId,
+        paymentId,
+        serviceId: notes.service_id,
+        serviceName: notes.service_name || '',
+        staffId: notes.staff_id,
+        staffName: notes.staff_name || '',
+        amount: Number(order.amount) / 100,
+        currency: order.currency,
+        paidAt: Date.now()
+      }
+    }).catch((err) => console.error('Could not save rebook item', errorText(err)));
   }
   await updateCreatorAppointment(env, creatorId, {
     booking_status: 'Failed',
-    error_message: `${result.message} (payment ${paymentId} ${refunded ? 'refunded' : 'NOT refunded - refund manually'})`
+    payment_status: 'Paid',
+    error_message: `PAID - NEEDS REBOOKING. ${result.message} (payment ${paymentId}). Customer can pick a new time online.`
   }, logContext);
   await logSyncError(env, {
     operation: 'Create Appointment',
-    message: `Paid booking failed: ${result.message}. Payment ${paymentId} ${refunded ? 'refunded automatically' : 'needs a manual refund'}.`,
+    message: `Paid booking could not be made: ${result.message}. Payment ${paymentId} kept; customer asked to choose a new time.`,
     phone: booking.phone
   });
-  return { status: 'refunded', slotConflict: result.slotConflict, refunded, message: result.message };
+  return { status: 'needs_rebook', orderId, message: result.message };
 }
 
 export default {
@@ -1376,7 +1437,9 @@ export default {
               email: clip(email),
               phone,
               customer_notes: clip(notes),
-              creator_id: clip(creatorId)
+              creator_id: clip(creatorId),
+              service_name: clip(service.name),
+              staff_name: clip(body.staff_name)
             }
           });
         } catch (err) {
@@ -1401,7 +1464,7 @@ export default {
 
       // --- POST /api/payment/verify ----------------------------------------------
       // Step 2, called by the browser right after Razorpay Checkout succeeds.
-      // Verifies the signature, then books the slot (or refunds if it's gone).
+      // Verifies the signature, then books the slot (or asks for a new time if it's gone).
       if (url.pathname === '/api/payment/verify' && request.method === 'POST') {
         const body = await request.json().catch(() => ({}));
         const orderId = String(body.razorpay_order_id || '').trim();
@@ -1436,17 +1499,111 @@ export default {
         if (result.status === 'booked') {
           return jsonResponse({ success: true, booking_id: result.bookingId, payment_id: paymentId }, 200, headers);
         }
-        if (result.status === 'refunded') {
+        if (result.status === 'needs_rebook') {
           return jsonResponse({
             success: false,
-            refunded: result.refunded,
-            slot_conflict: result.slotConflict,
-            error: result.refunded
-              ? 'Your payment went through, but that time was taken just before we could book it. Your money is being refunded (usually 5-7 working days). Please pick another time.'
-              : 'Your payment went through, but we could not book that time. Our team will contact you and refund you.'
+            needs_rebook: true,
+            order_id: orderId,
+            error: 'Your payment was successful, but we could not book that time. Please choose a new date and time - you will not be charged again.'
           }, 409, headers);
         }
         return jsonResponse({ success: false, error: result.message || 'Payment not completed.' }, 400, headers);
+      }
+
+      // --- POST /api/payment/waiting ---------------------------------------------
+      // Paid sessions this verified phone still needs to pick a time for.
+      if (url.pathname === '/api/payment/waiting' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const session = await verifySessionToken(env, body.session_token);
+        if (!session) {
+          return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
+        }
+        const items = await waitingRebooks(env, session.phone);
+        return jsonResponse({
+          waiting: items.map((i) => ({
+            order_id: i.orderId,
+            service_id: i.serviceId,
+            service_name: i.serviceName,
+            staff_id: i.staffId,
+            staff_name: i.staffName,
+            amount: i.amount,
+            currency: i.currency
+          }))
+        }, 200, headers);
+      }
+
+      // --- POST /api/payment/rebook ----------------------------------------------
+      // Books a new time for a session that was paid for but couldn't be booked.
+      // Same service and therapist; no second payment. Each order books once.
+      if (url.pathname === '/api/payment/rebook' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const session = await verifySessionToken(env, body.session_token);
+        if (!session) {
+          return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
+        }
+        const orderId = String(body.order_id || '').trim();
+        const { date, time } = body;
+        if (!orderId || !date || !time) {
+          return jsonResponse({ error: 'order_id, date and time are required' }, 400, headers);
+        }
+
+        const order = await razorpayRequest(env, 'GET', `orders/${orderId}`);
+        const notes = order.notes || {};
+        if (notes.phone !== session.phone || order.status !== 'paid') {
+          return jsonResponse({ error: 'We could not find that payment for your number.' }, 404, headers);
+        }
+        if (notes.booking_id) {
+          return jsonResponse({ success: true, booking_id: notes.booking_id, already: true }, 200, headers);
+        }
+
+        const lock = env.SLOT_HOLDS ? await holdsCall(env, 'lock', { key: orderId, ttlMs: 60000 }) : { ok: true };
+        if (!lock.ok) {
+          return jsonResponse({ error: 'Your booking is already being confirmed. Please wait a moment.' }, 409, headers);
+        }
+        try {
+          const time24 = to24Hour(time);
+          const service = await getServicePrice(env, notes.service_id);
+          const free = await isSlotAvailable(env, notes.service_id, notes.staff_id, date, time24);
+          const claim = free ? await claimSlot(env, {
+            phone: session.phone, staffId: notes.staff_id, date, time24, duration: (service && service.duration) || 60
+          }) : { ok: false };
+          if (!claim.ok) {
+            return jsonResponse({ error: 'That time was just taken. Please choose another time.', slot_conflict: true }, 409, headers);
+          }
+
+          const result = await bookInZoho(env, {
+            serviceId: notes.service_id,
+            staffId: notes.staff_id,
+            date,
+            time24,
+            name: notes.name,
+            email: notes.email,
+            phone: notes.phone,
+            notes: [notes.customer_notes, `Rebooked after payment. Order ID: ${orderId}.`].filter(Boolean).join('\n')
+          });
+          await releaseSlot(env, session.phone);
+          if (!result.ok) {
+            return jsonResponse({ error: result.message || 'That time could not be booked. Please choose another time.', slot_conflict: true }, 409, headers);
+          }
+
+          const { needs_rebook, ...rest } = notes;
+          await razorpayRequest(env, 'PATCH', `orders/${orderId}`, { notes: { ...rest, booking_id: result.bookingId, date, time: time24 } })
+            .catch((err) => console.error('Could not save rebooking on order', orderId, errorText(err)));
+          await holdsCall(env, 'rebook-remove', { phone: session.phone, orderId }).catch(() => {});
+          const creatorId = await createCreatorAppointment(env, {
+            phone: notes.phone, name: notes.name, email: notes.email,
+            serviceId: notes.service_id, staffId: notes.staff_id, date, time24,
+            amount: Number(order.amount) / 100, paymentStatus: 'Paid'
+          });
+          await updateCreatorAppointment(env, creatorId, {
+            zoho_bookings_appointment_id: result.bookingId,
+            booking_status: 'Confirmed',
+            confirmed_time: creatorNow()
+          }, { phone: notes.phone, bookingId: result.bookingId });
+          return jsonResponse({ success: true, booking_id: result.bookingId }, 200, headers);
+        } finally {
+          if (env.SLOT_HOLDS) await holdsCall(env, 'unlock', { key: orderId }).catch(() => {});
+        }
       }
 
       // --- POST /api/payment/webhook ---------------------------------------------
@@ -1475,7 +1632,7 @@ export default {
         const ageSeconds = Date.now() / 1000 - Number(payment.created_at || 0);
         if (ageSeconds < 120) {
           const order = await razorpayRequest(env, 'GET', `orders/${payment.order_id}`);
-          if (!(order.notes && order.notes.booking_id)) {
+          if (!(order.notes && (order.notes.booking_id || order.notes.needs_rebook))) {
             return new Response('Retry later', { status: 503 });
           }
           return new Response('OK', { status: 200 });

@@ -234,7 +234,8 @@
             ['When', state.date && state.time ? shortDate(state.date) + ', ' + String(state.time).replace(/^0/, '') : '']
         ].filter(([, value]) => value);
         let total = '';
-        if (state.creditMode && state.serviceName) total = 'Prepaid';
+        if (state.rebookOrderId && state.serviceName) total = 'Already paid';
+        else if (state.creditMode && state.serviceName) total = 'Prepaid';
         else if (state.serviceName && state.price !== undefined && state.price !== null) total = money(state.price, state.currency);
 
         box.hidden = !rows.length;
@@ -437,7 +438,32 @@
     }
 
     /** Prepaid credits (Zoho CRM) decide the next page. A failed check falls back to the normal flow. */
+    /** Switches the flow to "pick a new time for an already-paid session". */
+    function startRebook(item) {
+        clearFrom(SCHEDULE_KEYS.concat(['hold', 'duration']));
+        save({
+            rebookOrderId: item.order_id,
+            serviceId: item.service_id,
+            serviceName: item.service_name || 'Your paid session',
+            staffId: String(item.staff_id),
+            staffName: item.staff_name || 'your therapist',
+            sessionType: serviceType(item.service_name),
+            creditMode: false,
+            price: Number(item.amount) || 0,
+            currency: item.currency || 'INR'
+        });
+    }
+
     async function routeAfterVerify(token) {
+        try {
+            const { res, data } = await post('/api/payment/waiting', { session_token: token });
+            if (handleAuthError(res, data)) return;
+            if (res.ok && data.waiting && data.waiting.length) {
+                startRebook(data.waiting[0]);
+                go(PATHS.confirmation + '?booking=waiting');
+                return;
+            }
+        } catch (err) { /* fall through to the normal flow */ }
         try {
             const { res, data } = await post('/api/credits/check', { session_token: token });
             if (handleAuthError(res, data)) return;
@@ -626,10 +652,17 @@
         renderStepper(3);
         showVerifiedChip(state);
 
+        const rebook = Boolean(state.rebookOrderId);
         $('schedule-back').href = state.creditMode ? PATHS.credits : PATHS.type;
         $('schedule-with').innerHTML = 'With <strong>' + escapeHtml(state.staffName) + '</strong> · ' +
             (state.creditMode ? 'prepaid session' : state.sessionType === 'couple' ? 'couple therapy' : 'individual therapy') +
             ' · online. <a href="' + PATHS.therapist + '">Change therapist</a>';
+        if (rebook) {
+            $('schedule-back').href = PATHS.confirmation + '?booking=waiting';
+            $('schedule-with').innerHTML = 'Already paid: <strong>' + escapeHtml(state.serviceName) + '</strong> with <strong>' +
+                escapeHtml(state.staffName) + '</strong>. Pick a new date and time - no payment needed.';
+            $('schedule-next').textContent = 'Confirm new time';
+        }
         if (state.creditMode) {
             const banner = $('credit-banner');
             banner.hidden = false;
@@ -688,7 +721,7 @@
             const ready = pick.date && pick.time && pick.service && holdMatchesPick();
             nextBtn.disabled = !ready || holding;
             if (ready) {
-                const line = escapeHtml(pick.service.name) + (state.creditMode ? ' · prepaid' : ' · ' + money(pick.service.price, pick.service.currency));
+                const line = escapeHtml(pick.service.name) + (rebook ? ' · already paid' : state.creditMode ? ' · prepaid' : ' · ' + money(pick.service.price, pick.service.currency));
                 runHoldCountdown(hold.until, (left) => {
                     footerSummary.innerHTML = '<strong>' + escapeHtml(shortDate(pick.date) + ', ' + niceTime(pick.time)) + '</strong>' +
                         '<span class="hold-inline">Held for you · ' + clock(left) + '</span> ' + line;
@@ -902,7 +935,8 @@
                         '<span class="option-title">' + escapeHtml(s.name) + '</span>' +
                         '<span class="option-meta">' + serviceMinutes(s) + ' min per session · online</span>' +
                         (available
-                            ? (state.creditMode ? '<span class="option-meta">Covered by your prepaid sessions</span>'
+                            ? (rebook ? '<span class="option-meta">Already paid</span>'
+                                : state.creditMode ? '<span class="option-meta">Covered by your prepaid sessions</span>'
                                 : '<span class="option-price">' + escapeHtml(money(s.price, s.currency)) + '</span>')
                             : '<span class="option-meta">Not available at ' + escapeHtml(niceTime(pick.time)) + '</span>') +
                     '</span>' +
@@ -939,9 +973,44 @@
             }
         }
 
+        async function confirmRebook() {
+            nextBtn.disabled = true;
+            nextBtn.textContent = 'Booking…';
+            setStatus(statusEl, 'Booking your new time…');
+            try {
+                const { res, data } = await post('/api/payment/rebook', {
+                    session_token: state.token,
+                    order_id: state.rebookOrderId,
+                    date: pick.date,
+                    time: pick.time
+                });
+                if (handleAuthError(res, data)) return;
+                if (res.ok && data.success) {
+                    save({ date: pick.date, time: pick.time, rebookOrderId: null, hold: null });
+                    go(PATHS.confirmation + '?booking=success');
+                    return;
+                }
+                setStatus(statusEl, data.error || 'That time could not be booked. Please choose another time.', 'error');
+                if (data.slot_conflict) {
+                    pick.time = null;
+                    hold = null;
+                    save({ hold: null });
+                    chooseDate(pick.date, true);
+                }
+            } catch (err) {
+                setStatus(statusEl, 'Network error, please try again.', 'error');
+            }
+            nextBtn.textContent = 'Confirm new time';
+            refresh();
+        }
+
         nextBtn.addEventListener('click', () => {
             if (!(pick.date && pick.time && pick.service && holdMatchesPick())) {
                 setStatus(statusEl, 'Please choose a date, time and session.', 'error');
+                return;
+            }
+            if (rebook) {
+                confirmRebook();
                 return;
             }
             save({
@@ -958,7 +1027,10 @@
 
         (async () => {
             try {
-                candidates = bookableServices(await get('/api/services'), state.staffId, state);
+                const all = await get('/api/services');
+                // Rebooking: only the session they already paid for.
+                candidates = rebook ? all.filter((sv) => String(sv.id) === String(state.serviceId))
+                    : bookableServices(all, state.staffId, state);
             } catch (err) {
                 setStatus(statusEl, 'Could not load sessions right now. Please try again shortly or book on WhatsApp.', 'error');
                 return;
@@ -1067,6 +1139,7 @@
         consent.addEventListener('change', () => consent.parentElement.classList.remove('needs-attention'));
 
         const booking = {
+            staff_name: state.staffName,
             session_token: state.token,
             service_id: state.serviceId,
             staff_id: state.staffId,
@@ -1123,13 +1196,16 @@
                         return;
                     }
                     last = data;
-                    if (res.status === 409) break; // slot really gone: refunded (or refund flagged for the team)
+                    if (data.needs_rebook) {
+                        save({ rebookOrderId: data.order_id, date: null, time: null, hold: null });
+                        go(PATHS.confirmation + '?booking=rebook&payment=' + paymentId);
+                        return;
+                    }
                 } catch (err) {
                     last = { network: true };
                 }
             }
-            const outcome = last.refunded ? 'refunded' : last.slot_conflict ? 'failed' : 'error';
-            go(PATHS.confirmation + '?booking=' + outcome + '&payment=' + paymentId);
+            go(PATHS.confirmation + '?booking=error&payment=' + paymentId);
         }
 
         /** Opens Razorpay Checkout on this page. The slot is booked only after payment (see confirmPayment). */
@@ -1207,7 +1283,7 @@
     }
 
     // -----------------------------------------------------------------
-    // /book/confirmation/?booking=success|refunded|failed|cancelled|error
+    // /book/confirmation/?booking=success|rebook|waiting|cancelled|error
     // -----------------------------------------------------------------
 
     const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
@@ -1229,15 +1305,15 @@
             text: 'Nothing was booked or charged. Your details are saved, so you can try the payment again.',
             actions: [['Try payment again', PATHS.checkout, 'btn-primary'], ['Change time', PATHS.schedule, 'btn-secondary']]
         },
-        refunded: {
-            icon: 'warn', title: 'That time was just taken',
-            text: 'Your payment went through, but someone booked that time moments before you. Your money is being refunded automatically (usually 5-7 working days). Please pick another time.',
-            actions: [['Pick another time', PATHS.schedule, 'btn-primary']]
+        rebook: {
+            icon: 'warn', title: 'Payment successful - please choose a new time',
+            text: "Your payment went through, but we couldn't book that time (it was taken moments before you). Choose a new date and time - you won't be charged again.",
+            actions: [['Choose a new time', PATHS.schedule, 'btn-primary'], ['Message us on WhatsApp', WHATSAPP_URL, 'btn-secondary']]
         },
-        failed: {
-            icon: 'warn', title: "We couldn't complete your booking",
-            text: 'Your payment went through, but we could not book the session. Our team will contact you and refund you.',
-            actions: [['Message us on WhatsApp', WHATSAPP_URL, 'btn-primary']]
+        waiting: {
+            icon: 'warn', title: 'You have a paid session waiting',
+            text: "You've already paid for a session that still needs a date and time. Choose one now - no payment needed.",
+            actions: [['Choose a time', PATHS.schedule, 'btn-primary'], ['Message us on WhatsApp', WHATSAPP_URL, 'btn-secondary']]
         },
         error: {
             icon: 'warn', title: 'Something went wrong',
@@ -1265,7 +1341,15 @@
         $('result-text').textContent = outcome.text + (payment && key !== 'success' ? ' Payment ID: ' + payment : '');
         document.title = outcome.title + ' | Mindlap';
 
-        if (state.serviceName && state.date && state.time) {
+        if ((key === 'rebook' || key === 'waiting') && state.serviceName) {
+            const summary = $('result-summary');
+            summary.hidden = false;
+            summary.innerHTML = '<dl class="review-list">' +
+                '<dt>Session</dt><dd>' + escapeHtml(state.serviceName) + '</dd>' +
+                '<dt>Therapist</dt><dd>' + escapeHtml(state.staffName || '') + '</dd>' +
+                '<dt>Paid</dt><dd>' + escapeHtml(money(state.price, state.currency)) + '</dd>' +
+                '</dl>';
+        } else if (state.serviceName && state.date && state.time) {
             const summary = $('result-summary');
             summary.hidden = false;
             summary.innerHTML = '<dl class="review-list">' +
@@ -1284,7 +1368,7 @@
         if (key === 'success' || key === 'prepaid') {
             // Booking finished: keep the verification (so a second booking
             // skips OTP) but clear what was booked.
-            clearFrom(SCHEDULE_KEYS.concat(['notes', 'hp', 'creditMode', 'sessionType', 'credits']));
+            clearFrom(SCHEDULE_KEYS.concat(['notes', 'hp', 'creditMode', 'sessionType', 'credits', 'rebookOrderId']));
         }
     }
 
@@ -1306,7 +1390,8 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         const page = document.body.getAttribute('data-page');
-        if (ONLINE_BOOKING_PAUSED && page !== 'confirmation') {
+        const finishingPaidSession = page === 'schedule' && load().rebookOrderId;
+        if (ONLINE_BOOKING_PAUSED && page !== 'confirmation' && !finishingPaidSession) {
             window.location.replace('/');
             return;
         }
