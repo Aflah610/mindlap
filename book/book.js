@@ -1384,9 +1384,8 @@
         confirmation: initConfirmation
     };
 
-    // Online booking is paused: everyone books on WhatsApp for now.
-    // Delete this line to switch Book Online back on.
-    const ONLINE_BOOKING_PAUSED = true;
+    // Set to true to pause online booking (everyone books on WhatsApp).
+    const ONLINE_BOOKING_PAUSED = false;
 
     document.addEventListener('DOMContentLoaded', () => {
         const page = document.body.getAttribute('data-page');
