@@ -4414,3 +4414,42 @@ select.phone-input-prefix {
         display: block;
     }
 }
+
+/* "You're logged in, no sessions yet" note above the therapists */
+.welcome-new-note {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    max-width: 880px;
+    margin: 0 auto 32px;
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    background: var(--bg-lavender);
+    border: 1px solid var(--border-light);
+    color: var(--text-main);
+    font-size: 0.95rem;
+}
+
+.welcome-new-note p {
+    margin: 0;
+}
+
+.welcome-new-logout {
+    flex-shrink: 0;
+    background: none;
+    border: 1.5px solid var(--primary-color);
+    border-radius: var(--radius-round);
+    padding: 8px 18px;
+    color: var(--primary-color);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+@media (max-width: 560px) {
+    .welcome-new-note {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -685,17 +685,39 @@ document.addEventListener('DOMContentLoaded', () => {
 // "Log In" in the menu turns into "My account" while the customer is logged in
 // (the booking pages keep the verified login in localStorage for 24 hours).
 document.addEventListener('DOMContentLoaded', () => {
+    let auth = {};
     let loggedIn = false;
     try {
-        const auth = JSON.parse(localStorage.getItem('mindlapAuth')) || {};
+        auth = JSON.parse(localStorage.getItem('mindlapAuth')) || {};
         const payload = String(auth.token || '').split('.')[0].replace(/-/g, '+').replace(/_/g, '/');
         const exp = payload ? JSON.parse(atob(payload + '==='.slice((payload.length + 3) % 4))).exp : 0;
-        // "My account" is for clients who have booked or have prepaid credits.
-        loggedIn = Number(exp) > Date.now() + 60 * 1000 && auth.account === true;
+        loggedIn = Number(exp) > Date.now() + 60 * 1000;
     } catch (err) { /* treat as logged out */ }
-    if (!loggedIn) return;
-    document.querySelectorAll('[data-login-link]').forEach((link) => {
-        link.textContent = 'My account';
-        link.href = '/account/';
-    });
+
+    // "My account" is for clients who have booked or have prepaid credits.
+    if (loggedIn && auth.account === true) {
+        document.querySelectorAll('[data-login-link]').forEach((link) => {
+            link.textContent = 'My account';
+            link.href = '/account/';
+        });
+    }
+
+    // Logged in, but nothing booked yet: say so above the therapists.
+    const section = document.getElementById('therapists');
+    if (loggedIn && section && new URLSearchParams(window.location.search).get('welcome') === 'new') {
+        const note = document.createElement('div');
+        note.className = 'welcome-new-note';
+        note.setAttribute('role', 'status');
+        const phone = String(auth.phone || '').replace(/[^+\d]/g, '');
+        note.innerHTML = '<p><strong>You’re logged in' + (phone ? ' as ' + phone : '') + '.</strong> ' +
+            'You don’t have any sessions yet. Choose a therapist below to book your first one.</p>' +
+            '<button type="button" class="welcome-new-logout">Log out</button>';
+        note.querySelector('button').addEventListener('click', () => {
+            try { localStorage.removeItem('mindlapAuth'); sessionStorage.removeItem('mindlapBooking'); } catch (err) { /* ignore */ }
+            window.location.href = '/';
+        });
+        const container = section.querySelector('.container') || section;
+        container.insertBefore(note, container.firstChild);
+        history.replaceState(null, '', window.location.pathname + window.location.hash);
+    }
 });

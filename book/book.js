@@ -87,7 +87,7 @@
         const account = await loadAccount(token);
         if (!account) return;
         saveAuthAccount(account.hasAccount);
-        window.location.replace(account.hasAccount || !account.known ? PATHS.account : '/#therapists');
+        window.location.replace(account.hasAccount || !account.known ? PATHS.account : '/?welcome=new#therapists');
     }
 
     // -----------------------------------------------------------------
@@ -1482,7 +1482,7 @@
         if (account.known) saveAuthAccount(account.hasAccount);
         if (account.known && !account.hasAccount) {
             // New client: nothing booked and no prepaid sessions yet.
-            window.location.replace('/#therapists');
+            window.location.replace('/?welcome=new#therapists');
             return;
         }
 
