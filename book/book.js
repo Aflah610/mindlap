@@ -51,6 +51,31 @@
         } catch (err) { /* login then lasts for this tab only */ }
     }
 
+    /** Remembers how many prepaid credits the logged-in client has (drives "My account" in the menu). */
+    function saveAuthCredits(credits) {
+        try {
+            const auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {};
+            if (!auth.token) return;
+            auth.credits = credits;
+            localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+        } catch (err) { /* menu just shows "Log In" */ }
+    }
+
+    /**
+     * After logging in: the account page is only for clients with prepaid
+     * credits. Everyone else goes to the therapists on the home page.
+     */
+    async function goAfterLogin(token) {
+        let credits = 0;
+        try {
+            const { res, data } = await post('/api/credits/check', { session_token: token });
+            if (handleAuthError(res, data)) return;
+            credits = res.ok && data.has_credits ? Number(data.credits) || 0 : 0;
+        } catch (err) { /* treat as no credits */ }
+        saveAuthCredits(credits);
+        window.location.replace(credits > 0 ? PATHS.account : '/#therapists');
+    }
+
     // -----------------------------------------------------------------
     // State
     // -----------------------------------------------------------------
@@ -338,7 +363,7 @@
 
         const state = load();
         if (tokenValid(state.token)) {
-            if (forAccount) go(PATHS.account);
+            if (forAccount) goAfterLogin(state.token);
             else routeAfterVerify(state.token);
             return;
         }
@@ -455,7 +480,7 @@
                 save({ token: data.session_token, phone: data.phone || fullPhone(), preferredTherapist });
                 if (forAccount) {
                     setStatus(statusEl, 'Logged in!', 'success');
-                    go(PATHS.account);
+                    await goAfterLogin(data.session_token);
                     return;
                 }
                 setStatus(statusEl, 'Verified! Checking for prepaid sessions…', 'success');
@@ -1446,12 +1471,19 @@
         ]);
         if ((sessions && handleAuthError(sessions.res, sessions.data)) || (credits && handleAuthError(credits.res, credits.data))) return;
 
+        const n = credits && credits.res.ok && credits.data.has_credits ? Number(credits.data.credits) || 0 : 0;
+        if (credits && credits.res.ok) saveAuthCredits(n);
+        if (credits && credits.res.ok && n <= 0) {
+            // No prepaid credits: this page isn't for them.
+            window.location.replace('/#therapists');
+            return;
+        }
+
         const data = sessions && sessions.res.ok ? sessions.data : null;
         if (data && data.customer && data.customer.name) {
             $('account-greeting').textContent = 'Hi ' + data.customer.name + '!';
         }
 
-        const n = credits && credits.res.ok && credits.data.has_credits ? Number(credits.data.credits) || 0 : 0;
         if (n > 0) {
             const box = $('account-credits');
             box.hidden = false;
