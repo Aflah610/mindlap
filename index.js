@@ -765,15 +765,23 @@ document.addEventListener('DOMContentLoaded', () => {
         note.className = 'welcome-new-note';
         note.setAttribute('role', 'status');
         const phone = String(auth.phone || '').replace(/[^+\d]/g, '');
-        note.innerHTML = '<p><strong>You’re logged in' + (phone ? ' as ' + phone : '') + '.</strong> ' +
-            'You don’t have any sessions yet. Choose a therapist below to book your first one.</p>' +
+        note.innerHTML =
+            '<span class="welcome-new-icon" aria-hidden="true">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' +
+            '</span>' +
+            '<div class="welcome-new-text">' +
+                '<strong>Welcome' + (phone ? ', you’re logged in as ' + esc(phone) : ', you’re logged in') + '</strong>' +
+                '<span>No sessions yet. Pick a therapist below to book your first one.</span>' +
+            '</div>' +
             '<button type="button" class="welcome-new-logout">Log out</button>';
-        note.querySelector('button').addEventListener('click', () => {
-            try { localStorage.removeItem('mindlapAuth'); sessionStorage.removeItem('mindlapBooking'); } catch (err) { /* ignore */ }
-            window.location.href = '/';
-        });
+        note.querySelector('button').addEventListener('click', logOut);
         const container = section.querySelector('.container') || section;
         container.insertBefore(note, container.firstChild);
         history.replaceState(null, '', window.location.pathname + window.location.hash);
+        // Shown for a minute, then fades away.
+        setTimeout(() => {
+            note.classList.add('leaving');
+            setTimeout(() => note.remove(), 600);
+        }, 60 * 1000);
     }
 });
