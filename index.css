@@ -4399,3 +4399,18 @@ select.phone-input-prefix {
 .nav-actions .btn {
     white-space: nowrap;
 }
+
+/* Log In sits next to Book Session on desktop; inside the menu on phones */
+.nav-link.nav-login-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .nav-actions .btn-login {
+        display: none !important;
+    }
+
+    .nav-link.nav-login-mobile {
+        display: block;
+    }
+}
