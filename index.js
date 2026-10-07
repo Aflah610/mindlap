@@ -772,9 +772,7 @@ document.addEventListener('DOMContentLoaded', () => {
             '<div class="welcome-new-text">' +
                 '<strong>Welcome' + (phone ? ', you’re logged in as ' + esc(phone) : ', you’re logged in') + '</strong>' +
                 '<span>No sessions yet. Pick a therapist below to book your first one.</span>' +
-            '</div>' +
-            '<button type="button" class="welcome-new-logout">Log out</button>';
-        note.querySelector('button').addEventListener('click', logOut);
+            '</div>';
         const container = section.querySelector('.container') || section;
         container.insertBefore(note, container.firstChild);
         history.replaceState(null, '', window.location.pathname + window.location.hash);
