@@ -52,11 +52,12 @@
     }
 
     /** Remembers whether the logged-in client gets the account page (drives "My account" in the menu). */
-    function saveAuthAccount(hasAccount) {
+    function saveAuthAccount(hasAccount, name) {
         try {
             const auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {};
             if (!auth.token) return;
             auth.account = !!hasAccount;
+            if (name) auth.name = String(name).slice(0, 60);
             localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
         } catch (err) { /* menu just shows "Log In" */ }
     }
@@ -73,6 +74,7 @@
         const booked = data ? (data.upcoming || []).length + (data.past || []).length : 0;
         return {
             data,
+            name: data && data.customer && data.customer.name,
             credits: creditCount,
             known: !!data || !!(credits && credits.res.ok),
             hasAccount: creditCount > 0 || booked > 0
@@ -86,7 +88,7 @@
     async function goAfterLogin(token) {
         const account = await loadAccount(token);
         if (!account) return;
-        saveAuthAccount(account.hasAccount);
+        saveAuthAccount(account.hasAccount, account.name);
         window.location.replace(account.hasAccount || !account.known ? PATHS.account : '/?welcome=new#therapists');
     }
 
@@ -1479,7 +1481,7 @@
 
         const account = await loadAccount(state.token);
         if (!account) return;
-        if (account.known) saveAuthAccount(account.hasAccount);
+        if (account.known) saveAuthAccount(account.hasAccount, account.name);
         if (account.known && !account.hasAccount) {
             // New client: nothing booked and no prepaid sessions yet.
             window.location.replace('/?welcome=new#therapists');

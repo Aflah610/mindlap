@@ -694,11 +694,67 @@ document.addEventListener('DOMContentLoaded', () => {
         loggedIn = Number(exp) > Date.now() + 60 * 1000;
     } catch (err) { /* treat as logged out */ }
 
-    // "My account" is for clients who have booked or have prepaid credits.
-    if (loggedIn && auth.account === true) {
-        document.querySelectorAll('[data-login-link]').forEach((link) => {
-            link.textContent = 'My account';
-            link.href = '/account/';
+    const logOut = () => {
+        try { localStorage.removeItem('mindlapAuth'); sessionStorage.removeItem('mindlapBooking'); } catch (err) { /* ignore */ }
+        window.location.href = '/';
+    };
+    const esc = (str) => String(str || '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+    if (loggedIn) {
+        const name = String(auth.name || '').trim();
+        const phone = String(auth.phone || '').replace(/[^+\d]/g, '');
+        const initials = name
+            ? name.split(/\s+/).slice(0, 2).map((w) => w.charAt(0)).join('').toUpperCase()
+            : '';
+        const avatarInner = initials ||
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>';
+        // "View bookings" is for clients who have booked or have prepaid credits.
+        const hasAccount = auth.account === true;
+
+        // Desktop: the Log In button becomes a profile badge with a small menu.
+        document.querySelectorAll('.nav-actions .btn-login').forEach((btn) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'account-menu';
+            wrap.innerHTML =
+                '<button type="button" class="account-avatar" aria-haspopup="true" aria-expanded="false" aria-label="Your account">' + avatarInner + '</button>' +
+                '<div class="account-panel" hidden>' +
+                    '<div class="account-panel-avatar">' + avatarInner + '</div>' +
+                    (name ? '<p class="account-panel-name">' + esc(name) + '</p>' : '') +
+                    '<p class="account-panel-phone">' + esc(phone) + '</p>' +
+                    (hasAccount ? '<a class="account-panel-link" href="/account/">View bookings<span aria-hidden="true">&rsaquo;</span></a>' : '') +
+                    '<button type="button" class="account-panel-logout">Log out</button>' +
+                '</div>';
+            btn.replaceWith(wrap);
+            const toggle = wrap.querySelector('.account-avatar');
+            const panel = wrap.querySelector('.account-panel');
+            const setOpen = (open) => {
+                panel.hidden = !open;
+                toggle.setAttribute('aria-expanded', String(open));
+            };
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setOpen(panel.hidden);
+            });
+            document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) setOpen(false); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+            wrap.querySelector('.account-panel-logout').addEventListener('click', logOut);
+        });
+
+        // Phones: the menu shows View bookings / Log out instead of Log In.
+        document.querySelectorAll('.nav-link.nav-login-mobile').forEach((link) => {
+            const menu = link.parentNode;
+            if (hasAccount) {
+                link.textContent = 'View bookings';
+                link.href = '/account/';
+            } else {
+                link.remove();
+            }
+            const out = document.createElement('a');
+            out.href = '#';
+            out.className = 'nav-link nav-login nav-login-mobile';
+            out.textContent = 'Log out';
+            out.addEventListener('click', (e) => { e.preventDefault(); logOut(); });
+            menu.appendChild(out);
         });
     }
 

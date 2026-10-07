@@ -4453,3 +4453,127 @@ select.phone-input-prefix {
         align-items: flex-start;
     }
 }
+
+/* Profile badge + menu (replaces Log In while logged in) */
+.account-menu {
+    position: relative;
+}
+
+.account-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-soft);
+    background: var(--bg-lavender);
+    color: var(--primary-color);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1rem;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.account-avatar:hover,
+.account-avatar[aria-expanded="true"] {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(142, 102, 222, 0.18);
+}
+
+.account-avatar svg,
+.account-panel-avatar svg {
+    width: 55%;
+    height: 55%;
+}
+
+.account-panel {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    z-index: 1000;
+    width: 290px;
+    padding: 22px 20px 20px;
+    border-radius: var(--radius-lg);
+    background: var(--bg-white);
+    border: 1px solid var(--border-light);
+    box-shadow: 0 20px 45px rgba(74, 46, 128, 0.16);
+    text-align: center;
+}
+
+.account-panel[hidden] {
+    display: none;
+}
+
+.account-panel-avatar {
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--bg-lavender);
+    color: var(--primary-color);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.account-panel-name {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-main);
+}
+
+.account-panel-phone {
+    margin: 2px 0 16px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.account-panel-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 4px;
+    margin-bottom: 14px;
+    border-top: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
+    font-weight: 600;
+    color: var(--text-main);
+    text-decoration: none;
+}
+
+.account-panel-link span {
+    font-size: 1.3rem;
+    line-height: 1;
+    color: var(--text-muted);
+}
+
+.account-panel-link:hover {
+    color: var(--primary-color);
+}
+
+.account-panel-logout {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: var(--radius-round);
+    background: var(--primary-color);
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.account-panel-logout:hover {
+    background: var(--primary-dark, #3A2170);
+}
+
+@media (max-width: 768px) {
+    .nav-actions .account-menu {
+        display: none;
+    }
+}
