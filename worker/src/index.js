@@ -27,8 +27,8 @@
  *   POST /api/otp/verify  { phone, code } -> also returns a session_token
  *   POST /api/sessions    { session_token } -> past/upcoming appointments
  *                                              for that verified phone
- *   POST /api/credits/check { session_token } -> { has_credits, credits }
- *                              from Contacts.Package_credit_value (read-only)
+ *   POST /api/credits/check { session_token } -> { has_credits, credits, wallet_credit }
+ *                              from Contacts.Package_credit_value / Wallet_credit (read-only)
  *   POST /api/credits/book  { session_token, service_id,
  *                              staff_id, date, time, name, email, notes? }
  *   POST /api/payment/create-order  { session_token, service_id, staff_id, date,
@@ -511,6 +511,15 @@ async function getPackageCredits(env, phone) {
   const credits = contacts[0] ? Number(contacts[0].Package_credit_value) || 0 : 0;
   console.log('Credit check:', { contactFound: Boolean(contacts[0]), credits });
   return credits;
+}
+
+/** Contacts.Wallet_credit (₹ package balance) for this phone; null if there's no contact. */
+async function getWalletCredit(env, phone) {
+  const contacts = await crmSearchByPhoneVariants(env, 'Contacts', phone, 'id,Wallet_credit');
+  if (!contacts[0]) return null;
+  const wallet = Number(contacts[0].Wallet_credit) || 0;
+  console.log('Wallet check:', { raw: contacts[0].Wallet_credit, wallet });
+  return wallet;
 }
 
 // --- Booking + payment helpers --------------------------------------------
@@ -1231,8 +1240,15 @@ export default {
         }
 
         try {
-          const credits = await getPackageCredits(env, session.phone);
-          return jsonResponse({ has_credits: credits > 0, credits }, 200, headers);
+          const [credits, wallet] = await Promise.all([
+            getPackageCredits(env, session.phone),
+            // Read separately so a problem with Wallet_credit never breaks the credit check.
+            getWalletCredit(env, session.phone).catch((err) => {
+              console.error('Wallet_credit read failed', err && err.message ? err.message : err);
+              return null;
+            })
+          ]);
+          return jsonResponse({ has_credits: credits > 0, credits, wallet_credit: wallet }, 200, headers);
         } catch (err) {
           console.error('Credit check failed', err && err.message ? err.message : err);
           await logSyncError(env, {

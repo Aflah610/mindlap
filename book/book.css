@@ -1677,3 +1677,11 @@ body.book-page {
 .login-mode .book-summary {
     display: none;
 }
+
+.account-wallet + .account-credits {
+    margin-top: 12px;
+}
+
+.account-wallet .account-credits-num {
+    font-size: 1.8rem;
+}

@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css?v=129">
-    <link rel="stylesheet" href="/book/book.css?v=8">
+    <link rel="stylesheet" href="/book/book.css?v=9">
 </head>
 
 <body class="book-page" data-page="account">
@@ -42,6 +42,11 @@
                     </div>
                 </div>
 
+                <div class="account-credits account-wallet" id="account-wallet" hidden>
+                    <span class="account-credits-num" data-wallet></span>
+                    <span class="account-credits-text"><strong>Package balance</strong>Used for your sessions at your package price.</span>
+                </div>
+
                 <div class="account-credits" id="account-credits" hidden>
                     <span class="account-credits-num" data-credits></span>
                     <span class="account-credits-text"><strong data-credits-label>prepaid sessions left</strong>No payment needed when you book these.</span>
@@ -60,7 +65,7 @@
         </main>
     </div>
 
-    <script src="/book/book.js?v=16"></script>
+    <script src="/book/book.js?v=17"></script>
 </body>
 
 </html>

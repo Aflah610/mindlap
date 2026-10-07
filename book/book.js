@@ -71,13 +71,15 @@
         if ((sessions && handleAuthError(sessions.res, sessions.data)) || (credits && handleAuthError(credits.res, credits.data))) return null;
         const data = sessions && sessions.res.ok ? sessions.data : null;
         const creditCount = credits && credits.res.ok && credits.data.has_credits ? Number(credits.data.credits) || 0 : 0;
+        const wallet = credits && credits.res.ok ? Number(credits.data.wallet_credit) || 0 : 0;
         const booked = data ? (data.upcoming || []).length + (data.past || []).length : 0;
         return {
             data,
             name: data && data.customer && data.customer.name,
             credits: creditCount,
+            wallet,
             known: !!data || !!(credits && credits.res.ok),
-            hasAccount: creditCount > 0 || booked > 0
+            hasAccount: creditCount > 0 || wallet > 0 || booked > 0
         };
     }
 
@@ -1491,6 +1493,12 @@
         const data = account.data;
         const name = data && data.customer && data.customer.name;
         $('account-greeting').textContent = name ? 'Hi, ' + name : 'Hi there';
+
+        if (account.wallet > 0) {
+            const box = $('account-wallet');
+            box.hidden = false;
+            box.querySelector('[data-wallet]').textContent = money(account.wallet, 'INR');
+        }
 
         if (account.credits > 0) {
             const box = $('account-credits');
