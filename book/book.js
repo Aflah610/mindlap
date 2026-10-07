@@ -27,23 +27,49 @@
         schedule: '/book/schedule/',
         details: '/book/details/',
         checkout: '/book/checkout/',
-        confirmation: '/book/confirmation/'
+        confirmation: '/book/confirmation/',
+        account: '/account/'
     };
+
+    // The login (verified phone + signed token) is kept in localStorage so it
+    // lasts across tabs and visits until the token expires (24h). Booking
+    // progress stays in sessionStorage (this tab only).
+    const AUTH_KEY = 'mindlapAuth';
+
+    function loadAuth() {
+        try {
+            const auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {};
+            return tokenValid(auth.token) ? auth : {};
+        } catch (err) {
+            return {};
+        }
+    }
+
+    function saveAuth(token, phone) {
+        try {
+            localStorage.setItem(AUTH_KEY, JSON.stringify({ token, phone }));
+        } catch (err) { /* login then lasts for this tab only */ }
+    }
 
     // -----------------------------------------------------------------
     // State
     // -----------------------------------------------------------------
 
     function load() {
+        let state = {};
         try {
-            return JSON.parse(sessionStorage.getItem(STORE_KEY)) || {};
-        } catch (err) {
-            return {};
+            state = JSON.parse(sessionStorage.getItem(STORE_KEY)) || {};
+        } catch (err) { /* empty */ }
+        if (!tokenValid(state.token)) {
+            const auth = loadAuth();
+            if (auth.token) Object.assign(state, { token: auth.token, phone: auth.phone });
         }
+        return state;
     }
 
     function save(patch) {
         const next = Object.assign(load(), patch);
+        if (patch.token) saveAuth(patch.token, next.phone);
         try {
             sessionStorage.setItem(STORE_KEY, JSON.stringify(next));
         } catch (err) {
@@ -63,9 +89,11 @@
         } catch (err) { /* see save() */ }
     }
 
+    /** Forgets the booking in progress and the login. */
     function signOut() {
         try {
             sessionStorage.removeItem(STORE_KEY);
+            localStorage.removeItem(AUTH_KEY);
         } catch (err) { /* see save() */ }
     }
 
@@ -288,12 +316,30 @@
     function initVerify() {
         renderStepper(0);
 
-        const wanted = new URLSearchParams(window.location.search).get('therapist');
-        if (wanted) save({ preferredTherapist: wanted.slice(0, 60) });
+        const params = new URLSearchParams(window.location.search);
+        const forAccount = params.get('next') === 'account';
+        const wanted = params.get('therapist');
+        if (wanted) {
+            // Booking from a therapist's own button: that therapist is fixed.
+            save({ preferredTherapist: wanted.slice(0, 60) });
+        } else if (!forAccount && !load().rebookOrderId) {
+            // Plain "Book Online": start fresh and choose the therapist on the site.
+            clearFrom(SCHEDULE_KEYS.concat(['hold', 'staffPhoto', 'staffProfile', 'sessionType', 'preferredTherapist']));
+        }
+        if (forAccount) {
+            const title = document.querySelector('.book-title');
+            const lead = document.querySelector('.book-lead');
+            if (title) title.textContent = 'Log in to Mindlap';
+            if (lead) lead.textContent = 'Enter your WhatsApp number and we\'ll send you a code. No password needed.';
+            document.body.classList.add('login-mode');
+            const asideTitle = document.querySelector('.book-aside-title');
+            if (asideTitle) asideTitle.textContent = 'See your sessions and prepaid credits in one place';
+        }
 
         const state = load();
         if (tokenValid(state.token)) {
-            routeAfterVerify(state.token);
+            if (forAccount) go(PATHS.account);
+            else routeAfterVerify(state.token);
             return;
         }
 
@@ -407,6 +453,11 @@
                 const preferredTherapist = load().preferredTherapist || null;
                 signOut();
                 save({ token: data.session_token, phone: data.phone || fullPhone(), preferredTherapist });
+                if (forAccount) {
+                    setStatus(statusEl, 'Logged in!', 'success');
+                    go(PATHS.account);
+                    return;
+                }
                 setStatus(statusEl, 'Verified! Checking for prepaid sessions…', 'success');
                 await routeAfterVerify(data.session_token);
             } catch (err) {
@@ -1373,6 +1424,64 @@
     }
 
     // -----------------------------------------------------------------
+    // /account/ - logged-in customer: sessions, prepaid credits, log out
+    // -----------------------------------------------------------------
+
+    async function initAccount() {
+        const state = load();
+        if (!tokenValid(state.token)) {
+            window.location.replace(PATHS.verify + '?next=account');
+            return;
+        }
+        $('account-phone').textContent = state.phone || '';
+        $('account-logout').addEventListener('click', () => {
+            signOut();
+            go('/');
+        });
+
+        const sessionsEl = $('account-sessions');
+        const [sessions, credits] = await Promise.all([
+            post('/api/sessions', { session_token: state.token }).catch(() => null),
+            post('/api/credits/check', { session_token: state.token }).catch(() => null)
+        ]);
+        if ((sessions && handleAuthError(sessions.res, sessions.data)) || (credits && handleAuthError(credits.res, credits.data))) return;
+
+        const data = sessions && sessions.res.ok ? sessions.data : null;
+        if (data && data.customer && data.customer.name) {
+            $('account-greeting').textContent = 'Hi ' + data.customer.name + '!';
+        }
+
+        const n = credits && credits.res.ok && credits.data.has_credits ? Number(credits.data.credits) || 0 : 0;
+        if (n > 0) {
+            const box = $('account-credits');
+            box.hidden = false;
+            box.querySelector('[data-credits]').textContent = n + ' prepaid session' + (n === 1 ? '' : 's');
+        }
+
+        if (!data) {
+            sessionsEl.innerHTML = '<p class="booking-slots-empty">Could not load your sessions right now. Please try again shortly.</p>';
+            return;
+        }
+
+        const card = (s) =>
+            '<li class="account-session">' +
+                '<div class="account-session-main">' +
+                    '<strong>' + escapeHtml(s.service_name || 'Session') + '</strong>' +
+                    '<span>' + escapeHtml(s.date || '') + (s.start_time ? ' · ' + escapeHtml(String(s.start_time).slice(0, 5)) : '') +
+                        (s.therapist_name ? ' · with ' + escapeHtml(s.therapist_name) : '') + '</span>' +
+                '</div>' +
+                '<span class="account-badge">' + escapeHtml(s.booking_status || '') + '</span>' +
+            '</li>';
+        const list = (items, empty) => items && items.length
+            ? '<ul class="account-list">' + items.map(card).join('') + '</ul>'
+            : '<p class="booking-slots-empty">' + empty + '</p>';
+
+        sessionsEl.innerHTML =
+            '<h2 class="account-heading">Upcoming sessions</h2>' + list(data.upcoming, 'No upcoming sessions.') +
+            '<h2 class="account-heading">Past sessions</h2>' + list(data.past, 'No past sessions yet.');
+    }
+
+    // -----------------------------------------------------------------
 
     const PAGES = {
         verify: initVerify,
@@ -1381,7 +1490,8 @@
         schedule: initSchedule,
         details: initDetails,
         checkout: initCheckout,
-        confirmation: initConfirmation
+        confirmation: initConfirmation,
+        account: initAccount
     };
 
     // Set to true to pause online booking (everyone books on WhatsApp).
@@ -1394,7 +1504,7 @@
             window.location.replace('/');
             return;
         }
-        if (page !== 'verify' && page !== 'confirmation') renderSummary(load());
+        if (page !== 'verify' && page !== 'confirmation' && page !== 'account') renderSummary(load());
         const init = PAGES[page];
         if (init) init();
     });

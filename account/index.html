@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking status | Book Online | Mindlap</title>
+    <title>My account | Mindlap</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/webp" href="/assets/favicon.webp">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="/book/book.css?v=6">
 </head>
 
-<body class="book-page" data-page="confirmation">
+<body class="book-page" data-page="account">
 
     <header class="book-topbar">
         <div class="book-topbar-inner">
@@ -31,11 +31,22 @@
     <div class="book-shell solo">
         <main class="book-main">
             <div class="book-card">
-                <div class="result-icon" id="result-icon" aria-hidden="true"></div>
-                <h1 class="book-title" id="result-title">Checking your booking…</h1>
-                <p class="book-lead" id="result-text"></p>
-                <div class="result-summary" id="result-summary" hidden></div>
-                <div class="result-actions" id="result-actions"></div>
+                <p class="account-kicker">My account</p>
+                <h1 class="book-title" id="account-greeting">Welcome back!</h1>
+                <p class="book-lead">Logged in as <strong id="account-phone"></strong></p>
+
+                <div class="modal-cta-box account-credits" id="account-credits" hidden>
+                    <p>You have <strong data-credits></strong> ready to use. No payment needed when you book.</p>
+                </div>
+
+                <div class="result-actions">
+                    <a class="btn btn-primary btn-lg" href="/book/">Book a session</a>
+                    <button type="button" class="btn btn-secondary btn-lg" id="account-logout">Log out</button>
+                </div>
+
+                <div id="account-sessions" class="account-sessions">
+                    <p class="booking-slots-loading">Loading your sessions…</p>
+                </div>
             </div>
         </main>
     </div>

@@ -1436,3 +1436,81 @@ body.book-page {
     font-weight: 700;
     white-space: nowrap;
 }
+
+/* ------------------------------------------------------------------
+   My account
+   ------------------------------------------------------------------ */
+.account-kicker {
+    margin: 0 0 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+}
+
+.account-credits {
+    margin-bottom: 20px;
+}
+
+.account-sessions {
+    margin-top: 32px;
+}
+
+.account-heading {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 24px 0 12px;
+}
+
+.account-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.account-session {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--bg-white);
+}
+
+.account-session-main {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.account-session-main strong {
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
+
+.account-badge {
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    background: var(--bg-lavender);
+    border-radius: var(--radius-round);
+    padding: 3px 10px;
+}
+
+/* Log-in mode of /book/ (from the "Log In" menu link): no booking steps */
+.login-mode .book-stepper,
+.login-mode .book-summary {
+    display: none;
+}

@@ -681,3 +681,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+// "Log In" in the menu turns into "My account" while the customer is logged in
+// (the booking pages keep the verified login in localStorage for 24 hours).
+document.addEventListener('DOMContentLoaded', () => {
+    let loggedIn = false;
+    try {
+        const auth = JSON.parse(localStorage.getItem('mindlapAuth')) || {};
+        const payload = String(auth.token || '').split('.')[0].replace(/-/g, '+').replace(/_/g, '/');
+        const exp = payload ? JSON.parse(atob(payload + '==='.slice((payload.length + 3) % 4))).exp : 0;
+        loggedIn = Number(exp) > Date.now() + 60 * 1000;
+    } catch (err) { /* treat as logged out */ }
+    if (!loggedIn) return;
+    document.querySelectorAll('[data-login-link]').forEach((link) => {
+        link.textContent = 'My account';
+        link.href = '/account/';
+    });
+});

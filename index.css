@@ -4389,3 +4389,13 @@ select.phone-input-prefix {
     letter-spacing: 0.04em;
     font-size: 0.85rem;
 }
+
+/* Log In / My account in the main menu */
+.nav-link.nav-login {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.nav-actions .btn {
+    white-space: nowrap;
+}
