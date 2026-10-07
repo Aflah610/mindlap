@@ -690,8 +690,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const auth = JSON.parse(localStorage.getItem('mindlapAuth')) || {};
         const payload = String(auth.token || '').split('.')[0].replace(/-/g, '+').replace(/_/g, '/');
         const exp = payload ? JSON.parse(atob(payload + '==='.slice((payload.length + 3) % 4))).exp : 0;
-        // "My account" is only for clients with prepaid credits.
-        loggedIn = Number(exp) > Date.now() + 60 * 1000 && Number(auth.credits) > 0;
+        // "My account" is for clients who have booked or have prepaid credits.
+        loggedIn = Number(exp) > Date.now() + 60 * 1000 && auth.account === true;
     } catch (err) { /* treat as logged out */ }
     if (!loggedIn) return;
     document.querySelectorAll('[data-login-link]').forEach((link) => {

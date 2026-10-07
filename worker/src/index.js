@@ -1191,7 +1191,8 @@ export default {
               therapist_name: therapistNames[therapistId] || '',
               session_mode: a.session_mode,
               booking_status: a.booking_status,
-              payment_status: a.payment_status
+              payment_status: a.payment_status,
+              amount: Number(a.amount) || 0
             };
           })
           .filter((a) => a.parsedDate);

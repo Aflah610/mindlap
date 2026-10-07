@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css?v=129">
-    <link rel="stylesheet" href="/book/book.css?v=6">
+    <link rel="stylesheet" href="/book/book.css?v=8">
 </head>
 
 <body class="book-page" data-page="account">
@@ -30,18 +30,27 @@
 
     <div class="book-shell solo">
         <main class="book-main">
-            <div class="book-card">
-                <p class="account-kicker">My account</p>
-                <h1 class="book-title" id="account-greeting">Welcome back!</h1>
-                <p class="book-lead">Logged in as <strong id="account-phone"></strong></p>
-
-                <div class="modal-cta-box account-credits" id="account-credits" hidden>
-                    <p>You have <strong data-credits></strong> ready to use. No payment needed when you book.</p>
+            <div class="book-card account-card">
+                <div class="account-head">
+                    <div>
+                        <h1 class="book-title" id="account-greeting">Hi there</h1>
+                        <p class="book-lead">Book a session whenever you're ready.</p>
+                    </div>
+                    <div class="account-actions">
+                        <a class="btn btn-primary" href="/#therapists">Book</a>
+                        <button type="button" class="btn btn-secondary" id="account-logout">Log out</button>
+                    </div>
                 </div>
 
-                <div class="result-actions">
-                    <a class="btn btn-primary btn-lg" href="/book/">Book a session</a>
-                    <button type="button" class="btn btn-secondary btn-lg" id="account-logout">Log out</button>
+                <div class="account-credits" id="account-credits" hidden>
+                    <span class="account-credits-num" data-credits></span>
+                    <span class="account-credits-text"><strong data-credits-label>prepaid sessions left</strong>No payment needed when you book these.</span>
+                </div>
+
+                <div class="account-tabs" id="account-tabs" role="tablist" hidden>
+                    <button type="button" role="tab" data-tab="upcoming">Upcoming <span class="count">0</span></button>
+                    <button type="button" role="tab" data-tab="past">Past <span class="count">0</span></button>
+                    <button type="button" role="tab" data-tab="all">All <span class="count">0</span></button>
                 </div>
 
                 <div id="account-sessions" class="account-sessions">
@@ -51,7 +60,7 @@
         </main>
     </div>
 
-    <script src="/book/book.js?v=13"></script>
+    <script src="/book/book.js?v=14"></script>
 </body>
 
 </html>

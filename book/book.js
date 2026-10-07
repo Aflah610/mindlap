@@ -51,29 +51,43 @@
         } catch (err) { /* login then lasts for this tab only */ }
     }
 
-    /** Remembers how many prepaid credits the logged-in client has (drives "My account" in the menu). */
-    function saveAuthCredits(credits) {
+    /** Remembers whether the logged-in client gets the account page (drives "My account" in the menu). */
+    function saveAuthAccount(hasAccount) {
         try {
             const auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {};
             if (!auth.token) return;
-            auth.credits = credits;
+            auth.account = !!hasAccount;
             localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
         } catch (err) { /* menu just shows "Log In" */ }
     }
 
+    /** Prepaid credits + booked sessions for the logged-in client. Returns null if the login expired. */
+    async function loadAccount(token) {
+        const [sessions, credits] = await Promise.all([
+            post('/api/sessions', { session_token: token }).catch(() => null),
+            post('/api/credits/check', { session_token: token }).catch(() => null)
+        ]);
+        if ((sessions && handleAuthError(sessions.res, sessions.data)) || (credits && handleAuthError(credits.res, credits.data))) return null;
+        const data = sessions && sessions.res.ok ? sessions.data : null;
+        const creditCount = credits && credits.res.ok && credits.data.has_credits ? Number(credits.data.credits) || 0 : 0;
+        const booked = data ? (data.upcoming || []).length + (data.past || []).length : 0;
+        return {
+            data,
+            credits: creditCount,
+            known: !!data || !!(credits && credits.res.ok),
+            hasAccount: creditCount > 0 || booked > 0
+        };
+    }
+
     /**
-     * After logging in: the account page is only for clients with prepaid
-     * credits. Everyone else goes to the therapists on the home page.
+     * After logging in: the account page is for clients who have booked a
+     * session or have prepaid credits. New clients go to the therapists.
      */
     async function goAfterLogin(token) {
-        let credits = 0;
-        try {
-            const { res, data } = await post('/api/credits/check', { session_token: token });
-            if (handleAuthError(res, data)) return;
-            credits = res.ok && data.has_credits ? Number(data.credits) || 0 : 0;
-        } catch (err) { /* treat as no credits */ }
-        saveAuthCredits(credits);
-        window.location.replace(credits > 0 ? PATHS.account : '/#therapists');
+        const account = await loadAccount(token);
+        if (!account) return;
+        saveAuthAccount(account.hasAccount);
+        window.location.replace(account.hasAccount || !account.known ? PATHS.account : '/#therapists');
     }
 
     // -----------------------------------------------------------------
@@ -1458,59 +1472,96 @@
             window.location.replace(PATHS.verify + '?next=account');
             return;
         }
-        $('account-phone').textContent = state.phone || '';
         $('account-logout').addEventListener('click', () => {
             signOut();
             go('/');
         });
 
-        const sessionsEl = $('account-sessions');
-        const [sessions, credits] = await Promise.all([
-            post('/api/sessions', { session_token: state.token }).catch(() => null),
-            post('/api/credits/check', { session_token: state.token }).catch(() => null)
-        ]);
-        if ((sessions && handleAuthError(sessions.res, sessions.data)) || (credits && handleAuthError(credits.res, credits.data))) return;
-
-        const n = credits && credits.res.ok && credits.data.has_credits ? Number(credits.data.credits) || 0 : 0;
-        if (credits && credits.res.ok) saveAuthCredits(n);
-        if (credits && credits.res.ok && n <= 0) {
-            // No prepaid credits: this page isn't for them.
+        const account = await loadAccount(state.token);
+        if (!account) return;
+        if (account.known) saveAuthAccount(account.hasAccount);
+        if (account.known && !account.hasAccount) {
+            // New client: nothing booked and no prepaid sessions yet.
             window.location.replace('/#therapists');
             return;
         }
 
-        const data = sessions && sessions.res.ok ? sessions.data : null;
-        if (data && data.customer && data.customer.name) {
-            $('account-greeting').textContent = 'Hi ' + data.customer.name + '!';
-        }
+        const data = account.data;
+        const name = data && data.customer && data.customer.name;
+        $('account-greeting').textContent = name ? 'Hi, ' + name : 'Hi there';
 
-        if (n > 0) {
+        if (account.credits > 0) {
             const box = $('account-credits');
             box.hidden = false;
-            box.querySelector('[data-credits]').textContent = n + ' prepaid session' + (n === 1 ? '' : 's');
+            box.querySelector('[data-credits]').textContent = account.credits;
+            box.querySelector('[data-credits-label]').textContent = account.credits === 1 ? 'prepaid session left' : 'prepaid sessions left';
         }
 
+        const sessionsEl = $('account-sessions');
         if (!data) {
             sessionsEl.innerHTML = '<p class="booking-slots-empty">Could not load your sessions right now. Please try again shortly.</p>';
             return;
         }
 
-        const card = (s) =>
-            '<li class="account-session">' +
-                '<div class="account-session-main">' +
-                    '<strong>' + escapeHtml(s.service_name || 'Session') + '</strong>' +
-                    '<span>' + escapeHtml(s.date || '') + (s.start_time ? ' · ' + escapeHtml(String(s.start_time).slice(0, 5)) : '') +
-                        (s.therapist_name ? ' · with ' + escapeHtml(s.therapist_name) : '') + '</span>' +
-                '</div>' +
-                '<span class="account-badge">' + escapeHtml(s.booking_status || '') + '</span>' +
-            '</li>';
-        const list = (items, empty) => items && items.length
-            ? '<ul class="account-list">' + items.map(card).join('') + '</ul>'
-            : '<p class="booking-slots-empty">' + empty + '</p>';
+        const MONTH_INDEX = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+        const parse = (zohoDate) => {
+            const [dd, mon, yyyy] = String(zohoDate || '').split('-');
+            return MONTH_INDEX[mon] === undefined ? null : new Date(Number(yyyy), MONTH_INDEX[mon], Number(dd));
+        };
+        const clock = (hhmm) => {
+            const m = String(hhmm || '').match(/^(\d{1,2}):(\d{2})/);
+            if (!m) return '';
+            const h = Number(m[1]);
+            return (h % 12 || 12) + ':' + m[2] + (h >= 12 ? ' pm' : ' am');
+        };
+        const statusClass = (status) => {
+            const st = String(status || '').toLowerCase();
+            return /cancel|no ?show|fail/.test(st) ? 'muted' : /complete/.test(st) ? 'done' : 'ok';
+        };
 
-        sessionsEl.innerHTML =
-            '<h2 class="account-heading">Upcoming sessions</h2>' + list(data.upcoming, 'No upcoming sessions.') +
-            '<h2 class="account-heading">Past sessions</h2>' + list(data.past, 'No past sessions yet.');
+        const card = (sess) => {
+            const d = parse(sess.date);
+            const tile = d
+                ? '<span class="month">' + d.toLocaleDateString('en-IN', { month: 'short' }) + '</span>' +
+                  '<span class="day">' + d.getDate() + '</span>' +
+                  '<span class="dow">' + d.toLocaleDateString('en-IN', { weekday: 'short' }) + '</span>'
+                : '<span class="day">?</span>';
+            const meta = [clock(sess.start_time), sess.service_name].filter(Boolean).map(escapeHtml).join('<span class="dot">·</span>');
+            return '<li class="account-session">' +
+                '<div class="account-date">' + tile + '</div>' +
+                '<div class="account-session-main">' +
+                    '<strong>' + escapeHtml(sess.therapist_name || 'Your therapist') + '</strong>' +
+                    '<span class="account-meta">' + meta + '</span>' +
+                    (sess.amount > 0 ? '<span class="account-amount">' + escapeHtml(money(sess.amount, 'INR')) + '</span>' : '') +
+                '</div>' +
+                '<span class="account-badge ' + statusClass(sess.booking_status) + '">' + escapeHtml(sess.booking_status || '') + '</span>' +
+            '</li>';
+        };
+
+        const groups = {
+            upcoming: data.upcoming || [],
+            past: data.past || [],
+            all: (data.upcoming || []).concat(data.past || [])
+        };
+        const empty = {
+            upcoming: 'No upcoming sessions. <a href="/#therapists">Book a session</a>',
+            past: 'No past sessions yet.',
+            all: 'No sessions yet.'
+        };
+        const tabs = $('account-tabs');
+        const show = (key) => {
+            tabs.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === key)));
+            sessionsEl.innerHTML = groups[key].length
+                ? '<ul class="account-list">' + groups[key].map(card).join('') + '</ul>'
+                : '<p class="account-empty">' + empty[key] + '</p>';
+        };
+        tabs.querySelectorAll('[data-tab]').forEach((b) => {
+            const n = groups[b.dataset.tab].length;
+            b.querySelector('.count').textContent = n;
+            b.addEventListener('click', () => show(b.dataset.tab));
+        });
+        tabs.hidden = false;
+        show(groups.upcoming.length ? 'upcoming' : 'past');
     }
 
     // -----------------------------------------------------------------
