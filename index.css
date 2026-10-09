@@ -778,7 +778,7 @@ section {
    THERAPIST SECTION
    ------------------------------------------------------------- */
 .therapists-section {
-    background-color: var(--bg-calm);
+    background-color: #FFFFFF;
     padding: 96px 0 40px 0;
 }
 
@@ -914,8 +914,8 @@ section {
 .tc-card {
     background: var(--bg-white);
     border-radius: 18px;
-    border: 1px solid rgba(142, 102, 222, 0.10);
-    box-shadow: 0 4px 24px rgba(74, 46, 128, 0.06);
+    border: 1px solid #ECEBEF;
+    box-shadow: 0 4px 20px rgba(20, 18, 28, 0.05);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -924,8 +924,8 @@ section {
 
 .tc-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 36px rgba(74, 46, 128, 0.12);
-    border-color: rgba(142, 102, 222, 0.22);
+    box-shadow: 0 12px 32px rgba(20, 18, 28, 0.09);
+    border-color: #DEDCE4;
 }
 
 /* -- Top section: identity left, avatar right -- */
@@ -955,15 +955,15 @@ section {
 
 .tc-role {
     font-size: 0.78rem;
-    color: var(--accent-color);
+    color: var(--text-muted);
     font-weight: 600;
     margin: 0;
 }
 
 .tc-lang-badge {
     display: inline-block;
-    background-color: var(--bg-lavender);
-    color: var(--primary-color);
+    background-color: #F3F3F5;
+    color: #4A4952;
     font-size: 0.68rem;
     font-weight: 600;
     padding: 3px 10px;
@@ -984,7 +984,7 @@ section {
     position: absolute;
     inset: -4px;
     border-radius: 50%;
-    border: 2px dashed rgba(142, 102, 222, 0.35);
+    border: 2px dashed #E2E1E7;
     animation: tc-spin 18s linear infinite;
 }
 
@@ -1019,7 +1019,7 @@ section {
     overflow: hidden;
     position: relative;
     z-index: 1;
-    box-shadow: 0 0 0 2px rgba(142, 102, 222, 0.3), 0 4px 16px rgba(74, 46, 128, 0.15);
+    box-shadow: 0 0 0 2px #FFFFFF, 0 4px 14px rgba(20, 18, 28, 0.12);
 }
 
 /* Avatar photo image */
@@ -1037,7 +1037,7 @@ section {
 /* -- Divider -- */
 .tc-divider {
     height: 1px;
-    background: linear-gradient(to right, transparent, rgba(142, 102, 222, 0.12), transparent);
+    background: #F0EFF3;
     margin: 0 20px;
 }
 
@@ -1054,7 +1054,7 @@ section {
     display: flex;
     align-items: center;
     gap: 6px;
-    color: var(--accent-color);
+    color: var(--text-main);
     font-size: 0.78rem;
     font-weight: 700;
 }
@@ -1087,7 +1087,7 @@ section {
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background-color: var(--accent-color);
+    background-color: #B9B7C2;
     flex-shrink: 0;
 }
 
@@ -1097,8 +1097,8 @@ section {
     align-items: center;
     gap: 12px;
     padding: 12px 18px 16px 20px;
-    border-top: 1px solid rgba(142, 102, 222, 0.07);
-    background: rgba(244, 238, 253, 0.3);
+    border-top: 1px solid #F0EFF3;
+    background: #FAFAFB;
     margin-top: auto;
 }
 
@@ -1116,8 +1116,8 @@ section {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background-color: var(--bg-lavender);
-    color: var(--primary-color);
+    background-color: #F3F3F5;
+    color: #4A4952;
     font-size: 0.8rem;
     font-weight: 700;
     flex-shrink: 0;
@@ -1126,7 +1126,7 @@ section {
 .tc-globe-icon {
     width: 26px;
     height: 26px;
-    color: var(--accent-color);
+    color: #8C8B94;
     opacity: 0.75;
     flex-shrink: 0;
 }
