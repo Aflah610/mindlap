@@ -1321,6 +1321,7 @@
                 return;
             }
 
+            let lastFailure = '';
             const checkout = new Razorpay({
                 key: data.key_id,
                 order_id: data.order_id,
@@ -1334,14 +1335,25 @@
                 handler: confirmPayment,
                 modal: {
                     ondismiss: () => {
-                        setStatus(statusEl, 'Payment cancelled. Nothing was booked or charged, you can try again.', 'error');
+                        // Records the attempt as Failed in Creator (fire and forget).
+                        post('/api/payment/abandon', {
+                            session_token: state.token,
+                            order_id: data.order_id,
+                            reason: lastFailure ? 'failed' : 'cancelled',
+                            message: lastFailure
+                        }).catch(() => {});
+                        setStatus(statusEl, lastFailure
+                            ? 'Payment failed: ' + lastFailure + '. Nothing was booked, you can try again.'
+                            : 'Payment cancelled. Nothing was booked or charged, you can try again.', 'error');
                         idle();
                     }
                 }
             });
+            // Razorpay keeps the window open after a decline so the customer can retry;
+            // only a close (ondismiss) ends the attempt.
             checkout.on('payment.failed', (response) => {
-                const reason = response && response.error && response.error.description;
-                setStatus(statusEl, 'Payment failed' + (reason ? ': ' + reason : '') + '. You can try again.', 'error');
+                lastFailure = (response && response.error && response.error.description) || 'declined';
+                setStatus(statusEl, 'Payment failed: ' + lastFailure + '. You can try again.', 'error');
             });
             setStatus(statusEl, '');
             payBtn.textContent = 'Complete payment in the Razorpay window…';

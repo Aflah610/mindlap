@@ -723,6 +723,8 @@ async function createCreatorAppointment(env, { phone, name, email, serviceId, st
       amount,
       payment_status: paymentStatus,
       booking_status: 'Creating Appointment',
+      // Lets the abandoned-booking sweep tell how long a row has been in progress.
+      created_time: creatorNow(),
       // Mandatory on the form but not something the site collects yet.
       Age: '0'
     });
@@ -910,7 +912,89 @@ async function finalizePaidBooking(env, orderId, paymentId) {
   return { status: 'needs_rebook', orderId, message: result.message };
 }
 
+// --- Failed / abandoned payments ---------------------------------------------
+//
+// A paid booking writes its Creator row ("Creating Appointment", payment
+// Pending) before the customer pays. These mark that row Failed when the
+// payment is cancelled, declined or abandoned, so failed bookings are
+// visible in Creator instead of sitting "in progress" forever.
+
+/**
+ * Marks the order's Creator row as a failed payment, unless the order was
+ * actually paid (then it's left for finalizePaidBooking).
+ * Returns 'marked' | 'paid' | 'not_found'.
+ */
+async function markPaymentFailed(env, orderId, reason) {
+  const order = await razorpayRequest(env, 'GET', `orders/${orderId}`);
+  const notes = order.notes || {};
+  if (order.status === 'paid' || notes.booking_id || notes.needs_rebook) return 'paid';
+  if (!notes.creator_id) return 'not_found';
+  await updateCreatorAppointment(env, notes.creator_id, {
+    booking_status: 'Failed',
+    payment_status: 'Failed',
+    error_message: String(reason || 'Payment not completed').slice(0, 2000)
+  }, { phone: notes.phone });
+  await releaseSlot(env, notes.phone);
+  return 'marked';
+}
+
+const ABANDONED_AFTER_MINUTES = 45;
+
+/** "09-Oct-2026 14:05:00" (UTC, as written by creatorNow) -> epoch ms, or null. */
+function parseCreatorTime(value) {
+  const m = String(value || '').match(/^(\d{2})-([A-Za-z]{3})-(\d{4}) (\d{2}):(\d{2}):(\d{2})/);
+  if (!m) return null;
+  const month = MONTHS.indexOf(m[2]);
+  if (month === -1) return null;
+  return Date.UTC(Number(m[3]), month, Number(m[1]), Number(m[4]), Number(m[5]), Number(m[6]));
+}
+
+/**
+ * Runs on a schedule: rows still "Creating Appointment" after
+ * ABANDONED_AFTER_MINUTES are either finished (the customer did pay but
+ * closed the tab) or marked Failed.
+ */
+async function sweepAbandonedBookings(env) {
+  const rows = await creatorQuery(env, 'appointments_Report', '(booking_status == "Creating Appointment")');
+  const cutoff = Date.now() - ABANDONED_AFTER_MINUTES * 60 * 1000;
+  let finished = 0;
+  let failed = 0;
+  for (const row of rows) {
+    const createdAt = parseCreatorTime(row.created_time);
+    if (createdAt && createdAt > cutoff) continue; // still within the payment window
+
+    try {
+      const orderId = row.razorpay_order_id;
+      if (orderId) {
+        const payments = await razorpayRequest(env, 'GET', `orders/${orderId}/payments`);
+        const paid = (payments.items || []).find((p) => p.status === 'captured' || p.status === 'authorized');
+        if (paid) {
+          const result = await finalizePaidBooking(env, orderId, paid.id);
+          console.log('Sweep finished paid booking', orderId, result.status);
+          finished += 1;
+          continue;
+        }
+      }
+      await updateCreatorAppointment(env, row.ID, {
+        booking_status: 'Failed',
+        payment_status: row.payment_status === 'Paid' ? 'Paid' : 'Failed',
+        error_message: orderId
+          ? 'Abandoned: payment not completed within ' + ABANDONED_AFTER_MINUTES + ' minutes'
+          : 'Abandoned: booking did not finish'
+      });
+      failed += 1;
+    } catch (err) {
+      await logSyncError(env, { operation: 'Update Appointment', message: `Abandoned-booking sweep failed for ${row.ID}: ${errorText(err)}` });
+    }
+  }
+  console.log('Abandoned-booking sweep', { checked: rows.length, finished, failed });
+}
+
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(sweepAbandonedBookings(env).catch((err) => console.error('Sweep crashed', errorText(err))));
+  },
+
   async fetch(request, env) {
     const url = new URL(request.url);
     const headers = corsHeaders(request, env);
@@ -1460,10 +1544,16 @@ export default {
             }
           });
         } catch (err) {
-          await updateCreatorAppointment(env, creatorId, { booking_status: 'Failed', error_message: errorText(err) }, { phone });
+          await updateCreatorAppointment(env, creatorId, {
+            booking_status: 'Failed',
+            payment_status: 'Failed',
+            error_message: 'Could not start payment: ' + errorText(err)
+          }, { phone });
           await logSyncError(env, { operation: 'Create Appointment', message: 'Razorpay order failed: ' + errorText(err), phone });
           return jsonResponse({ error: 'Could not start the payment. Please try again.' }, 502, headers);
         }
+        // So a cancelled/failed/abandoned payment can be traced back to this row.
+        await updateCreatorAppointment(env, creatorId, { razorpay_order_id: order.id }, { phone });
 
         return jsonResponse(
           {
@@ -1477,6 +1567,32 @@ export default {
           200,
           headers
         );
+      }
+
+      // --- POST /api/payment/abandon ---------------------------------------------
+      // Called by the browser when the customer closes Razorpay Checkout or the
+      // payment is declined, so the booking shows as Failed in Creator.
+      if (url.pathname === '/api/payment/abandon' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const session = await verifySessionToken(env, body.session_token);
+        if (!session) {
+          return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
+        }
+        const orderId = String(body.order_id || '').trim();
+        if (!/^order_\w+$/.test(orderId)) {
+          return jsonResponse({ error: 'order_id is required' }, 400, headers);
+        }
+        const order = await razorpayRequest(env, 'GET', `orders/${orderId}`).catch(() => null);
+        // Only the customer who started this payment can mark it failed.
+        if (!order || !order.notes || order.notes.phone !== session.phone) {
+          return jsonResponse({ error: 'Order not found' }, 404, headers);
+        }
+        const detail = String(body.message || '').slice(0, 300);
+        const reason = body.reason === 'failed'
+          ? 'Payment failed' + (detail ? ': ' + detail : '')
+          : 'Payment cancelled by customer';
+        const result = await markPaymentFailed(env, orderId, reason);
+        return jsonResponse({ ok: true, result }, 200, headers);
       }
 
       // --- POST /api/payment/verify ----------------------------------------------
@@ -1639,6 +1755,13 @@ export default {
 
         const event = JSON.parse(rawBody);
         const payment = event.payload && event.payload.payment && event.payload.payment.entity;
+        if (payment && payment.order_id && event.event === 'payment.failed') {
+          // A later attempt on the same order may still succeed; markPaymentFailed
+          // leaves paid orders alone, and finalizePaidBooking overwrites the row if so.
+          const reason = 'Payment failed' + (payment.error_description ? ': ' + payment.error_description : '');
+          await markPaymentFailed(env, payment.order_id, reason).catch((err) => console.error('payment.failed webhook', errorText(err)));
+          return new Response('OK', { status: 200 });
+        }
         if (!payment || !payment.order_id || !['payment.captured', 'payment.authorized'].includes(event.event)) {
           return new Response('Ignored', { status: 200 });
         }

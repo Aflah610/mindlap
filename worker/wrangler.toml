@@ -12,6 +12,11 @@ class_name = "SlotHolds"
 tag = "v1"
 new_sqlite_classes = ["SlotHolds"]
 
+# Every 15 minutes: mark bookings stuck "in progress" (payment abandoned) as
+# Failed in Creator, or finish them if the customer did pay.
+[triggers]
+crons = ["*/15 * * * *"]
+
 # Non-secret configuration. Safe to commit.
 [vars]
 # Zoho data center for your account: "com" (US/global), "in" (India),
