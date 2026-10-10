@@ -64,6 +64,16 @@
         } catch (err) { /* menu just shows "Log In" */ }
     }
 
+    /** Name typed at verification - shows as initials on the profile badge. */
+    function saveAuthName(name) {
+        try {
+            const auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {};
+            if (!auth.token || !name) return;
+            auth.name = String(name).slice(0, 60);
+            localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+        } catch (err) { /* badge falls back to an icon */ }
+    }
+
     /** Prepaid credits + booked sessions for the logged-in client. Returns null if the login expired. */
     async function loadAccount(token) {
         const [sessions, credits] = await Promise.all([
@@ -394,6 +404,7 @@
 
         const phoneStep = $('otp-phone-step');
         const codeStep = $('otp-code-step');
+        const nameInput = $('otp-name');
         const phoneInput = $('otp-phone');
         const countrySelect = $('otp-country');
         const codeInput = $('otp-code');
@@ -405,6 +416,11 @@
         const sentTo = $('otp-sent-to');
         let resendTimer = null;
         let verifying = false;
+
+        // Name is asked when booking; logging in to see bookings needs only the number.
+        if (forAccount) $('otp-name-field').hidden = true;
+        else nameInput.value = state.name || '';
+        const typedName = () => nameInput.value.trim().replace(/\s+/g, ' ');
 
         if (new URLSearchParams(window.location.search).get('expired')) {
             setStatus(statusEl, 'Your verification expired. Please verify your number again.', 'error');
@@ -456,6 +472,11 @@
         }
 
         async function send(isResend) {
+            if (!forAccount && typedName().length < 2) {
+                setStatus(statusEl, 'Please enter your name.', 'error');
+                nameInput.focus();
+                return;
+            }
             if (!validNumber()) {
                 setStatus(statusEl, countrySelect.value === '+91' ? 'Please enter a valid 10-digit phone number.' : 'Please enter a valid phone number.', 'error');
                 return;
@@ -501,7 +522,8 @@
                 }
                 const preferredTherapist = load().preferredTherapist || null;
                 signOut();
-                save({ token: data.session_token, phone: data.phone || fullPhone(), preferredTherapist });
+                save({ token: data.session_token, phone: data.phone || fullPhone(), preferredTherapist, name: forAccount ? undefined : typedName() });
+                if (!forAccount) saveAuthName(typedName());
                 if (forAccount) {
                     setStatus(statusEl, 'Logged in!', 'success');
                     await goAfterLogin(data.session_token);
@@ -522,6 +544,7 @@
         });
         sendBtn.addEventListener('click', () => send(false));
         phoneInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(false); });
+        nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') phoneInput.focus(); });
         resendBtn.addEventListener('click', () => send(true));
         verifyBtn.addEventListener('click', verify);
         codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verify(); });
