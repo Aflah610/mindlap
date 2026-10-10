@@ -4628,7 +4628,4 @@ select.phone-input-prefix {
     }
 }
 
-/* Breathing room between the menu links and the Log In button */
-.nav-actions .btn-login {
-    margin-left: 14px;
-}
+/* Log In / profile badge sits at the far right, after Book Session */
