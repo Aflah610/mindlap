@@ -307,11 +307,11 @@
         const box = $('book-summary');
         const list = $('book-summary-list');
         if (!box || !list) return;
-        const typeLabel = state.creditMode ? 'Prepaid session'
-            : state.sessionType === 'couple' ? 'Couple therapy'
-                : state.sessionType === 'individual' ? 'Individual therapy' : '';
+        const typeLabel = state.sessionType === 'couple' ? 'Couple therapy'
+            : state.sessionType === 'individual' ? 'Individual therapy' : '';
+        const typeText = state.creditMode ? (typeLabel ? typeLabel + ' (prepaid)' : 'Prepaid session') : typeLabel;
         const rows = [
-            ['Type', typeLabel],
+            ['Type', typeText],
             ['Session', state.serviceName],
             ['Therapist', state.staffName],
             ['When', state.date && state.time ? shortDate(state.date) + ', ' + String(state.time).replace(/^0/, '') : '']
@@ -634,8 +634,8 @@
         $('credits-count').textContent = n + ' prepaid session' + (n === 1 ? '' : 's');
 
         $('use-credits-btn').addEventListener('click', () => {
-            save({ creditMode: true, sessionType: 'any' });
-            clearFrom(['serviceId', 'serviceName', 'price', 'currency', 'duration', 'date', 'time']);
+            save({ creditMode: true });
+            clearFrom(['sessionType', 'serviceId', 'serviceName', 'price', 'currency', 'duration', 'date', 'time']);
             continueWithTherapist();
         });
         $('pay-new-btn').addEventListener('click', () => {
@@ -676,7 +676,7 @@
         return services.filter((s) => {
             const type = serviceType(s.name);
             if (!type || !offeredBy(s, staffId)) return false;
-            return state.creditMode ? !isPackage(s.name) : type === state.sessionType;
+            return type === state.sessionType && !(state.creditMode && isPackage(s.name));
         });
     }
 
@@ -704,7 +704,7 @@
         const wanted = state.preferredTherapist;
         const known = state.staffId && !wanted;
         if (known) {
-            go(state.creditMode ? PATHS.plan : PATHS.type);
+            go(PATHS.type);
             return;
         }
         const entry = wanted && ONLINE_THERAPISTS[firstName(wanted)];
@@ -734,7 +734,7 @@
             staffProfile: entry.profile,
             preferredTherapist: null
         });
-        window.location.replace(state.creditMode ? PATHS.plan : PATHS.type);
+        window.location.replace(PATHS.type);
     }
 
     // -----------------------------------------------------------------
@@ -760,7 +760,7 @@
                 if (card.disabled) return;
                 const type = card.getAttribute('data-session-type');
                 if (type !== load().sessionType) clearFrom(['serviceId', 'serviceName', 'price', 'currency', 'duration']);
-                save({ sessionType: type, creditMode: false });
+                save({ sessionType: type });
                 go(PATHS.plan);
             });
         });
@@ -796,9 +796,9 @@
         renderStepper(3);
         showVerifiedChip(state);
 
-        $('plan-back').href = state.creditMode ? PATHS.credits : PATHS.type;
+        $('plan-back').href = PATHS.type;
         $('plan-with').innerHTML = 'With <strong>' + escapeHtml(state.staffName) + '</strong> · ' +
-            (state.creditMode ? 'prepaid session' : state.sessionType === 'couple' ? 'couple therapy' : 'individual therapy') +
+            (state.sessionType === 'couple' ? 'couple therapy' : 'individual therapy') + (state.creditMode ? ' (prepaid)' : '') +
             ' · online. <a href="' + PATHS.therapist + '">Change therapist</a>';
         if (state.creditMode) {
             const banner = $('credit-banner');
@@ -822,7 +822,7 @@
         const packages = services.filter((s) => isPackage(s.name)).sort((a, b) => packageSessions(a.name) - packageSessions(b.name));
         const singles = services.filter((s) => !isPackage(s.name)).sort((a, b) => Number(b.price) - Number(a.price));
         if (!services.length) {
-            setStatus(statusEl, state.staffName + ' has no ' + (state.creditMode ? '' : state.sessionType + ' ') +
+            setStatus(statusEl, state.staffName + ' has no ' + state.sessionType + ' ' +
                 'sessions open for online booking. Please choose another therapist or book on WhatsApp.', 'error');
             return;
         }

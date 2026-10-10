@@ -1771,3 +1771,8 @@ body.book-page {
 @keyframes otp-spin {
     to { transform: rotate(360deg); }
 }
+
+#credit-banner + .plan-tabs[hidden] + .plan-list,
+#credit-banner + .plan-tabs + .plan-list {
+    margin-top: 16px;
+}
