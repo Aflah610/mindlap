@@ -841,7 +841,7 @@
             const full = n && singlePrice ? n * singlePrice : 0;
             const save = full > price ? Math.round((1 - price / full) * 100) : 0;
             return '<span class="option-body">' +
-                    '<span class="option-kicker">' + (n ? n + ' sessions' : 'Package') + (save ? ' · save ' + save + '%' : '') + '</span>' +
+                    '<span class="option-kicker">' + (n ? n + ' sessions' : 'Package') + '</span>' +
                     '<span class="option-title">' + escapeHtml(n ? n + '-session package' : s.name) + '</span>' +
                     '<span class="option-meta">' + serviceMinutes(s) + ' min per session · online</span>' +
                     '<span class="plan-price"><span class="option-price">' + escapeHtml(money(price, s.currency)) + '</span>' +
