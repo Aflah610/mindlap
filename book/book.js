@@ -1590,7 +1590,7 @@
     }
 
     // -----------------------------------------------------------------
-    // /account/ - logged-in customer: sessions, prepaid credits, log out
+    // /account/ - logged-in customer: sessions, prepaid credits (log out lives in the profile badge)
     // -----------------------------------------------------------------
 
     async function initAccount() {
@@ -1599,11 +1599,6 @@
             window.location.replace(PATHS.verify + '?next=account');
             return;
         }
-        $('account-logout').addEventListener('click', () => {
-            signOut();
-            go('/');
-        });
-
         const account = await loadAccount(state.token);
         if (!account) return;
         if (account.known) saveAuthAccount(account.hasAccount, account.name);
