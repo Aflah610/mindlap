@@ -66,7 +66,7 @@
     }
 
     /**
-     * A booking that reached the review/pay page is kept for 48 hours, so the
+     * A booking with a time picked (details page onwards) is kept for 48 hours, so the
      * home page can offer "Resume your booking" (index.js) - prepaid ones too,
      * which have nothing in Creator until they are confirmed.
      */
@@ -1287,6 +1287,8 @@
         if (!state) return;
         renderStepper(5);
         showHoldBanner(state);
+        // A time is picked: from here on the booking can be resumed from the home page.
+        if (!state.rebookOrderId) saveDraft(state);
 
         $('details-phone').value = state.phone || '';
         $('details-name').value = state.name || '';
@@ -1313,7 +1315,8 @@
                 $('details-email').focus();
                 return;
             }
-            save({ name, email, notes: $('details-notes').value.trim(), hp: $('details-hp').value });
+            const next = save({ name, email, notes: $('details-notes').value.trim(), hp: $('details-hp').value });
+            if (!next.rebookOrderId) saveDraft(next);
             go(PATHS.checkout);
         });
     }
