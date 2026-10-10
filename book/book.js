@@ -854,7 +854,6 @@
             return '<span class="option-body">' +
                     '<span class="option-kicker">Single session</span>' +
                     '<span class="option-title">' + escapeHtml(s.name) + '</span>' +
-                    '<span class="option-meta">' + serviceMinutes(s) + ' min · online</span>' +
                     (state.creditMode ? '<span class="option-meta">Covered by your prepaid sessions</span>'
                         : '<span class="option-price">' + escapeHtml(Number(s.price) ? money(s.price, s.currency) : 'Free') + '</span>') +
                 '</span>';
