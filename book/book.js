@@ -843,7 +843,6 @@
             return '<span class="option-body">' +
                     '<span class="option-kicker">' + (n ? n + ' sessions' : 'Package') + '</span>' +
                     '<span class="option-title">' + escapeHtml(n ? n + '-session package' : s.name) + '</span>' +
-                    '<span class="option-meta">' + serviceMinutes(s) + ' min per session · online</span>' +
                     '<span class="plan-price"><span class="option-price">' + escapeHtml(money(price, s.currency)) + '</span>' +
                         (save ? '<s>' + escapeHtml(money(full, s.currency)) + '</s>' : '') + '</span>' +
                     (n ? '<span class="option-meta">' + escapeHtml(money(Math.round(price / n), s.currency)) + ' per session</span>' : '') +
