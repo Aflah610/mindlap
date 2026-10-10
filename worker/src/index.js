@@ -38,6 +38,7 @@
  *   POST /api/payment/webhook       Razorpay webhook (payment.captured/authorized)
  *   POST /api/payment/waiting       { session_token } -> paid sessions still needing a time
  *   POST /api/payment/rebook        { session_token, order_id, date, time } -> book a new time, no new payment
+ *   POST /api/booking/resume        { session_token } -> unpaid booking attempt from the last 48h, if any
  *
  * See ../../docs/zoho-bookings-setup.md for how to configure and deploy
  * this Worker.
@@ -944,6 +945,10 @@ async function markPaymentFailed(env, orderId, reason) {
 const ABANDONED_AFTER_MINUTES = 45;
 
 /** "09-Oct-2026 14:05:00" (UTC, as written by creatorNow) -> epoch ms, or null. */
+// "Resume your booking" offers an unpaid booking attempt for this long.
+const RESUME_HOURS = 48;
+const IST_OFFSET_MS = 330 * 60 * 1000;
+
 function parseCreatorTime(value) {
   const m = String(value || '').match(/^(\d{2})-([A-Za-z]{3})-(\d{4}) (\d{2}):(\d{2}):(\d{2})/);
   if (!m) return null;
@@ -1644,6 +1649,84 @@ export default {
           }, 409, headers);
         }
         return jsonResponse({ success: false, error: result.message || 'Payment not completed.' }, 400, headers);
+      }
+
+      // --- POST /api/booking/resume ----------------------------------------------
+      // "Resume your booking": the client's latest booking attempt, if it was
+      // left unpaid (cancelled/failed/abandoned payment) in the last 48 hours
+      // and nothing has been booked since. Read from Creator; the details
+      // (session, therapist, time, name, email) come from its Razorpay order.
+      if (url.pathname === '/api/booking/resume' && request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+        const session = await verifySessionToken(env, body.session_token);
+        if (!session) {
+          return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
+        }
+        const none = () => jsonResponse({ resume: null }, 200, headers);
+
+        const normalized = normalizePhone(session.phone);
+        const customers = await creatorQuery(
+          env,
+          'customers_Report',
+          `(phone_number=="${normalized}" || whatsapp_number=="${normalized}")`
+        );
+        if (!customers[0]) return none();
+        const rows = await creatorQuery(env, 'appointments_Report', `(customer.ID==${customers[0].ID})`);
+
+        // Latest attempt first (rows without created_time are older credit/free bookings).
+        const latest = rows
+          .map((r) => ({ row: r, at: parseCreatorTime(r.created_time) || 0 }))
+          .sort((a, b) => b.at - a.at)[0];
+        if (!latest || !latest.at) return none();
+        const row = latest.row;
+        if (Date.now() - latest.at > RESUME_HOURS * 60 * 60 * 1000) return none();
+        if (row.booking_status !== 'Failed' || row.payment_status === 'Paid' || !/^order_\w+$/.test(row.razorpay_order_id || '')) {
+          return none();
+        }
+
+        let order;
+        try {
+          order = await razorpayRequest(env, 'GET', `orders/${row.razorpay_order_id}`);
+        } catch (err) {
+          return none();
+        }
+        const notes = order.notes || {};
+        if (notes.phone !== session.phone || order.status === 'paid' || notes.booking_id || notes.needs_rebook) return none();
+
+        const service = await getServicePrice(env, notes.service_id);
+        if (!service || service.price <= 0) return none();
+
+        // Is their old time still in the future and open?
+        const [y, mo, d] = String(notes.date || '').split('-').map(Number);
+        const [hh, mm] = String(notes.time || '').split(':').map(Number);
+        const startsAt = Date.UTC(y, mo - 1, d, hh, mm) - IST_OFFSET_MS;
+        let slotAvailable = false;
+        if (startsAt > Date.now() + 15 * 60 * 1000) {
+          slotAvailable = await isSlotAvailable(env, notes.service_id, notes.staff_id, notes.date, notes.time).catch(() => false);
+        }
+        const h12 = hh % 12 || 12;
+        const timeLabel = `${String(h12).padStart(2, '0')}:${String(mm).padStart(2, '0')} ${hh >= 12 ? 'PM' : 'AM'}`;
+
+        return jsonResponse({
+          resume: {
+            order_id: order.id,
+            service_id: notes.service_id,
+            service_name: service.name,
+            session_type: /couple/i.test(service.name) ? 'couple' : 'individual',
+            staff_id: notes.staff_id,
+            staff_name: notes.staff_name || '',
+            date: notes.date,
+            time: timeLabel,
+            amount: service.price,
+            currency: service.currency,
+            duration: service.duration,
+            name: notes.name || '',
+            email: notes.email || '',
+            notes: notes.customer_notes || '',
+            slot_available: slotAvailable,
+            expires_at: latest.at + RESUME_HOURS * 60 * 60 * 1000
+          }
+        }, 200, headers);
       }
 
       // --- POST /api/payment/waiting ---------------------------------------------

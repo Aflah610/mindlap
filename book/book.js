@@ -936,6 +936,13 @@
 
         const rebook = Boolean(state.rebookOrderId);
         $('schedule-back').href = PATHS.plan;
+        if (new URLSearchParams(window.location.search).get('resume') === 'taken') {
+            // From "Resume your booking": everything is kept except the time.
+            const note = document.createElement('div');
+            note.className = 'modal-cta-box';
+            note.innerHTML = '<p>Your earlier time is no longer available. Pick a new date and time - your session and details are saved.</p>';
+            $('date-block').parentNode.insertBefore(note, $('date-block'));
+        }
         $('schedule-with').innerHTML = '<strong>' + escapeHtml(state.serviceName) + '</strong> with <strong>' + escapeHtml(state.staffName) + '</strong> · ' +
             (state.creditMode ? 'prepaid' : escapeHtml(money(state.price, state.currency))) +
             ' · online. <a href="' + PATHS.plan + '">Change plan</a>';

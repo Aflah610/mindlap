@@ -782,4 +782,131 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => note.remove(), 600);
         }, 60 * 1000);
     }
+
+    // "Resume your booking": a booking left unpaid in the last 48 hours, shown
+    // as the first card above the therapists. Continue goes straight to payment
+    // with everything filled in, or to pick a new time if theirs was taken.
+    const grid = document.querySelector('.therapist-grid-new');
+    if (loggedIn && grid) showResumeCard(auth, grid, esc);
 });
+
+const RESUME_API = 'https://mindlap-booking-api.nasheel.workers.dev';
+const RESUME_DISMISSED_KEY = 'mindlapResumeDismissed';
+
+async function showResumeCard(auth, grid, esc) {
+    let resume = null;
+    try {
+        const res = await fetch(RESUME_API + '/api/booking/resume', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_token: auth.token })
+        });
+        resume = res.ok ? (await res.json()).resume : null;
+    } catch (err) { /* no card */ }
+    if (!resume) return;
+    try {
+        if (localStorage.getItem(RESUME_DISMISSED_KEY) === resume.order_id) return;
+    } catch (err) { /* show it */ }
+
+    // Photo and title from the therapist's own card on this page.
+    const first = String(resume.staff_name || '').trim().split(/\s+/)[0].toLowerCase();
+    const match = Array.from(grid.querySelectorAll('.tc-card')).find((c) => {
+        const name = c.querySelector('.tc-name');
+        return name && first && name.textContent.trim().toLowerCase().startsWith(first);
+    });
+    const img = match && match.querySelector('.tc-avatar-img');
+    const role = match && match.querySelector('.tc-role');
+    const photo = img ? img.getAttribute('src') : '';
+
+    const [y, m, d] = String(resume.date).split('-').map(Number);
+    const dateText = new Date(y, m - 1, d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const timeText = String(resume.time).replace(/^0/, '');
+    const price = '₹' + Number(resume.amount).toLocaleString('en-IN');
+
+    const card = document.createElement('div');
+    card.className = 'resume-card';
+    card.innerHTML =
+        '<div class="resume-top">' +
+            (photo ? '<img class="resume-avatar" src="' + esc(photo) + '" alt="" width="64" height="64">' : '') +
+            '<div class="resume-who">' +
+                '<h3>' + esc(resume.staff_name || 'Your therapist') + '</h3>' +
+                '<p>' + esc(role ? role.textContent : 'Online therapy') + '</p>' +
+            '</div>' +
+            '<button type="button" class="resume-close" aria-label="Dismiss">&times;</button>' +
+        '</div>' +
+        '<div class="resume-body">' +
+            '<span class="resume-pill">Resume your booking</span>' +
+            '<div class="resume-grid">' +
+                '<div><strong>Session type</strong><span>' + (resume.session_type === 'couple' ? 'Couple' : 'Individual') + '</span></div>' +
+                '<div><strong>Date</strong><span>' + esc(dateText) + ', ' + esc(timeText) + '</span></div>' +
+                '<div><strong>Price</strong><span>' + esc(price) + '</span></div>' +
+                (resume.slot_available
+                    ? '<div><strong>Pending</strong><span>Complete payment</span></div>'
+                    : '<div class="resume-taken"><strong>Time taken</strong><span>Pick a new time</span></div>') +
+            '</div>' +
+            '<button type="button" class="btn btn-primary resume-continue">Continue booking</button>' +
+        '</div>';
+    grid.insertBefore(card, grid.firstChild);
+
+    card.querySelector('.resume-close').addEventListener('click', () => {
+        try { localStorage.setItem(RESUME_DISMISSED_KEY, resume.order_id); } catch (err) { /* ignore */ }
+        card.remove();
+    });
+
+    const btn = card.querySelector('.resume-continue');
+    btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        btn.textContent = 'One moment…';
+        const state = {
+            token: auth.token,
+            phone: auth.phone,
+            staffId: String(resume.staff_id),
+            staffName: resume.staff_name || 'your therapist',
+            staffPhoto: photo || undefined,
+            staffProfile: first ? '/' + first + '.html' : undefined,
+            sessionType: resume.session_type,
+            creditMode: false,
+            serviceId: resume.service_id,
+            serviceName: resume.service_name,
+            price: Number(resume.amount) || 0,
+            currency: resume.currency || 'INR',
+            duration: resume.duration,
+            name: resume.name,
+            email: resume.email,
+            notes: resume.notes
+        };
+        // Hold their old time again; if someone else has it, they pick a new one.
+        let held = null;
+        if (resume.slot_available) {
+            try {
+                const res = await fetch(RESUME_API + '/api/slots/hold', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_token: auth.token,
+                        service_id: resume.service_id,
+                        staff_id: resume.staff_id,
+                        date: resume.date,
+                        time: resume.time
+                    })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (res.ok && data.held) held = data;
+            } catch (err) { /* treat as taken */ }
+        }
+        if (held) {
+            Object.assign(state, {
+                date: resume.date,
+                time: resume.time,
+                hold: {
+                    staffId: String(resume.staff_id),
+                    date: resume.date,
+                    time: resume.time,
+                    until: held.held_until || Date.now() + (held.hold_minutes || 10) * 60 * 1000
+                }
+            });
+        }
+        try { sessionStorage.setItem('mindlapBooking', JSON.stringify(state)); } catch (err) { /* ignore */ }
+        window.location.href = held ? '/book/checkout/' : '/book/schedule/?resume=taken';
+    });
+}

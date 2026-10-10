@@ -4629,3 +4629,116 @@ select.phone-input-prefix {
 }
 
 /* Log In / profile badge sits at the far right, after Book Session */
+
+/* "Resume your booking" card - first in the therapist grid */
+.resume-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 18px;
+    border: 1.5px solid rgba(46, 160, 110, 0.35);
+    background: var(--bg-white);
+    box-shadow: 0 4px 20px rgba(20, 18, 28, 0.05);
+    overflow: hidden;
+}
+
+.resume-top {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 52px 20px 20px;
+    background: #EAF6F0;
+}
+
+.resume-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 3px solid #fff;
+}
+
+.resume-who h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--text-main);
+}
+
+.resume-who p {
+    margin: 2px 0 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.resume-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.resume-close:hover {
+    color: var(--text-main);
+}
+
+.resume-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 20px 20px;
+    flex: 1;
+}
+
+.resume-pill {
+    align-self: flex-start;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #23845A;
+    background: #EAF6F0;
+    border-radius: 999px;
+    padding: 4px 12px;
+}
+
+.resume-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+}
+
+.resume-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #F7F7F9;
+}
+
+.resume-grid strong {
+    font-size: 0.88rem;
+    color: var(--text-main);
+}
+
+.resume-grid span {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+}
+
+.resume-grid .resume-taken span {
+    color: #B4541E;
+}
+
+.resume-continue {
+    margin-top: auto;
+    width: 100%;
+    justify-content: center;
+}
