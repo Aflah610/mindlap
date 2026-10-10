@@ -65,6 +65,27 @@
         } catch (err) { /* menu just shows "Log In" */ }
     }
 
+    /**
+     * A booking that reached the review/pay page is kept for 48 hours, so the
+     * home page can offer "Resume your booking" (index.js) - prepaid ones too,
+     * which have nothing in Creator until they are confirmed.
+     */
+    const DRAFT_KEY = 'mindlapDraft';
+    const DRAFT_FIELDS = ['staffId', 'staffName', 'staffPhoto', 'staffProfile', 'sessionType', 'creditMode', 'credits',
+        'serviceId', 'serviceName', 'price', 'currency', 'duration', 'date', 'time', 'name', 'email', 'notes'];
+
+    function saveDraft(state) {
+        try {
+            const draft = { phone: state.phone, savedAt: Date.now() };
+            DRAFT_FIELDS.forEach((k) => { if (state[k] !== undefined) draft[k] = state[k]; });
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        } catch (err) { /* no resume card on this device */ }
+    }
+
+    function clearDraft() {
+        try { localStorage.removeItem(DRAFT_KEY); } catch (err) { /* ignore */ }
+    }
+
     /** Name typed at verification - shows as initials on the profile badge. */
     function saveAuthName(name) {
         try {
@@ -1310,6 +1331,7 @@
         if (!state) return;
         renderStepper(6);
         showHoldBanner(state);
+        if (!state.rebookOrderId) saveDraft(state);
 
         const date = parseIsoDate(state.date);
         $('review-month').textContent = date ? date.toLocaleDateString('en-IN', { month: 'short' }) : '';
@@ -1557,6 +1579,8 @@
 
         const state = load();
         const payment = params.get('payment');
+        // Booked (or paid and waiting for a time): nothing left to resume.
+        if (['success', 'prepaid', 'rebook', 'waiting'].includes(key)) clearDraft();
 
         $('result-icon').className = 'result-icon ' + outcome.icon;
         $('result-icon').innerHTML = outcome.icon === 'success' ? CHECK_ICON : INFO_ICON;

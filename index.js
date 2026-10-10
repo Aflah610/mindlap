@@ -792,36 +792,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const RESUME_API = 'https://mindlap-booking-api.nasheel.workers.dev';
 const RESUME_DISMISSED_KEY = 'mindlapResumeDismissed';
+const RESUME_MS = 48 * 60 * 60 * 1000;
 
-async function showResumeCard(auth, grid, esc) {
-    let resume = null;
+/** Unpaid booking attempt saved in Creator (cancelled/failed/abandoned payment). */
+async function serverResume(auth) {
     try {
         const res = await fetch(RESUME_API + '/api/booking/resume', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ session_token: auth.token })
         });
-        resume = res.ok ? (await res.json()).resume : null;
-    } catch (err) { /* no card */ }
+        const r = res.ok ? (await res.json()).resume : null;
+        if (!r) return null;
+        return {
+            id: r.order_id,
+            at: (Number(r.expires_at) || 0) - RESUME_MS,
+            staffId: String(r.staff_id),
+            staffName: r.staff_name,
+            sessionType: r.session_type,
+            serviceId: r.service_id,
+            serviceName: r.service_name,
+            price: Number(r.amount) || 0,
+            currency: r.currency || 'INR',
+            duration: r.duration,
+            date: r.date,
+            time: r.time,
+            name: r.name,
+            email: r.email,
+            notes: r.notes,
+            creditMode: false,
+            slotAvailable: !!r.slot_available
+        };
+    } catch (err) {
+        return null;
+    }
+}
+
+/** Booking that reached the review page on this device (book.js saves it), prepaid ones included. */
+function localResume(auth) {
+    try {
+        const d = JSON.parse(localStorage.getItem('mindlapDraft'));
+        if (!d || d.phone !== auth.phone || !(Date.now() - d.savedAt < RESUME_MS)) return null;
+        if (!d.serviceId || !d.staffId || !d.date || !d.time) return null;
+        // Their time, in India time, must still be ahead.
+        const [y, m, day] = String(d.date).split('-').map(Number);
+        const t = String(d.time).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        let h = t ? Number(t[1]) % 12 : 0;
+        if (t && t[3].toUpperCase() === 'PM') h += 12;
+        const startsAt = Date.UTC(y, m - 1, day, h, t ? Number(t[2]) : 0) - 330 * 60 * 1000;
+        return Object.assign({}, d, { id: 'draft-' + d.savedAt, at: d.savedAt, slotAvailable: startsAt > Date.now() + 15 * 60 * 1000 });
+    } catch (err) {
+        return null;
+    }
+}
+
+async function showResumeCard(auth, grid, esc) {
+    const local = localResume(auth);
+    const server = await serverResume(auth);
+    const resume = [local, server].filter(Boolean).sort((a, b) => b.at - a.at)[0];
     if (!resume) return;
     try {
-        if (localStorage.getItem(RESUME_DISMISSED_KEY) === resume.order_id) return;
+        if (localStorage.getItem(RESUME_DISMISSED_KEY) === resume.id) return;
     } catch (err) { /* show it */ }
 
     // Photo and title from the therapist's own card on this page.
-    const first = String(resume.staff_name || '').trim().split(/\s+/)[0].toLowerCase();
+    const first = String(resume.staffName || '').trim().split(/\s+/)[0].toLowerCase();
     const match = Array.from(grid.querySelectorAll('.tc-card')).find((c) => {
         const name = c.querySelector('.tc-name');
         return name && first && name.textContent.trim().toLowerCase().startsWith(first);
     });
     const img = match && match.querySelector('.tc-avatar-img');
     const role = match && match.querySelector('.tc-role');
-    const photo = img ? img.getAttribute('src') : '';
+    const photo = resume.staffPhoto || (img ? img.getAttribute('src') : '');
 
     const [y, m, d] = String(resume.date).split('-').map(Number);
     const dateText = new Date(y, m - 1, d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     const timeText = String(resume.time).replace(/^0/, '');
-    const price = '₹' + Number(resume.amount).toLocaleString('en-IN');
+    const prepaid = !!resume.creditMode;
+    const price = prepaid ? 'Prepaid' : '₹' + Number(resume.price).toLocaleString('en-IN');
 
     const card = document.createElement('div');
     card.className = 'resume-card';
@@ -829,7 +877,7 @@ async function showResumeCard(auth, grid, esc) {
         '<div class="resume-top">' +
             (photo ? '<img class="resume-avatar" src="' + esc(photo) + '" alt="" width="64" height="64">' : '') +
             '<div class="resume-who">' +
-                '<h3>' + esc(resume.staff_name || 'Your therapist') + '</h3>' +
+                '<h3>' + esc(resume.staffName || 'Your therapist') + '</h3>' +
                 '<p>' + esc(role ? role.textContent : 'Online therapy') + '</p>' +
             '</div>' +
             '<button type="button" class="resume-close" aria-label="Dismiss">&times;</button>' +
@@ -837,19 +885,19 @@ async function showResumeCard(auth, grid, esc) {
         '<div class="resume-body">' +
             '<span class="resume-pill">Resume your booking</span>' +
             '<div class="resume-grid">' +
-                '<div><strong>Session type</strong><span>' + (resume.session_type === 'couple' ? 'Couple' : 'Individual') + '</span></div>' +
+                '<div><strong>Session type</strong><span>' + (resume.sessionType === 'couple' ? 'Couple' : 'Individual') + '</span></div>' +
                 '<div><strong>Date</strong><span>' + esc(dateText) + ', ' + esc(timeText) + '</span></div>' +
                 '<div><strong>Price</strong><span>' + esc(price) + '</span></div>' +
-                (resume.slot_available
-                    ? '<div><strong>Pending</strong><span>Complete payment</span></div>'
-                    : '<div class="resume-taken"><strong>Time taken</strong><span>Pick a new time</span></div>') +
+                (!resume.slotAvailable
+                    ? '<div class="resume-taken"><strong>Time taken</strong><span>Pick a new time</span></div>'
+                    : '<div><strong>Pending</strong><span>' + (prepaid ? 'Confirm booking' : 'Complete payment') + '</span></div>') +
             '</div>' +
             '<button type="button" class="btn btn-primary resume-continue">Continue booking</button>' +
         '</div>';
     grid.insertBefore(card, grid.firstChild);
 
     card.querySelector('.resume-close').addEventListener('click', () => {
-        try { localStorage.setItem(RESUME_DISMISSED_KEY, resume.order_id); } catch (err) { /* ignore */ }
+        try { localStorage.setItem(RESUME_DISMISSED_KEY, resume.id); } catch (err) { /* ignore */ }
         card.remove();
     });
 
@@ -860,15 +908,16 @@ async function showResumeCard(auth, grid, esc) {
         const state = {
             token: auth.token,
             phone: auth.phone,
-            staffId: String(resume.staff_id),
-            staffName: resume.staff_name || 'your therapist',
+            staffId: resume.staffId,
+            staffName: resume.staffName || 'your therapist',
             staffPhoto: photo || undefined,
-            staffProfile: first ? '/' + first + '.html' : undefined,
-            sessionType: resume.session_type,
-            creditMode: false,
-            serviceId: resume.service_id,
-            serviceName: resume.service_name,
-            price: Number(resume.amount) || 0,
+            staffProfile: resume.staffProfile || (first ? '/' + first + '.html' : undefined),
+            sessionType: resume.sessionType,
+            creditMode: prepaid,
+            credits: prepaid ? resume.credits : undefined,
+            serviceId: resume.serviceId,
+            serviceName: resume.serviceName,
+            price: resume.price,
             currency: resume.currency || 'INR',
             duration: resume.duration,
             name: resume.name,
@@ -877,15 +926,15 @@ async function showResumeCard(auth, grid, esc) {
         };
         // Hold their old time again; if someone else has it, they pick a new one.
         let held = null;
-        if (resume.slot_available) {
+        if (resume.slotAvailable) {
             try {
                 const res = await fetch(RESUME_API + '/api/slots/hold', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         session_token: auth.token,
-                        service_id: resume.service_id,
-                        staff_id: resume.staff_id,
+                        service_id: resume.serviceId,
+                        staff_id: resume.staffId,
                         date: resume.date,
                         time: resume.time
                     })
@@ -899,7 +948,7 @@ async function showResumeCard(auth, grid, esc) {
                 date: resume.date,
                 time: resume.time,
                 hold: {
-                    staffId: String(resume.staff_id),
+                    staffId: resume.staffId,
                     date: resume.date,
                     time: resume.time,
                     until: held.held_until || Date.now() + (held.hold_minutes || 10) * 60 * 1000
