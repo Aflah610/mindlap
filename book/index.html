@@ -13,7 +13,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css?v=129">
-    <link rel="stylesheet" href="/book/book.css?v=10">
+    <link rel="stylesheet" href="/book/book.css?v=11">
+    <script>
+        // Already logged in: hide the number form before it paints; book.js moves on to the next step.
+        try {
+            var t = (JSON.parse(localStorage.getItem('mindlapAuth')) || {}).token || '';
+            var p = t.split('.')[0].replace(/-/g, '+').replace(/_/g, '/');
+            if (p && JSON.parse(atob(p + '==='.slice((p.length + 3) % 4))).exp > Date.now() + 60000) {
+                document.documentElement.classList.add('auth-skip');
+            }
+        } catch (e) { /* show the form */ }
+    </script>
 </head>
 
 <body class="book-page" data-page="verify">
@@ -100,13 +110,15 @@
                     </div>
                 </div>
     
+                <p class="otp-continuing" id="otp-continuing"><span class="otp-spinner" aria-hidden="true"></span><span>Welcome back<span id="otp-continuing-phone"></span>. Taking you to the next step…</span></p>
+
                 <p id="otp-status" class="booking-status" role="status"></p>
             </div>
             <p class="book-help">Prefer to chat? <a href="https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session." target="_blank" rel="noopener">Book on WhatsApp</a></p>
         </main>
     </div>
 
-    <script src="/book/book.js?v=19"></script>
+    <script src="/book/book.js?v=20"></script>
 </body>
 
 </html>

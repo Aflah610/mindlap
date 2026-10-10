@@ -383,10 +383,14 @@
 
         const state = load();
         if (tokenValid(state.token)) {
+            // Already logged in: no number to type, just move on.
+            document.documentElement.classList.add('auth-skip');
+            if (state.phone) $('otp-continuing-phone').textContent = ', ' + state.phone;
             if (forAccount) goAfterLogin(state.token);
             else routeAfterVerify(state.token);
             return;
         }
+        document.documentElement.classList.remove('auth-skip');
 
         const phoneStep = $('otp-phone-step');
         const codeStep = $('otp-code-step');
