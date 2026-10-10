@@ -748,14 +748,16 @@ async function updateCreatorAppointment(env, creatorId, fields, { phone, booking
  * Reserves the slot in Zoho Bookings. Zoho answers HTTP 200 even when the
  * booking itself failed, so success means a booking_id came back.
  */
-async function bookInZoho(env, { serviceId, staffId, date, time24, name, email, phone, notes }) {
+async function bookInZoho(env, { serviceId, staffId, date, time24, name, email, phone, notes, costPaid }) {
   const data = await zohoPostForm(env, 'appointment', {
     service_id: serviceId,
     staff_id: staffId,
     from_time: `${toZohoDate(date)} ${time24}:00`,
     timezone: 'Asia/Calcutta',
     notes: notes || undefined,
-    customer_details: JSON.stringify({ name, email, phone_number: phone })
+    customer_details: JSON.stringify({ name, email, phone_number: phone }),
+    // Amount already paid on Razorpay, so Zoho Bookings shows the booking as paid.
+    payment_info: costPaid ? JSON.stringify({ cost_paid: costPaid }) : undefined
   });
   const returnvalue = (data && data.response && data.response.returnvalue) || {};
   if (returnvalue.booking_id) {
@@ -828,7 +830,8 @@ async function finalizePaidBooking(env, orderId, paymentId) {
     phone: notes.phone,
     notes: [notes.customer_notes, `Paid via Razorpay. Payment ID: ${paymentId}, Order ID: ${orderId}.`]
       .filter(Boolean)
-      .join('\n')
+      .join('\n'),
+    costPaid: (Number(payment.amount) / 100).toFixed(2)
   };
   const creatorId = notes.creator_id || null;
   const logContext = { phone: booking.phone };
@@ -1712,7 +1715,8 @@ export default {
             name: notes.name,
             email: notes.email,
             phone: notes.phone,
-            notes: [notes.customer_notes, `Rebooked after payment. Order ID: ${orderId}.`].filter(Boolean).join('\n')
+            notes: [notes.customer_notes, `Rebooked after payment. Order ID: ${orderId}.`].filter(Boolean).join('\n'),
+            costPaid: (Number(order.amount_paid || order.amount) / 100).toFixed(2)
           });
           await releaseSlot(env, session.phone);
           if (!result.ok) {
