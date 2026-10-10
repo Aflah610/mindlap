@@ -554,19 +554,30 @@
         });
     }
 
+    // Paid-but-unbooked sessions and prepaid credits were checked this recently: don't ask the server again.
+    const ROUTE_CHECK_MS = 10 * 60 * 1000;
+
     async function routeAfterVerify(token) {
+        const state = load();
+        if (state.routeCheckedAt && Date.now() - state.routeCheckedAt < ROUTE_CHECK_MS && state.creditMode !== undefined) {
+            await continueWithTherapist();
+            return;
+        }
+        // Both checks at once - they don't depend on each other.
+        const [waiting, credits] = await Promise.all([
+            post('/api/payment/waiting', { session_token: token }).catch(() => null),
+            post('/api/credits/check', { session_token: token }).catch(() => null)
+        ]);
+        if ((waiting && handleAuthError(waiting.res, waiting.data)) || (credits && handleAuthError(credits.res, credits.data))) return;
+        if (waiting && waiting.res.ok && waiting.data.waiting && waiting.data.waiting.length) {
+            startRebook(waiting.data.waiting[0]);
+            go(PATHS.confirmation + '?booking=waiting');
+            return;
+        }
+        save({ routeCheckedAt: Date.now() });
         try {
-            const { res, data } = await post('/api/payment/waiting', { session_token: token });
-            if (handleAuthError(res, data)) return;
-            if (res.ok && data.waiting && data.waiting.length) {
-                startRebook(data.waiting[0]);
-                go(PATHS.confirmation + '?booking=waiting');
-                return;
-            }
-        } catch (err) { /* fall through to the normal flow */ }
-        try {
-            const { res, data } = await post('/api/credits/check', { session_token: token });
-            if (handleAuthError(res, data)) return;
+            if (!credits) throw new Error('credit check failed');
+            const { res, data } = credits;
             if (res.ok && data.has_credits && data.credits > 0) {
                 const firstTime = load().creditMode === undefined;
                 save({ credits: data.credits });
@@ -652,7 +663,8 @@
      * once they exist in Zoho; until then their buttons stay on WhatsApp.
      */
     const ONLINE_THERAPISTS = {
-        rashin: { zohoStaff: 'nasheel', profile: '/rashin.html', photo: '/assets/rashin.webp' }
+        // zohoStaffId: Nasheel's ID in Zoho Bookings (saves looking it up on every booking).
+        rashin: { zohoStaff: 'nasheel', zohoStaffId: '445145000000031006', profile: '/rashin.html', photo: '/assets/rashin.webp' }
     };
 
     function firstName(name) {
@@ -678,11 +690,14 @@
             go(PATHS.therapist);
             return;
         }
-        let staff = [];
-        try {
-            staff = await get('/api/staff');
-        } catch (err) { /* handled below */ }
-        const match = staff.find((p) => firstName(p.name) === entry.zohoStaff);
+        let match = entry.zohoStaffId ? { id: entry.zohoStaffId } : null;
+        if (!match) {
+            let staff = [];
+            try {
+                staff = await get('/api/staff');
+            } catch (err) { /* handled below */ }
+            match = staff.find((p) => firstName(p.name) === entry.zohoStaff);
+        }
         if (!match) {
             save({ preferredTherapist: null });
             go(PATHS.therapist);
