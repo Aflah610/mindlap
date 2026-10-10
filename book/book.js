@@ -59,7 +59,8 @@
             const auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {};
             if (!auth.token) return;
             auth.account = !!hasAccount;
-            if (name) auth.name = String(name).slice(0, 60);
+            // Keep the name typed at WhatsApp verification; Creator's name only fills a gap.
+            if (name && !auth.name) auth.name = String(name).slice(0, 60);
             localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
         } catch (err) { /* menu just shows "Log In" */ }
     }
@@ -1614,7 +1615,7 @@
         }
 
         const data = account.data;
-        const name = data && data.customer && data.customer.name;
+        const name = loadAuth().name || (data && data.customer && data.customer.name);
         $('account-greeting').textContent = name ? 'Hi, ' + name : 'Hi there';
 
         if (account.wallet > 0) {
