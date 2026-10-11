@@ -570,6 +570,46 @@ function timeToMinutes(time24) {
   return h * 60 + m;
 }
 
+/**
+ * Counts a request against each { key, limit, windowMs } rule. Returns false
+ * once any rule is over its limit. Fails open if the counter is unreachable,
+ * so a Durable Object hiccup never blocks real customers from logging in.
+ */
+async function withinRateLimits(env, rules) {
+  if (!env.SLOT_HOLDS) return true;
+  try {
+    for (const rule of rules) {
+      const res = await holdsCall(env, 'hit', rule);
+      if (res && res.ok === false) return false;
+    }
+  } catch (err) {
+    console.error('Rate limit check failed', errorText(err));
+  }
+  return true;
+}
+
+function clientIp(request) {
+  return request.headers.get('CF-Connecting-IP') || 'unknown';
+}
+
+const isIsoDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(String(v || ''));
+const isSlotTime = (v) => /^\d{1,2}:\d{2}(\s*(AM|PM))?$/i.test(String(v || '').trim());
+const isOrderId = (v) => /^order_[A-Za-z0-9]+$/.test(String(v || ''));
+const isZohoId = (v) => /^\d{6,25}$/.test(String(v || ''));
+const isEmail = (v) => /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/.test(String(v || ''));
+
+/** Shared checks for the booking fields a browser sends. Returns an error message or null. */
+function bookingFieldsError({ service_id, staff_id, date, time, name, email, notes }, { needContact = true } = {}) {
+  if (!isZohoId(service_id) || !isZohoId(staff_id)) return 'Invalid session or therapist.';
+  if (!isIsoDate(date) || !isSlotTime(time)) return 'Invalid date or time.';
+  if (needContact) {
+    if (!name || String(name).trim().length > 80) return 'Please enter your name (up to 80 characters).';
+    if (!isEmail(email)) return 'Please enter a valid email address.';
+  }
+  if (notes && String(notes).length > 1000) return 'Notes are too long (1,000 characters max).';
+  return null;
+}
+
 async function holdsCall(env, op, payload) {
   const stub = env.SLOT_HOLDS.get(env.SLOT_HOLDS.idFromName('global'));
   const res = await stub.fetch('https://slot-holds/' + op, { method: 'POST', body: JSON.stringify(payload) });
@@ -672,6 +712,18 @@ export class SlotHolds {
         else await this.state.storage.delete(key);
       }
       return reply({ items });
+    }
+
+    // Rate limit: at most `limit` hits per `windowMs` for this key.
+    if (op === 'hit') {
+      const key = 'rate:' + body.key;
+      const now = Date.now();
+      let entry = await this.state.storage.get(key);
+      if (!entry || entry.resetAt <= now) entry = { count: 0, resetAt: now + body.windowMs };
+      if (entry.count >= body.limit) return reply({ ok: false, retryAfterMs: entry.resetAt - now });
+      entry.count += 1;
+      await this.state.storage.put(key, entry);
+      return reply({ ok: true });
     }
 
     // Short lock so the same paid order can't be rebooked twice at once.
@@ -1033,6 +1085,11 @@ export default {
           workspace_id: env.ZOHO_WORKSPACE_ID,
           service_id: serviceId
         });
+        // Public endpoint: only what the booking pages need (no staff emails, birthdays, etc.).
+        const returnvalue = data && data.response && data.response.returnvalue;
+        if (returnvalue && Array.isArray(returnvalue.data)) {
+          returnvalue.data = returnvalue.data.map((p) => ({ id: p.id, name: p.name, assigned_services: p.assigned_services }));
+        }
         return jsonResponse(data, 200, headers);
       }
 
@@ -1041,7 +1098,7 @@ export default {
         const serviceId = url.searchParams.get('service_id');
         const staffId = url.searchParams.get('staff_id');
         const date = url.searchParams.get('date'); // YYYY-MM-DD
-        if (!serviceId || !staffId || !date) {
+        if (!isZohoId(serviceId) || !isZohoId(staffId) || !isIsoDate(date)) {
           return jsonResponse({ error: 'service_id, staff_id and date are required' }, 400, headers);
         }
         const data = await zohoGet(env, 'availableslots', {
@@ -1072,7 +1129,7 @@ export default {
           return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
         }
         const { service_id, staff_id, date, time } = body;
-        if (!service_id || !staff_id || !date || !time) {
+        if (bookingFieldsError({ service_id, staff_id, date, time }, { needContact: false })) {
           return jsonResponse({ error: 'service_id, staff_id, date and time are required' }, 400, headers);
         }
         const time24 = to24Hour(time);
@@ -1124,8 +1181,9 @@ export default {
         }
         const phone = session.phone;
 
-        if (!service_id || !staff_id || !date || !time || !name || !email) {
-          return jsonResponse({ error: 'Missing required booking fields' }, 400, headers);
+        const fieldsError = bookingFieldsError(body);
+        if (fieldsError) {
+          return jsonResponse({ error: fieldsError }, 400, headers);
         }
 
         const service = await getServicePrice(env, service_id);
@@ -1173,6 +1231,12 @@ export default {
         if (!phone) {
           return jsonResponse({ success: false, error: 'Please enter a valid phone number.' }, 400, headers);
         }
+        // Every code is a paid WhatsApp message: cap sends per number and per visitor.
+        const allowed = await withinRateLimits(env, [
+          { key: 'otp-send:' + phone, limit: 3, windowMs: 10 * 60 * 1000 },
+          { key: 'otp-send-ip:' + clientIp(request), limit: 10, windowMs: 60 * 60 * 1000 }
+        ]);
+        if (!allowed) return jsonResponse({ success: false, error: 'Too many attempts. Please wait a few minutes and try again.' }, 429, headers);
 
         let result;
         try {
@@ -1214,6 +1278,12 @@ export default {
         if (code.length !== 6) {
           return jsonResponse({ success: false, error: 'Please enter the 6-digit code.' }, 400, headers);
         }
+        // Stops anyone guessing codes for someone else's number.
+        const allowed = await withinRateLimits(env, [
+          { key: 'otp-verify:' + phone, limit: 5, windowMs: 15 * 60 * 1000 },
+          { key: 'otp-verify-ip:' + clientIp(request), limit: 30, windowMs: 60 * 60 * 1000 }
+        ]);
+        if (!allowed) return jsonResponse({ success: false, error: 'Too many attempts. Please wait a few minutes and try again.' }, 429, headers);
 
         let result;
         try {
@@ -1367,11 +1437,16 @@ export default {
         if (hp_confirm) {
           return jsonResponse({ error: 'Rejected' }, 400, headers);
         }
-        if (!service_id || !staff_id || !date || !time || !name || !email) {
-          return jsonResponse({ error: 'Missing required booking fields' }, 400, headers);
+        const fieldsError = bookingFieldsError(body);
+        if (fieldsError) {
+          return jsonResponse({ error: fieldsError }, 400, headers);
         }
 
         const phone = session.phone;
+        const creditService = await getServicePrice(env, service_id);
+        if (!creditService || /package/i.test(creditService.name)) {
+          return jsonResponse({ error: 'Prepaid sessions can only be used for a single session.' }, 400, headers);
+        }
         const credits = await getPackageCredits(env, phone);
         if (credits <= 0) {
           return jsonResponse({ error: 'You have no prepaid sessions left. Please refresh and try again.' }, 400, headers);
@@ -1470,7 +1545,7 @@ export default {
         }
 
         return jsonResponse(
-          { error: message, slot_conflict: isSlotConflict, raw: data },
+          { error: message, slot_conflict: isSlotConflict },
           isSlotConflict ? 409 : 400,
           headers
         );
@@ -1498,8 +1573,9 @@ export default {
         }
         const phone = session.phone;
 
-        if (!service_id || !staff_id || !date || !time || !name || !email) {
-          return jsonResponse({ error: 'Missing required booking fields' }, 400, headers);
+        const fieldsError = bookingFieldsError(body);
+        if (fieldsError) {
+          return jsonResponse({ error: fieldsError }, 400, headers);
         }
 
         const time24 = to24Hour(time);
@@ -1587,7 +1663,7 @@ export default {
           return jsonResponse({ error: 'Please verify your phone number again.', reverify: true }, 401, headers);
         }
         const orderId = String(body.order_id || '').trim();
-        if (!/^order_\w+$/.test(orderId)) {
+        if (!isOrderId(orderId)) {
           return jsonResponse({ error: 'order_id is required' }, 400, headers);
         }
         const order = await razorpayRequest(env, 'GET', `orders/${orderId}`).catch(() => null);
@@ -1612,7 +1688,7 @@ export default {
         const paymentId = String(body.razorpay_payment_id || '').trim();
         const signature = String(body.razorpay_signature || '').trim();
 
-        if (!orderId || !paymentId || !signature) {
+        if (!isOrderId(orderId) || !/^pay_[A-Za-z0-9]+$/.test(paymentId) || !/^[0-9a-f]{64}$/.test(signature)) {
           return jsonResponse({ error: 'Missing payment verification fields' }, 400, headers);
         }
 
@@ -1762,7 +1838,7 @@ export default {
         }
         const orderId = String(body.order_id || '').trim();
         const { date, time } = body;
-        if (!orderId || !date || !time) {
+        if (!isOrderId(orderId) || !isIsoDate(date) || !isSlotTime(time)) {
           return jsonResponse({ error: 'order_id, date and time are required' }, 400, headers);
         }
 
