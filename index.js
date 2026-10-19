@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Christine',
                 role: 'Psychologist',
                 focus: 'Relationship & Marital Concerns, Anxiety & Stress, PTSD & Trauma Recovery',
-                img: 'assets/christine_bg.jpeg?v=3'
+                img: 'assets/christine_bg.jpeg?v=4'
             }
         };
 
