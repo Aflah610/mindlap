@@ -132,6 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 role: 'Consultant Psychologist',
                 focus: 'Behavioral Change, Stress & Anxiety, Emotional Regulation',
                 img: 'assets/jasmin_bg.jpeg'
+            },
+            fathima: {
+                name: 'Fathima Sidhyc',
+                role: 'Consultant Psychologist',
+                focus: 'Anxiety, Depression, OCD, ADHD, Trauma & PTSD',
+                img: 'assets/fathima_bg.jpeg'
             }
         };
 
