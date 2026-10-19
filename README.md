@@ -13,8 +13,7 @@ mindlap-therapy/
 ├── index.js              Site-wide script (nav, animations, therapist data)
 ├── booking.js            Book Online wizard: OTP -> credits/type -> details -> payment
 │
-├── anasooya.html  athira.html  gouri.html      Therapist profile pages
-├── rashin.html    sajitha.html theresa.html
+├── anasooya.html  rashin.html  theresa.html    Therapist profile pages
 ├── privacy.html   terms.html                   Legal pages
 │
 ├── assets/               Images, icons, favicons (only files the site uses)

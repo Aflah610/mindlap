@@ -109,24 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 focus: 'Stress & Anxiety Support, Trauma-Informed Care, Mindfulness & Self-Awareness',
                 img: 'assets/anasooya_bg.jpeg'
             },
-            gouri: {
-                name: 'Gouri Nandhana',
-                role: 'Consultant Psychologist',
-                focus: 'Depression & Anxiety, Couples Therapy, Trauma & PTSD',
-                img: 'assets/gouri_bg.jpeg'
-            },
-            sajitha: {
-                name: 'Sajitha KT',
-                role: 'Consultant Psychologist',
-                focus: 'Stress & Anxiety Management, Behaviour Modification, Trauma Therapy',
-                img: 'assets/sajitha_bg.jpeg'
-            },
-            athira: {
-                name: 'Athira Asok',
-                role: 'Consultant Psychologist',
-                focus: 'Depression & Anxiety, Stress & Crisis Management, Couples Therapy',
-                img: 'assets/athira_bg.jpeg'
-            },
             rashin: {
                 name: 'Rashin PK',
                 role: 'Consultant Psychologist',
@@ -260,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'low mood',
                 image: 'assets/check-depression.webp',
                 icon: '<line x1="16" y1="13" x2="16" y2="21"></line><line x1="8" y1="13" x2="8" y2="21"></line><line x1="12" y1="15" x2="12" y2="23"></line><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path>',
-                match: { higher: 'gouri', lower: 'athira' },
+                match: { higher: 'rashin', lower: 'anasooya' },
                 crisisIndex: 9,
                 questions: [
                     'Do you feel sad often?',
@@ -282,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'relationship strain',
                 image: 'assets/check-relationship.webp',
                 icon: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',
-                match: { higher: 'rashin', lower: 'gouri' },
+                match: { higher: 'rashin', lower: 'theresa' },
                 // These read positively, so a high answer means things are going well.
                 reverse: [0, 1, 2, 3, 4, 7, 9],
                 questions: [
@@ -305,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'stress',
                 image: 'assets/check-stress.webp',
                 icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>',
-                match: { higher: 'sajitha', lower: 'athira' },
+                match: { higher: 'theresa', lower: 'anasooya' },
                 questions: [
                     'Do you feel overwhelmed easily?',
                     'Do you feel under pressure?',
@@ -347,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'what you described',
                 image: 'assets/check-other.webp',
                 icon: '<circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line>',
-                match: { higher: 'rashin', lower: 'sajitha' },
+                match: { higher: 'rashin', lower: 'theresa' },
                 questions: [
                     'Do you feel low in confidence?',
                     'Do you doubt yourself often?',
