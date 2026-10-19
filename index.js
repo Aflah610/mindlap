@@ -126,6 +126,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 role: 'Consultant Psychologist',
                 focus: 'Relationship & Marital Concerns, Anxiety & Stress, PTSD & Trauma Recovery',
                 img: 'assets/christine_bg.jpeg?v=4'
+            },
+            jasmin: {
+                name: 'Jasmin',
+                role: 'Consultant Psychologist',
+                focus: 'Behavioral Change, Stress & Anxiety, Emotional Regulation',
+                img: 'assets/jasmin_bg.jpeg'
             }
         };
 
