@@ -1039,3 +1039,31 @@ document.addEventListener('DOMContentLoaded', () => {
     new MutationObserver(build).observe(grid, { childList: true });
     build();
 });
+
+// Menu highlights the section you are reading (Home / Therapists / Self Check / FAQs / Contact).
+document.addEventListener('DOMContentLoaded', () => {
+    const links = Array.from(document.querySelectorAll('.nav-links .nav-link[href^="#"]'));
+    if (!links.length || !('IntersectionObserver' in window)) return;
+    const byId = {};
+    links.forEach((a) => {
+        const id = a.getAttribute('href').slice(1);
+        if (id) byId[id] = a;
+    });
+    const sections = Object.keys(byId).map((id) => document.getElementById(id)).filter(Boolean);
+    const setActive = (a) => links.forEach((l) => l.classList.toggle('active', l === a));
+    const home = links.find((a) => a.getAttribute('href') === '#');
+    const seen = new Map();
+    const pick = () => {
+        let best = null;
+        let bestRatio = 0;
+        seen.forEach((ratio, el) => { if (ratio > bestRatio) { best = el; bestRatio = ratio; } });
+        if (window.scrollY < 200 || !best) setActive(home || null);
+        else setActive(byId[best.id]);
+    };
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => seen.set(e.target, e.isIntersecting ? e.intersectionRatio : 0));
+        pick();
+    }, { rootMargin: '-80px 0px -40% 0px', threshold: [0, 0.15, 0.3, 0.5, 0.75] });
+    sections.forEach((s) => io.observe(s));
+    window.addEventListener('scroll', () => { if (window.scrollY < 200) setActive(home || null); }, { passive: true });
+});
