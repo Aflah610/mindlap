@@ -4742,3 +4742,17 @@ select.phone-input-prefix {
     width: 100%;
     justify-content: center;
 }
+
+/* Black "Book Session" (header) and "Book Your Session" (hero) buttons */
+.nav-actions .btn-book,
+.hero-actions .btn-primary {
+    background-color: #111111;
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.nav-actions .btn-book:hover,
+.hero-actions .btn-primary:hover {
+    background-color: #2b2b2b;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+}
