@@ -5070,3 +5070,10 @@ select.phone-input-prefix {
         display: none;
     }
 }
+
+/* Log In switched off for now (online accounts paused). Delete this block to bring it back. */
+html .navbar-header .nav-actions .btn-login,
+html .navbar-header .nav-actions .account-menu,
+html .nav-link.nav-login-mobile {
+    display: none !important;
+}

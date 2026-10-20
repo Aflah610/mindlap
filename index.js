@@ -998,10 +998,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let pausedUntil = 0;
     let onScreen = false;
 
+    let snapTimer = null;
     const goTo = (i) => {
         const card = cards[i];
         if (!card) return;
+        // iPhones block a smooth programmatic slide while scroll-snap is on - lift it for the animation.
+        grid.style.scrollSnapType = 'none';
         grid.scrollTo({ left: card.offsetLeft - (grid.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
+        clearTimeout(snapTimer);
+        snapTimer = setTimeout(() => { grid.style.scrollSnapType = ''; }, 900);
     };
     const tick = () => {
         if (!phone.matches || calm.matches || !onScreen || document.hidden || Date.now() < pausedUntil || cards.length < 2) return;
@@ -1012,10 +1017,20 @@ document.addEventListener('DOMContentLoaded', () => {
         timer = setInterval(tick, AUTO_MS);
     };
     const pause = () => { pausedUntil = Date.now() + RESUME_MS; };
-    ['touchstart', 'pointerdown', 'wheel', 'keydown'].forEach((ev) => grid.addEventListener(ev, pause, { passive: true }));
+    // Pause only on a real sideways swipe - scrolling the page down over the cards shouldn't stop it.
+    let startX = 0;
+    let startY = 0;
+    grid.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, { passive: true });
+    grid.addEventListener('touchmove', (e) => {
+        const dx = Math.abs(e.touches[0].clientX - startX);
+        const dy = Math.abs(e.touches[0].clientY - startY);
+        if (dx > 8 && dx > dy) pause();
+    }, { passive: true });
+    grid.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse') pause(); }, { passive: true });
+    ['wheel', 'keydown'].forEach((ev) => grid.addEventListener(ev, pause, { passive: true }));
     // Only move while the cards are actually on screen.
     if ('IntersectionObserver' in window) {
-        new IntersectionObserver((entries) => { onScreen = entries[0].isIntersecting; }, { threshold: 0.5 }).observe(grid);
+        new IntersectionObserver((entries) => { onScreen = entries[0].isIntersecting; }, { threshold: 0.2 }).observe(grid);
     } else {
         onScreen = true;
     }
