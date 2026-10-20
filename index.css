@@ -4767,14 +4767,6 @@ select.phone-input-prefix {
     --brand-ink: #111111;
 }
 
-/* Hero headline: green instead of violet */
-.hero-title .text-gradient {
-    background: linear-gradient(135deg, var(--brand-green) 20%, var(--brand-green-bright) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
 /* "matters" in the closing banner, green too */
 .cta-banner .text-gradient {
     background: linear-gradient(135deg, var(--brand-green) 20%, var(--brand-green-bright) 100%);
@@ -4876,17 +4868,10 @@ select.phone-input-prefix {
     background-color: var(--brand-green-bright);
 }
 
-/* Phones: same green headline and black outline as desktop */
+/* Phones: black headline text and outline, like desktop */
 @media (max-width: 768px) {
     .hero-section .hero-title {
         color: var(--brand-ink);
-    }
-
-    .hero-section .hero-title .text-gradient {
-        background: linear-gradient(120deg, var(--brand-green) 0%, var(--brand-green-bright) 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
     }
 
     .hero-section .btn-explore {
