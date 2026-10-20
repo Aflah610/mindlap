@@ -970,6 +970,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.after(dots);
 
     let cards = [];
+    let current = 0;
     const build = () => {
         cards = Array.from(grid.children);
         dots.innerHTML = cards.map(() => '<span></span>').join('');
@@ -982,9 +983,43 @@ document.addEventListener('DOMContentLoaded', () => {
         cards.forEach((c, i) => {
             if (Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid) < Math.abs(cards[best].offsetLeft + cards[best].offsetWidth / 2 - mid)) best = i;
         });
+        current = best;
         Array.from(dots.children).forEach((d, i) => d.classList.toggle('active', i === best));
     };
     grid.addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
+
+    // Auto-play on phones: slide to the next therapist every few seconds, loop to the first.
+    // Pauses while the visitor touches the row, and for a while after, so it never fights a swipe.
+    const phone = window.matchMedia('(max-width: 768px)');
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const AUTO_MS = 3500;
+    const RESUME_MS = 8000;
+    let timer = null;
+    let pausedUntil = 0;
+    let onScreen = false;
+
+    const goTo = (i) => {
+        const card = cards[i];
+        if (!card) return;
+        grid.scrollTo({ left: card.offsetLeft - (grid.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
+    };
+    const tick = () => {
+        if (!phone.matches || calm.matches || !onScreen || document.hidden || Date.now() < pausedUntil || cards.length < 2) return;
+        goTo((current + 1) % cards.length);
+    };
+    const start = () => {
+        clearInterval(timer);
+        timer = setInterval(tick, AUTO_MS);
+    };
+    const pause = () => { pausedUntil = Date.now() + RESUME_MS; };
+    ['touchstart', 'pointerdown', 'wheel', 'keydown'].forEach((ev) => grid.addEventListener(ev, pause, { passive: true }));
+    // Only move while the cards are actually on screen.
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver((entries) => { onScreen = entries[0].isIntersecting; }, { threshold: 0.5 }).observe(grid);
+    } else {
+        onScreen = true;
+    }
+    start();
     // The "Resume your booking" card can be added later - rebuild when cards change.
     new MutationObserver(build).observe(grid, { childList: true });
     build();
