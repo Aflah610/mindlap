@@ -26,8 +26,8 @@ FOOTER_COMPANY = '''<h4>Company</h4>
                 </ul>'''
 
 PROFILES = {
-    'Rashin PK': '/rashin.html', 'Anasooya Pramod': '/anasooya.html', 'Theresa P Thomas': '/theresa.html',
-    'Christine': '/christine.html', 'Jasmin': '/jasmin.html', 'Fathima Sidhyc': '/fathima.html',
+    'Rashin PK': '/rashin', 'Anasooya Pramod': '/anasooya', 'Theresa P Thomas': '/theresa',
+    'Christine': '/christine', 'Jasmin': '/jasmin', 'Fathima Sidhyc': '/fathima',
 }
 
 for path in sorted(glob.glob('*.html')):

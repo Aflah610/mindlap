@@ -1095,3 +1095,12 @@ document.addEventListener('DOMContentLoaded', () => {
     tidyHash();
     window.addEventListener('hashchange', tidyHash);
 });
+
+// Old links like /jasmin.html or /index.html: show the clean address (/jasmin, /).
+(function () {
+    const path = window.location.pathname;
+    let clean = null;
+    if (/\/index\.html$/.test(path)) clean = path.replace(/index\.html$/, '');
+    else if (/\.html$/.test(path) && !/^\/(book|account)\//.test(path)) clean = path.replace(/\.html$/, '');
+    if (clean !== null) history.replaceState(null, '', clean + window.location.search + window.location.hash);
+})();

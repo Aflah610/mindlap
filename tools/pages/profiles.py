@@ -1,4 +1,4 @@
-"""Builds the psychologist profile pages (/rashin.html etc.) from therapists.json.
+"""Builds the psychologist profile pages (served at /rashin etc.) from therapists.json.
 
     python tools/pages/profiles.py
 """
@@ -84,7 +84,7 @@ def others(current):
     for t in PEOPLE:
         if t['slug'] == current:
             continue
-        cards.append(f'''<li><a href="/{t['slug']}.html">
+        cards.append(f'''<li><a href="/{t['slug']}">
                     <img src="/assets/{t['slug']}-card.webp" alt="" width="56" height="56" loading="lazy">
                     <span><strong>{e(t['name'])}</strong><small>{e(t['role'])}</small></span>
                 </a></li>''')
@@ -162,9 +162,9 @@ def build_profile(t):
     {others(t['slug'])}
     </main>'''
 
-    url = f"{b.SITE}/{path}"
+    url = f"{b.SITE}/{t['slug']}"
     schema = {'@context': 'https://schema.org', '@graph': [
-        b.crumb_schema([('Home', '/'), ('Psychologists', '/#therapists'), (t['name'], '/' + path)]),
+        b.crumb_schema([('Home', '/'), ('Psychologists', '/#therapists'), (t['name'], '/' + t['slug'])]),
         {'@type': 'Person', '@id': url + '#person', 'name': t['name'], 'jobTitle': t['role'], 'url': url,
          'image': f"{b.SITE}/{t['photo']}", 'knowsLanguage': t['languages'],
          'knowsAbout': [a for a, _ in t['focus']] + [METHODS.get(m, m) for m in t['methods']],

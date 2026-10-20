@@ -44,8 +44,8 @@ def write(path, text):
 def absolute(fragment):
     """Root-relative links so the shell works from /services/x/ too."""
     fragment = re.sub(r'(href|src)="index\.html', r'\1="/', fragment)
-    fragment = re.sub(r'(href|src)="(assets/|privacy\.html|terms\.html|manifest\.json|index\.js|index\.css)', r'\1="/\2', fragment)
-    fragment = re.sub(r'href="([a-z]+\.html)"', r'href="/\1"', fragment)
+    fragment = re.sub(r'(href|src)="(assets/|manifest\.json|index\.js|index\.css)', r'\1="/\2', fragment)
+    fragment = re.sub(r'href="/?([a-z]+)\.html', r'href="/\1', fragment)  # clean URLs: /privacy
     return fragment
 
 
@@ -66,6 +66,8 @@ NAV, FOOT, CSS_V = shell()
 
 def page(path, title, desc, body, schema):
     url = SITE + '/' + path.replace('index.html', '')
+    if url.endswith('.html'):
+        url = url[:-5]  # clean URLs: /rashin, not /rashin.html
     return f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -362,8 +364,8 @@ def build_kerala():
 
 def build_sitemap(paths):
     today = '2026-10-21'
-    urls = ['/', '/privacy.html', '/terms.html'] + ['/' + p.replace('index.html', '') for p in paths]
-    urls += [f'/{n}.html' for n in ('rashin', 'anasooya', 'theresa', 'christine', 'jasmin', 'fathima')]
+    urls = ['/', '/privacy', '/terms'] + ['/' + p.replace('index.html', '') for p in paths]
+    urls += [f'/{n}' for n in ('rashin', 'anasooya', 'theresa', 'christine', 'jasmin', 'fathima')]
     rows = ''.join(
         f'''  <url>
     <loc>{SITE}{u}</loc>
