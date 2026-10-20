@@ -1067,3 +1067,31 @@ document.addEventListener('DOMContentLoaded', () => {
     sections.forEach((s) => io.observe(s));
     window.addEventListener('scroll', () => { if (window.scrollY < 200) setActive(home || null); }, { passive: true });
 });
+
+// Keep the address bar clean: in-page links (#therapists, #faqs, ...) scroll smoothly
+// to their section without leaving "#faqs" in the URL.
+document.addEventListener('DOMContentLoaded', () => {
+    const clean = () => history.replaceState(null, '', window.location.pathname + window.location.search);
+    const goTo = (id) => {
+        const target = id ? document.getElementById(id) : null;
+        if (id && !target) return false;
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        else window.scrollTo({ top: 0, behavior: 'smooth' });
+        clean();
+        return true;
+    };
+    document.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href]');
+        if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+        const url = new URL(a.getAttribute('href'), window.location.href);
+        if (url.origin !== window.location.origin || url.pathname !== window.location.pathname || !url.hash && a.getAttribute('href') !== '#') return;
+        if (goTo(decodeURIComponent(url.hash.slice(1)))) e.preventDefault();
+    });
+    // Arriving from another page with /#therapists etc.: land on the section, then tidy the URL.
+    const tidyHash = () => {
+        const id = decodeURIComponent(window.location.hash.slice(1));
+        if (id && document.getElementById(id)) setTimeout(clean, 600);
+    };
+    tidyHash();
+    window.addEventListener('hashchange', tidyHash);
+});
