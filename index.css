@@ -5311,3 +5311,34 @@ footer[id] {
 .tc-lang-text small {
     color: #66646d;
 }
+
+/* Hover: calm neutral states instead of green */
+.nav-actions .btn-book:hover,
+.hero-actions .btn-primary:hover,
+.cta-actions .btn-primary:hover,
+.tc-view-btn:hover {
+    background-color: #2e2e2e;
+    color: #fff;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.btn-login:hover,
+.btn-explore:hover,
+.cta-actions .btn-outline:hover,
+.tc-profile-btn:hover {
+    background-color: #f3f2ef;
+    border-color: #111;
+    color: #111;
+    box-shadow: none;
+}
+
+.contact-info a:hover,
+.help-list a:hover {
+    color: #111;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.help-list a:hover::after {
+    color: #111;
+}

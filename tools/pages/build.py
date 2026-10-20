@@ -88,7 +88,7 @@ def page(path, title, desc, body, schema):
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css?v={CSS_V}">
-    <link rel="stylesheet" href="/pages.css?v=2">
+    <link rel="stylesheet" href="/pages.css?v=3">
     <script type="application/ld+json">{json.dumps(schema, ensure_ascii=False)}</script>
 </head>
 <body class="sv-page">

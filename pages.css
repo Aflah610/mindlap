@@ -585,3 +585,33 @@
 .sv-close p {
     color: #d9d6d0;
 }
+
+/* Hover: calm neutral states instead of green */
+.sv-btn:hover {
+    background: #2e2e2e;
+    color: #fff;
+}
+
+.sv-btn-light:hover {
+    background: #ece9e3;
+    color: var(--sv-ink);
+}
+
+.sv-related a:hover,
+.sv-list-links a:hover {
+    color: var(--sv-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.sv-rows a:hover .sv-row-title {
+    color: var(--sv-ink);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+}
+
+.sv-rows a:hover .sv-row-go {
+    color: var(--sv-ink);
+    border-color: var(--sv-ink);
+}
