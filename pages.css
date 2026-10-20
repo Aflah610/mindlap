@@ -580,3 +580,8 @@
         padding: 40px 0 120px; /* room for the phone call/chat bar */
     }
 }
+
+/* index.css styles p with a muted grey - keep the dark band readable */
+.sv-close p {
+    color: #d9d6d0;
+}

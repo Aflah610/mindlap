@@ -5301,3 +5301,13 @@ footer[id] {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* Readable contrast (Lighthouse / WCAG AA) */
+.tc-lang-badge {
+    color: #17702f;
+}
+
+.tc-price-text small,
+.tc-lang-text small {
+    color: #66646d;
+}
