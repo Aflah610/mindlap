@@ -4893,9 +4893,37 @@ select.phone-input-prefix {
 }
 
 @media (min-width: 1025px) {
+    /* Fills the first screen; the text block sits in the vertical middle */
     .hero-section {
-        min-height: 640px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        min-height: min(100vh, 880px);
+        padding: 110px 0 90px;
         background: #FBF7F0 url("assets/hero-calm.webp") right center / cover no-repeat;
+    }
+
+    .hero-section > .hero-container {
+        width: 100%;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* The hero's fade already gives breathing room above the therapists */
+    .therapists-section {
+        padding-top: 48px;
+    }
+
+    /* Melt the bottom edge into the white section below - no hard line */
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 140px;
+        pointer-events: none;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #FFFFFF 100%);
     }
 
     .hero-section .hero-media {
