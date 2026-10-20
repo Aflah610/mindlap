@@ -4879,3 +4879,37 @@ select.phone-input-prefix {
         color: var(--brand-ink);
     }
 }
+
+/* -------------------------------------------------------------
+   Hero: calm sunrise illustration (warm cream) as the background
+   ------------------------------------------------------------- */
+.hero-section {
+    background: #FBF7F0 url("assets/hero-calm.webp") right center / cover no-repeat;
+}
+
+/* The picture does the job on desktop; old decorations off */
+.hero-bg-shapes {
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .hero-section {
+        min-height: 640px;
+    }
+
+    .hero-section .hero-media {
+        visibility: hidden; /* keeps the layout, the background shows the art */
+    }
+}
+
+/* Phones: text on cream, the illustration below it */
+@media (max-width: 768px) {
+    .hero-section {
+        background: #FBF7F0;
+    }
+
+    .hero-section .hero-illustration {
+        -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
+        mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
+    }
+}

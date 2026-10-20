@@ -17,7 +17,8 @@
     
     <!-- LCP Image Preload -->
     <link rel="preload" href="assets/hero-illustration.webp" as="image" fetchpriority="high" media="(min-width: 769px)">
-    <link rel="preload" href="assets/hero-mobile.webp" as="image" fetchpriority="high" media="(max-width: 768px)">
+    <link rel="preload" href="assets/hero-calm-mobile.webp" as="image" fetchpriority="high" media="(max-width: 768px)">
+    <link rel="preload" href="assets/hero-calm.webp" as="image" fetchpriority="high" media="(min-width: 769px)">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -41,7 +42,7 @@
         rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index.css?v=144">
+    <link rel="stylesheet" href="index.css?v=145">
     <!-- Fix avatar blend mode -->
     <style>
         .tc-avatar-img { mix-blend-mode: normal !important; opacity: 1 !important; filter: none !important; background: none !important; }
@@ -192,7 +193,7 @@
                 <div class="hero-image-wrapper">
                     <!-- Hero Illustration Image -->
                     <picture>
-                        <source media="(max-width: 768px)" srcset="assets/hero-mobile.webp" width="795" height="564">
+                        <source media="(max-width: 768px)" srcset="assets/hero-calm-mobile.webp" width="900" height="914">
                         <img src="assets/hero-illustration.webp" alt="Mindlap - Online Mental Wellness Illustration"
                         class="hero-illustration" width="460" height="460" fetchpriority="high">
                     </picture>
@@ -204,7 +205,7 @@
         <div class="hero-waves">
             <svg class="wave-bg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 200" preserveAspectRatio="none">
                 <!-- Underlay decorative wave -->
-                <path fill="rgba(142, 102, 222, 0.08)" d="M0,90 C320,220 720,40 1080,120 L1440,160 L1440,200 L0,200 Z">
+                <path fill="rgba(160, 150, 120, 0.08)" d="M0,90 C320,220 720,40 1080,120 L1440,160 L1440,200 L0,200 Z">
                 </path>
                 <!-- Main overlay wave matching the next section's background -->
                 <path fill="var(--bg-calm)" d="M0,120 C360,260 760,80 1120,160 L1440,180 L1440,200 L0,200 Z"></path>
