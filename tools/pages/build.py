@@ -137,7 +137,6 @@ def aside(service_name):
                     <li>From anywhere, Kerala or abroad</li>
                 </ul>
             </div>
-            <p class="sv-aside-crisis">If you are in crisis or feel unsafe, call <a href="tel:14416">Tele-MANAS 14416</a> (free, 24&times;7) or <a href="tel:112">112</a>.</p>
         </aside>'''
 
 
