@@ -4881,35 +4881,48 @@ select.phone-input-prefix {
 }
 
 /* -------------------------------------------------------------
-   Hero: calm sunrise illustration (warm cream) as the background
+   Hero: calm sunrise illustration (warm cream)
+   Desktop: full background. Tablet + phone: picture under the text.
    ------------------------------------------------------------- */
 .hero-section {
-    background: #FBF7F0 url("assets/hero-calm.webp") right center / cover no-repeat;
+    background: #FBF7F0;
 }
 
-/* The picture does the job on desktop; old decorations off */
 .hero-bg-shapes {
     display: none;
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
     .hero-section {
         min-height: 640px;
+        background: #FBF7F0 url("assets/hero-calm.webp") right center / cover no-repeat;
     }
 
     .hero-section .hero-media {
-        visibility: hidden; /* keeps the layout, the background shows the art */
+        visibility: hidden; /* keeps the two-column layout; the background is the art */
+    }
+
+    /* Log In sits over the picture on wide screens: give it a solid backing */
+    .nav-actions .btn-login {
+        background-color: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(6px);
     }
 }
 
-/* Phones: text on cream, the illustration below it */
-@media (max-width: 768px) {
-    .hero-section {
-        background: #FBF7F0;
-    }
-
+@media (max-width: 1024px) {
     .hero-section .hero-illustration {
         -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
         mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
     }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .hero-image-wrapper {
+        max-width: 520px;
+    }
+}
+
+/* The illustration has its own soft waves - no extra white wave under it */
+.hero-section .hero-waves {
+    display: none;
 }
