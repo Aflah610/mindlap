@@ -4756,3 +4756,141 @@ select.phone-input-prefix {
     background-color: #2b2b2b;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
 }
+
+/* -------------------------------------------------------------
+   Green + black accents (violet stays, but as the quieter colour)
+   ------------------------------------------------------------- */
+:root {
+    --brand-green: #1E8E3E;        /* text-safe green */
+    --brand-green-bright: #3DBE5A; /* the fresh "sneaker" green */
+    --brand-green-soft: #E8F7EC;
+    --brand-ink: #111111;
+}
+
+/* Hero headline: green instead of violet */
+.hero-title .text-gradient {
+    background: linear-gradient(135deg, var(--brand-green) 20%, var(--brand-green-bright) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* "matters" in the closing banner, green too */
+.cta-banner .text-gradient {
+    background: linear-gradient(135deg, var(--brand-green) 20%, var(--brand-green-bright) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Menu: black text, green underline */
+.nav-link:hover,
+.nav-link.active {
+    color: var(--brand-ink);
+}
+
+.nav-link::after {
+    background-color: var(--brand-green-bright);
+    height: 3px;
+    border-radius: 3px;
+}
+
+/* Log In: black outline, green on hover */
+.btn-login:hover {
+    border-color: var(--brand-green);
+    color: var(--brand-green);
+}
+
+/* Black buttons get a green lift on hover */
+.nav-actions .btn-book:hover,
+.hero-actions .btn-primary:hover,
+.tc-view-btn:hover {
+    background-color: var(--brand-green);
+    box-shadow: 0 12px 28px rgba(30, 142, 62, 0.3);
+}
+
+/* Explore Therapists: black outline with a soft green hover */
+.btn-explore {
+    background-color: transparent;
+    border: 1.5px solid rgba(17, 17, 17, 0.18);
+    color: var(--brand-ink);
+    box-shadow: none;
+}
+
+.btn-explore:hover {
+    background-color: var(--brand-green-soft);
+    border-color: var(--brand-green);
+    color: var(--brand-green);
+    box-shadow: 0 12px 28px rgba(30, 142, 62, 0.12);
+}
+
+/* Therapist cards: black Book Now / Book Online, green details */
+.tc-view-btn {
+    background-color: var(--brand-ink);
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+.tc-spec-dot::before {
+    background-color: var(--brand-green-bright);
+}
+
+.tc-lang-badge {
+    background-color: var(--brand-green-soft);
+    color: var(--brand-green);
+}
+
+/* Floating call button: black */
+.btn-phone {
+    background-color: var(--brand-ink);
+}
+
+/* Closing banner: black main button, black outline, green label */
+.cta-actions .btn-primary {
+    background-color: var(--brand-ink);
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.cta-actions .btn-primary:hover {
+    background-color: var(--brand-green);
+    box-shadow: 0 12px 28px rgba(30, 142, 62, 0.3);
+}
+
+.cta-actions .btn-outline {
+    border-color: rgba(17, 17, 17, 0.25);
+    color: var(--brand-ink);
+}
+
+.cta-actions .btn-outline:hover {
+    background-color: var(--brand-green-soft);
+    border-color: var(--brand-green);
+    color: var(--brand-green);
+}
+
+.cta-eyebrow {
+    color: var(--brand-green);
+}
+
+.cta-eyebrow::before {
+    background-color: var(--brand-green-bright);
+}
+
+/* Phones: same green headline and black outline as desktop */
+@media (max-width: 768px) {
+    .hero-section .hero-title {
+        color: var(--brand-ink);
+    }
+
+    .hero-section .hero-title .text-gradient {
+        background: linear-gradient(120deg, var(--brand-green) 0%, var(--brand-green-bright) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-section .btn-explore {
+        border-color: rgba(17, 17, 17, 0.25);
+        color: var(--brand-ink);
+    }
+}
