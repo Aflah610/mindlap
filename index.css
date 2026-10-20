@@ -5342,3 +5342,15 @@ footer[id] {
 .help-list a:hover::after {
     color: #111;
 }
+
+/* Menu: no underline bar; the current section is shown in dark, semi-bold text */
+.nav-link::after,
+.nav-link:hover::after,
+.nav-link.active::after {
+    display: none;
+}
+
+.nav-link.active {
+    color: #111;
+    font-weight: 600;
+}
