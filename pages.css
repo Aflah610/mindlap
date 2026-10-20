@@ -1,0 +1,582 @@
+/* Service pages, services hub and Kerala page. Built by tools/pages/build.py. */
+
+.sv-page {
+    --sv-ink: #161616;
+    --sv-text: #3d3b40;
+    --sv-muted: #6b6870;
+    --sv-line: #e8e4dc;
+    --sv-cream: #fbf7f0;
+    --sv-green: #1e8e3e;
+    --sv-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+    background: #fff;
+    color: var(--sv-text);
+}
+
+.sv-wrap {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ---- Page head ---- */
+.sv-head {
+    background: var(--sv-cream);
+    border-bottom: 1px solid var(--sv-line);
+    padding: 140px 0 56px;
+}
+
+.sv-crumbs {
+    font-size: 0.85rem;
+    color: var(--sv-muted);
+    margin-bottom: 22px;
+}
+
+.sv-crumbs a {
+    color: var(--sv-muted);
+    text-decoration: none;
+}
+
+.sv-crumbs a:hover {
+    color: var(--sv-ink);
+    text-decoration: underline;
+}
+
+.sv-sep {
+    margin: 0 8px;
+    color: #b9b4aa;
+}
+
+.sv-head h1 {
+    font-family: var(--sv-serif);
+    font-weight: 500;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    color: var(--sv-ink);
+    max-width: 18ch;
+    margin: 0 0 18px;
+}
+
+.sv-lead {
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    line-height: 1.6;
+    color: var(--sv-text);
+    max-width: 56ch;
+    margin: 0;
+}
+
+/* ---- Body: article + booking card ---- */
+.sv-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 72px;
+    padding-top: 56px;
+    padding-bottom: 72px;
+    align-items: start;
+}
+
+.sv-article {
+    max-width: 680px;
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+.sv-article p,
+.sv-prose p {
+    margin: 0 0 18px;
+}
+
+.sv-article > p:first-child {
+    font-size: 1.14rem;
+    color: var(--sv-ink);
+}
+
+.sv-article h2,
+.sv-prose h2,
+.sv-services h2,
+.sv-band-plain h2,
+.sv-related h2 {
+    font-family: var(--sv-serif);
+    font-weight: 500;
+    font-size: clamp(1.45rem, 3vw, 1.9rem);
+    line-height: 1.25;
+    color: var(--sv-ink);
+    margin: 48px 0 16px;
+}
+
+.sv-article strong {
+    color: var(--sv-ink);
+}
+
+/* Plain two-column list with a short green rule instead of icons */
+.sv-list {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 22px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+}
+
+.sv-list li {
+    position: relative;
+    padding: 10px 0 10px 22px;
+    border-bottom: 1px solid var(--sv-line);
+    line-height: 1.5;
+}
+
+.sv-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 1.15em;
+    width: 10px;
+    height: 2px;
+    background: var(--sv-green);
+}
+
+.sv-list-links a {
+    color: var(--sv-ink);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+}
+
+.sv-list-links a:hover {
+    border-bottom-color: var(--sv-ink);
+}
+
+/* FAQs */
+.sv-faqs {
+    border-top: 1px solid var(--sv-line);
+}
+
+.sv-faq {
+    border-bottom: 1px solid var(--sv-line);
+}
+
+.sv-faq summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 18px 36px 18px 0;
+    position: relative;
+    font-weight: 600;
+    color: var(--sv-ink);
+    line-height: 1.45;
+}
+
+.sv-faq summary::-webkit-details-marker {
+    display: none;
+}
+
+.sv-faq summary::after {
+    content: '+';
+    position: absolute;
+    right: 4px;
+    top: 14px;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--sv-muted);
+    transition: transform 0.2s ease;
+}
+
+.sv-faq[open] summary::after {
+    transform: rotate(45deg);
+}
+
+.sv-faq p {
+    margin: 0 0 18px;
+    color: var(--sv-text);
+}
+
+/* Booking card */
+.sv-aside {
+    position: sticky;
+    top: 104px;
+}
+
+.sv-aside-card {
+    border: 1px solid var(--sv-line);
+    border-radius: 14px;
+    padding: 24px;
+    background: #fff;
+}
+
+.sv-aside-kicker {
+    font-family: var(--sv-serif);
+    font-size: 1.3rem;
+    color: var(--sv-ink);
+    margin: 0 0 8px;
+}
+
+.sv-aside-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0 0 18px;
+}
+
+.sv-aside-call {
+    display: block;
+    text-align: center;
+    margin-top: 12px;
+    font-size: 0.92rem;
+    color: var(--sv-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.sv-aside-facts {
+    list-style: none;
+    padding: 18px 0 0;
+    margin: 18px 0 0;
+    border-top: 1px solid var(--sv-line);
+    font-size: 0.9rem;
+    color: var(--sv-muted);
+}
+
+.sv-aside-facts li {
+    padding: 4px 0;
+}
+
+.sv-aside-crisis {
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: var(--sv-muted);
+    margin: 14px 4px 0;
+}
+
+.sv-aside-crisis a {
+    color: var(--sv-green);
+    font-weight: 700;
+}
+
+/* Buttons */
+.sv-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 50px;
+    padding: 0 24px;
+    border-radius: 999px;
+    background: var(--sv-ink);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.98rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.sv-btn:hover {
+    background: var(--sv-green);
+    color: #fff;
+}
+
+.sv-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.sv-btn-block {
+    width: 100%;
+}
+
+.sv-btn-light {
+    background: #fff;
+    color: var(--sv-ink);
+    flex-shrink: 0;
+}
+
+.sv-btn-light:hover {
+    background: #e8f7ec;
+    color: var(--sv-ink);
+}
+
+/* Closing band */
+.sv-close {
+    background: var(--sv-ink);
+    color: #d9d6d0;
+    padding: 64px 0;
+}
+
+.sv-close-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+.sv-close h2 {
+    font-family: var(--sv-serif);
+    font-weight: 500;
+    font-size: clamp(1.6rem, 3.4vw, 2.3rem);
+    color: #fff;
+    margin: 0 0 12px;
+}
+
+.sv-close p {
+    margin: 0 0 6px;
+    max-width: 60ch;
+    line-height: 1.65;
+}
+
+/* Related links */
+.sv-related {
+    padding: 56px 0 72px;
+}
+
+.sv-related h2 {
+    margin-top: 0;
+}
+
+.sv-related ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 32px;
+}
+
+.sv-related a {
+    display: block;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--sv-line);
+    color: var(--sv-ink);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.sv-related a:hover {
+    color: var(--sv-green);
+}
+
+/* Hub: numbered service rows */
+.sv-services {
+    padding: 8px 0 72px;
+}
+
+.sv-services h2 {
+    margin-top: 0;
+}
+
+.sv-rows {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid var(--sv-ink);
+}
+
+.sv-rows a {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    gap: 24px;
+    align-items: baseline;
+    padding: 26px 0;
+    border-bottom: 1px solid var(--sv-line);
+    color: var(--sv-text);
+    text-decoration: none;
+}
+
+.sv-num {
+    font-family: var(--sv-serif);
+    font-size: 1.05rem;
+    color: var(--sv-muted);
+}
+
+.sv-row-title {
+    display: block;
+    font-family: var(--sv-serif);
+    font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+    color: var(--sv-ink);
+    margin-bottom: 6px;
+}
+
+.sv-row-desc {
+    display: block;
+    max-width: 62ch;
+    line-height: 1.6;
+}
+
+.sv-row-go {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--sv-ink);
+    white-space: nowrap;
+    border-bottom: 1px solid var(--sv-ink);
+}
+
+.sv-rows a:hover .sv-row-title,
+.sv-rows a:hover .sv-row-go {
+    color: var(--sv-green);
+    border-color: var(--sv-green);
+}
+
+/* Plain cream band */
+.sv-band-plain {
+    background: var(--sv-cream);
+    border-top: 1px solid var(--sv-line);
+    border-bottom: 1px solid var(--sv-line);
+    padding: 64px 0;
+}
+
+.sv-band-plain h2 {
+    margin-top: 0;
+}
+
+.sv-why {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 32px;
+    margin: 8px 0 8px;
+}
+
+.sv-why h3 {
+    font-size: 1.05rem;
+    color: var(--sv-ink);
+    margin: 0 0 8px;
+    padding-top: 14px;
+    border-top: 2px solid var(--sv-ink);
+}
+
+.sv-why p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.sv-prose {
+    max-width: 1120px;
+    padding-top: 24px;
+    padding-bottom: 72px;
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+.sv-prose > p {
+    max-width: 680px;
+}
+
+.sv-prose .sv-faqs {
+    max-width: 680px;
+}
+
+/* Kerala: steps */
+.sv-steps {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 28px;
+}
+
+.sv-steps li {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sv-step-n {
+    font-family: var(--sv-serif);
+    font-size: 2.4rem;
+    line-height: 1;
+    color: var(--sv-green);
+}
+
+.sv-steps h3 {
+    font-size: 1.05rem;
+    color: var(--sv-ink);
+    margin: 0 0 6px;
+}
+
+.sv-steps p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 960px) {
+    .sv-body {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 40px;
+    }
+
+    .sv-aside {
+        position: static;
+        max-width: 480px;
+    }
+
+    .sv-why,
+    .sv-steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sv-related ul {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .sv-wrap {
+        padding: 0 20px;
+    }
+
+    .sv-head {
+        padding: 104px 0 36px;
+    }
+
+    .sv-body {
+        padding-top: 36px;
+        padding-bottom: 48px;
+    }
+
+    .sv-article {
+        font-size: 1rem;
+    }
+
+    .sv-list,
+    .sv-related ul,
+    .sv-why,
+    .sv-steps {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sv-rows a {
+        grid-template-columns: 36px minmax(0, 1fr);
+        gap: 14px;
+        padding: 22px 0;
+    }
+
+    .sv-row-go {
+        display: none;
+    }
+
+    .sv-close {
+        padding: 48px 0;
+    }
+
+    .sv-close-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 24px;
+    }
+
+    .sv-close .sv-btn {
+        width: 100%;
+    }
+
+    .sv-band-plain {
+        padding: 48px 0;
+    }
+
+    .sv-related {
+        padding: 40px 0 120px; /* room for the phone call/chat bar */
+    }
+}

@@ -5158,3 +5158,146 @@ footer[id] {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Therapist cards: View profile + Book side by side under price/language */
+.tc-footer {
+    flex-wrap: wrap;
+}
+
+.tc-actions {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.tc-actions .tc-view-btn,
+.tc-actions .tc-profile-btn {
+    flex: 1 1 0;
+    margin-left: 0;
+    justify-content: center;
+    text-align: center;
+}
+
+.tc-profile-btn {
+    padding: 8px 14px !important;
+    font-size: 0.76rem !important;
+    border-radius: var(--radius-round) !important;
+    background: #fff;
+    color: var(--brand-ink);
+    border: 1.5px solid rgba(17, 17, 17, 0.18);
+    white-space: nowrap;
+}
+
+.tc-profile-btn:hover {
+    border-color: var(--brand-green);
+    color: var(--brand-green);
+    background: #fff;
+}
+
+@media (max-width: 768px) {
+    .tc-actions .tc-view-btn,
+    .tc-actions .tc-profile-btn {
+        width: auto;
+        min-height: 46px;
+        font-size: 0.88rem !important;
+    }
+}
+
+/* Home: How we can help */
+.help-section {
+    padding: 72px 0;
+    background: #fff;
+}
+
+.help-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 32px;
+    margin-bottom: 28px;
+}
+
+.help-head .section-title {
+    margin: 0;
+    text-align: left;
+}
+
+.help-head p {
+    margin: 0;
+    max-width: 42ch;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.help-head p a {
+    color: var(--brand-ink);
+    font-weight: 600;
+}
+
+.help-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 32px;
+    border-top: 1px solid var(--brand-ink);
+}
+
+.help-list a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid #e8e4dc;
+    color: var(--brand-ink);
+    font-weight: 500;
+    font-size: 1.02rem;
+    text-decoration: none;
+}
+
+.help-list a::after {
+    content: '\2192';
+    color: #b9b4aa;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.help-list a:hover {
+    color: var(--brand-green);
+}
+
+.help-list a:hover::after {
+    color: var(--brand-green);
+    transform: translateX(4px);
+}
+
+.help-all {
+    display: inline-block;
+    margin-top: 22px;
+    font-weight: 600;
+    color: var(--brand-ink);
+    border-bottom: 1px solid var(--brand-ink);
+    text-decoration: none;
+}
+
+@media (max-width: 900px) {
+    .help-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .help-section {
+        padding: 48px 0;
+    }
+
+    .help-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .help-list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
