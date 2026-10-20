@@ -85,7 +85,7 @@ if 'class="help-section"' not in s:
 open('index.html', 'w', encoding='utf-8', newline='').write(s)
 print('home: profiles + help section')
 
-# ---- Privacy policy: marketer's text ----
+# ---- Privacy policy: marketer text ----
 p = open('privacy.html', encoding='utf-8').read()
 NEW = '''  <header class="page-header">
     <h1 class="section-title">Privacy Policy</h1>
@@ -148,6 +148,8 @@ NEW = '''  <header class="page-header">
     <p>If you have questions about this Privacy Policy, please contact us at <a href="mailto:Officialmindlap@gmail.com">Officialmindlap@gmail.com</a>.</p>
   </section>
 '''
+if 'Clients Under 18' in p:
+    raise SystemExit('privacy already up to date')  # don't overwrite the finished policy
 a = p.index('  <header class="page-header">')
 b = p.index('    <!-- Footer Section -->')
 p = p[:a] + NEW + '\n' + p[b:]
