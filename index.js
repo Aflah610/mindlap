@@ -959,3 +959,33 @@ async function showResumeCard(auth, grid, esc) {
         window.location.href = held ? '/book/checkout/' : '/book/schedule/?resume=taken';
     });
 }
+
+// Phones: therapist cards are one swipeable row - dots show where you are.
+document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.querySelector('.therapist-grid-new');
+    if (!grid) return;
+    const dots = document.createElement('div');
+    dots.className = 'swipe-dots';
+    dots.setAttribute('aria-hidden', 'true');
+    grid.after(dots);
+
+    let cards = [];
+    const build = () => {
+        cards = Array.from(grid.children);
+        dots.innerHTML = cards.map(() => '<span></span>').join('');
+        update();
+    };
+    const update = () => {
+        if (!cards.length) return;
+        const mid = grid.scrollLeft + grid.clientWidth / 2;
+        let best = 0;
+        cards.forEach((c, i) => {
+            if (Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid) < Math.abs(cards[best].offsetLeft + cards[best].offsetWidth / 2 - mid)) best = i;
+        });
+        Array.from(dots.children).forEach((d, i) => d.classList.toggle('active', i === best));
+    };
+    grid.addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
+    // The "Resume your booking" card can be added later - rebuild when cards change.
+    new MutationObserver(build).observe(grid, { childList: true });
+    build();
+});

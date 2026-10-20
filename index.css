@@ -4954,3 +4954,119 @@ select.phone-input-prefix {
 .hero-section .hero-waves {
     display: none;
 }
+
+/* -------------------------------------------------------------
+   Phone polish
+   ------------------------------------------------------------- */
+@media (max-width: 768px) {
+    /* Top bar: menu left, logo centre, a small Log In (or profile badge) right */
+    .navbar-header .nav-actions .btn-login {
+        display: inline-flex !important;
+        order: 3;
+        margin-left: auto;
+        padding: 7px 14px;
+        min-height: 0;
+        font-size: 0.82rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .navbar-header .nav-actions .account-menu {
+        display: block !important;
+        order: 3;
+        margin-left: auto;
+    }
+
+    .navbar-header .nav-actions .account-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 0.8rem;
+    }
+
+    .navbar-header .nav-actions .account-panel {
+        right: 0;
+        width: min(290px, calc(100vw - 32px));
+    }
+
+    /* Therapists: one swipeable row instead of nine tall cards */
+    .therapist-grid-new {
+        display: flex;
+        gap: 14px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        margin: 0 -16px;
+        padding: 4px 16px 18px;
+    }
+
+    .therapist-grid-new::-webkit-scrollbar {
+        display: none;
+    }
+
+    .therapist-grid-new > * {
+        flex: 0 0 86%;
+        scroll-snap-align: center;
+    }
+
+    .therapist-grid-new .tc-card:hover {
+        transform: none;
+    }
+
+    .swipe-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin: 2px 0 0;
+        font-size: 0.8rem;
+        color: var(--text-light);
+    }
+
+    .swipe-dots {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .swipe-dots span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #D9D7DE;
+        transition: width 0.25s ease, background 0.25s ease;
+    }
+
+    .swipe-dots span.active {
+        width: 18px;
+        border-radius: 3px;
+        background: var(--brand-ink);
+    }
+
+    /* FAQ: keep the + away from long questions */
+    .faq-trigger {
+        gap: 14px;
+    }
+
+    .faq-icon-plus {
+        flex-shrink: 0;
+    }
+
+    /* Less empty space at the end of the page */
+    .cta-banner {
+        padding: 48px 0 56px;
+    }
+
+    .footer-section {
+        padding-top: 40px;
+        padding-bottom: 120px; /* room for the Call / Chat bar */
+    }
+}
+
+@media (min-width: 769px) {
+    .swipe-hint,
+    .swipe-dots {
+        display: none;
+    }
+}
