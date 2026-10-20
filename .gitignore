@@ -45,3 +45,4 @@ mindlap_review/
 
 # Claude Code local settings
 .claude/
+__pycache__/
