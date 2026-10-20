@@ -376,8 +376,31 @@ def build_sitemap(paths):
     write('sitemap.xml', f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{rows}</urlset>\n')
 
 
+def build_404():
+    path = '404.html'
+    links = ''.join(f'<li><a href="{h}">{e(n)}</a></li>' for n, h in [
+        ('Home', '/'), ('Our psychologists', '/#therapists'), ('All services', '/services/'),
+        ('Online counselling in Kerala', '/online-counselling-kerala/')])
+    body = f'''    <main>
+    <header class="sv-head">
+        <div class="sv-wrap">
+            <h1>We couldn't find that page</h1>
+            <p class="sv-lead">The link may be old or mistyped. These might help:</p>
+        </div>
+    </header>
+    <section class="sv-related">
+        <div class="sv-wrap"><ul>{links}</ul></div>
+    </section>
+    </main>'''
+    out = page(path, 'Page not found | MindLap', 'This page could not be found.', body, {'@context': 'https://schema.org', '@type': 'WebPage', 'name': 'Page not found'})
+    out = out.replace('<meta name="viewport"', '<meta name="robots" content="noindex">\n    <meta name="viewport"', 1)
+    out = out.replace('class="nav-link active">Services', 'class="nav-link">Services')
+    write(path, out)
+
+
 if __name__ == '__main__':
     built = [build_hub(), build_kerala()] + [build_service(s) for s in SERVICES]
     build_sitemap(built)
+    build_404()
     for p in built:
         print('built', p)

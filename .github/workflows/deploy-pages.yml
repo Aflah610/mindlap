@@ -1,0 +1,33 @@
+# Publishes the website to Cloudflare Pages on every push to main.
+# Needs two repository secrets: CLOUDFLARE_API_TOKEN (Pages: Edit) and CLOUDFLARE_ACCOUNT_ID.
+name: Deploy website to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'worker/**'
+      - 'docs/**'
+      - 'README.md'
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build public folder (website files only)
+        run: python tools/site/build_dist.py
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=mindlap --branch=main
