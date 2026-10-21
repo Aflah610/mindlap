@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /dev/
+Disallow: /adminpanelofmindlap
 
 Sitemap: https://mindlap.in/sitemap.xml

@@ -32,7 +32,13 @@ HEADERS = """/*
 
 # Cloudflare Pages already serves /rashin for rashin.html and redirects
 # /rashin.html -> /rashin. These cover a few old addresses explicitly.
-REDIRECTS = """/index.html  /  301
+# Staff admin panel = Waky Booking's admin. Update this address when Waky moves
+# from its development URL to production (or to admin.mindlap.in).
+WAKY_ADMIN = 'https://waky-booking-50046919821.development.catalystappsail.in'
+
+REDIRECTS = f"""/index.html  /  301
+/adminpanelofmindlap  {WAKY_ADMIN}/  302
+/adminpanelofmindlap/*  {WAKY_ADMIN}/:splat  302
 """
 
 
