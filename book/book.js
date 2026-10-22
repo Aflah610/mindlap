@@ -792,7 +792,7 @@
 
         // Grey out a type this therapist doesn't offer online.
         try {
-            const services = await get('/api/services');
+            const services = await get('/api/services', { staff_id: state.staffId });
             cards.forEach((card) => {
                 const type = card.getAttribute('data-session-type');
                 const has = bookableServices(services, state.staffId, { sessionType: type }).length > 0;
@@ -839,7 +839,7 @@
 
         let services = [];
         try {
-            services = bookableServices(await get('/api/services'), state.staffId, state);
+            services = bookableServices(await get('/api/services', { staff_id: state.staffId }), state.staffId, state);
         } catch (err) {
             setStatus(statusEl, 'Could not load sessions right now. Please try again shortly or book on WhatsApp.', 'error');
             return;
@@ -1264,7 +1264,7 @@
 
         (async () => {
             try {
-                const all = await get('/api/services');
+                const all = await get('/api/services', { staff_id: state.staffId });
                 // The plan chosen on /book/plan/ (or, rebooking, the one already paid for).
                 candidates = all.filter((sv) => String(sv.id) === String(state.serviceId) && offeredBy(sv, state.staffId));
             } catch (err) {
