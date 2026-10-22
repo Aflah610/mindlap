@@ -365,6 +365,78 @@ async function callOtpApi(url, payload) {
   return String((data && data.result) || '');
 }
 
+// --- OTP straight from Mindlap's own WhatsApp number (Meta Cloud API) ------
+//
+// Used when OTP_PROVIDER = "meta". The code is made here, only its HMAC is kept
+// (in the SlotHolds Durable Object), and it is sent with the approved
+// Authentication template. Both functions return the same kind of text as
+// Zoho's Send_OTP / Verify_OTP, so the routes below treat either the same way.
+
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_RESEND_GAP_MS = 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
+
+function randomOtp() {
+  const buf = new Uint32Array(1);
+  // Rejection sampling keeps every 6-digit code equally likely.
+  do crypto.getRandomValues(buf); while (buf[0] >= 4294000000);
+  return String(buf[0] % 1000000).padStart(6, '0');
+}
+
+function otpHash(env, phone, code) {
+  return hmacSha256Hex(env.SESSION_TOKEN_SECRET, 'otp:' + phone + ':' + code);
+}
+
+async function sendOtpViaMeta(env, phone) {
+  const code = randomOtp();
+  const saved = await holdsCall(env, 'otp-put', {
+    phone,
+    hash: await otpHash(env, phone, code),
+    ttlMs: OTP_TTL_MS,
+    gapMs: OTP_RESEND_GAP_MS
+  });
+  if (!saved.ok) return 'Please wait a minute before requesting another code.';
+
+  const res = await fetch(`https://graph.facebook.com/v21.0/${env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + env.WHATSAPP_TOKEN },
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      to: phone.replace(/\D/g, ''),
+      type: 'template',
+      template: {
+        name: env.WHATSAPP_OTP_TEMPLATE || 'mindlap_verification_code',
+        language: { code: env.WHATSAPP_OTP_TEMPLATE_LANG || 'en' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', text: code }] },
+          // The "Copy code" button carries the code too.
+          { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: code }] }
+        ]
+      }
+    })
+  });
+  if (res.ok) return 'SUCCESS';
+  const detail = await res.text().catch(() => '');
+  return 'WhatsApp delivery failed: ' + res.status + ' ' + detail.slice(0, 300);
+}
+
+async function verifyOtpViaMeta(env, phone, code) {
+  const { result } = await holdsCall(env, 'otp-check', {
+    phone,
+    hash: await otpHash(env, phone, code),
+    maxAttempts: OTP_MAX_ATTEMPTS
+  });
+  return result || 'No OTP record';
+}
+
+const sendOtp = (env, phone) =>
+  env.OTP_PROVIDER === 'meta' ? sendOtpViaMeta(env, phone) : callOtpApi(env.ZOHO_CREATOR_SEND_OTP_URL, { Phone: phone });
+
+const verifyOtp = (env, phone, code) =>
+  env.OTP_PROVIDER === 'meta'
+    ? verifyOtpViaMeta(env, phone, code)
+    : callOtpApi(env.ZOHO_CREATOR_VERIFY_OTP_URL, { Phone: phone, Entered_OTP: code });
+
 /** Finds the Creator record for a therapist/service by its Zoho Bookings ID. */
 async function findCreatorRecordByBookingsId(env, reportName, fieldName, bookingsId) {
   const rows = await creatorQuery(env, reportName, `(${fieldName}=="${bookingsId}")`);
@@ -725,6 +797,33 @@ export class SlotHolds {
       entry.count += 1;
       await this.state.storage.put(key, entry);
       return reply({ ok: true });
+    }
+
+    // One-time codes sent from Mindlap's WhatsApp number: only an HMAC of the code is stored.
+    if (op === 'otp-put') {
+      const key = 'otp:' + body.phone;
+      const now = Date.now();
+      const prev = await this.state.storage.get(key);
+      if (prev && prev.sentAt + body.gapMs > now) return reply({ ok: false });
+      await this.state.storage.put(key, { hash: body.hash, sentAt: now, expiresAt: now + body.ttlMs, attempts: 0 });
+      return reply({ ok: true });
+    }
+    if (op === 'otp-check') {
+      const key = 'otp:' + body.phone;
+      const entry = await this.state.storage.get(key);
+      if (!entry) return reply({ result: 'No OTP record' });
+      if (entry.expiresAt <= Date.now()) {
+        await this.state.storage.delete(key);
+        return reply({ result: 'Expired' });
+      }
+      if (entry.attempts >= body.maxAttempts) return reply({ result: 'Too many incorrect attempts' });
+      if (constantTimeEqual(entry.hash, body.hash)) {
+        await this.state.storage.delete(key);
+        return reply({ result: 'SUCCESS' });
+      }
+      entry.attempts += 1;
+      await this.state.storage.put(key, entry);
+      return reply({ result: entry.attempts >= body.maxAttempts ? 'Too many incorrect attempts' : 'Incorrect OTP' });
     }
 
     // Short lock so the same paid order can't be rebooked twice at once.
@@ -1253,7 +1352,7 @@ export default {
 
         let result;
         try {
-          result = await callOtpApi(env.ZOHO_CREATOR_SEND_OTP_URL, { Phone: phone });
+          result = await sendOtp(env, phone);
         } catch (err) {
           console.error('Send_OTP call failed', err);
           return jsonResponse({ success: false, error: 'Could not send a code right now. Please try again.' }, 502, headers);
@@ -1300,7 +1399,7 @@ export default {
 
         let result;
         try {
-          result = await callOtpApi(env.ZOHO_CREATOR_VERIFY_OTP_URL, { Phone: phone, Entered_OTP: code });
+          result = await verifyOtp(env, phone, code);
         } catch (err) {
           console.error('Verify_OTP call failed', err);
           return jsonResponse({ success: false, error: 'Could not verify right now. Please try again.' }, 502, headers);
