@@ -1,4 +1,4 @@
-import { handleWaky } from './waky.js';
+import { aliasRequest, aliasResponse, handleWaky, staffAliases } from './waky.js';
 /**
  * Mindlap - Zoho Bookings API proxy
  * -----------------------------------------------------------------------
@@ -1070,10 +1070,11 @@ export default {
       // Waky Booking is the booking system: its routes are answered from waky.js.
       // OTP login and anything Waky doesn't own fall through to the code below.
       if (env.BOOKING_ENGINE === 'waky') {
-        const wakyReply = await handleWaky(request, env, url, headers, {
+        const aliases = await staffAliases(env).catch(() => []);
+        const wakyReply = await handleWaky(await aliasRequest(request, url, aliases), env, url, headers, {
           jsonResponse, verifySessionToken, razorpayRequest, hmacSha256Hex, constantTimeEqual, errorText
         });
-        if (wakyReply) return wakyReply;
+        if (wakyReply) return aliasResponse(wakyReply, aliases);
       }
 
       if (!env.ZOHO_WORKSPACE_ID || !env.ZOHO_CLIENT_ID) {
