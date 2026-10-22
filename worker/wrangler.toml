@@ -8,9 +8,10 @@ compatibility_date = "2026-09-01"
 name = "SLOT_HOLDS"
 class_name = "SlotHolds"
 
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["SlotHolds"]
+# Cloudflare now asks every Durable Object class to be listed here as well.
+[exports.SlotHolds]
+type = "durable-object"
+storage = "sqlite"
 
 # Every 15 minutes: mark bookings stuck "in progress" (payment abandoned) as
 # Failed in Creator, or finish them if the customer did pay.
@@ -43,7 +44,7 @@ BOOKING_ENGINE = "waky"
 WAKY_API_URL = "https://booking-app-50046547819.development.catalystappsail.in"
 # OTP codes: "zoho" = Zoho Creator Send_OTP/Verify_OTP; "meta" = sent straight from
 # Mindlap's WhatsApp number (needs the WHATSAPP_TOKEN secret and Meta billing set up).
-OTP_PROVIDER = "zoho"
+OTP_PROVIDER = "meta"
 WHATSAPP_PHONE_NUMBER_ID = "1427401513782694"
 WHATSAPP_OTP_TEMPLATE = "mindlap_verification_code"
 
