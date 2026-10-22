@@ -1,3 +1,4 @@
+import { handleWaky } from './waky.js';
 /**
  * Mindlap - Zoho Bookings API proxy
  * -----------------------------------------------------------------------
@@ -1052,6 +1053,8 @@ async function sweepAbandonedBookings(env) {
 
 export default {
   async scheduled(event, env, ctx) {
+    // Waky runs its own payment clocks; the Creator sweep is only for the Zoho engine.
+    if (env.BOOKING_ENGINE === 'waky') return;
     ctx.waitUntil(sweepAbandonedBookings(env).catch((err) => console.error('Sweep crashed', errorText(err))));
   },
 
@@ -1064,6 +1067,15 @@ export default {
     }
 
     try {
+      // Waky Booking is the booking system: its routes are answered from waky.js.
+      // OTP login and anything Waky doesn't own fall through to the code below.
+      if (env.BOOKING_ENGINE === 'waky') {
+        const wakyReply = await handleWaky(request, env, url, headers, {
+          jsonResponse, verifySessionToken, razorpayRequest, hmacSha256Hex, constantTimeEqual, errorText
+        });
+        if (wakyReply) return wakyReply;
+      }
+
       if (!env.ZOHO_WORKSPACE_ID || !env.ZOHO_CLIENT_ID) {
         return jsonResponse(
           { error: 'Worker is not configured yet. See docs/zoho-bookings-setup.md.' },

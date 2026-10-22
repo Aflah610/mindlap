@@ -821,7 +821,9 @@ async function serverResume(auth) {
             email: r.email,
             notes: r.notes,
             creditMode: false,
-            slotAvailable: !!r.slot_available
+            slotAvailable: !!r.slot_available,
+            // Waky keeps the unpaid booking itself: continue that one, don't make a new one.
+            wakyBookingId: r.engine === 'waky' ? r.booking_id : null
         };
     } catch (err) {
         return null;
@@ -924,6 +926,13 @@ async function showResumeCard(auth, grid, esc) {
             email: resume.email,
             notes: resume.notes
         };
+        if (resume.wakyBookingId) {
+            // The booking system takes the same time again at checkout if it is still free.
+            Object.assign(state, { resumeBookingId: resume.wakyBookingId, date: resume.date, time: resume.time });
+            try { sessionStorage.setItem('mindlapBooking', JSON.stringify(state)); } catch (err) { /* ignore */ }
+            window.location.href = resume.slotAvailable ? (state.email ? '/book/checkout/' : '/book/details/') : '/book/schedule/?resume=taken';
+            return;
+        }
         // Hold their old time again; if someone else has it, they pick a new one.
         let held = null;
         if (resume.slotAvailable) {

@@ -401,7 +401,7 @@
             save({ preferredTherapist: wanted.slice(0, 60) });
         } else if (!forAccount && !load().rebookOrderId) {
             // Plain "Book Online": start fresh and choose the therapist on the site.
-            clearFrom(SCHEDULE_KEYS.concat(['hold', 'staffPhoto', 'staffProfile', 'sessionType', 'preferredTherapist']));
+            clearFrom(SCHEDULE_KEYS.concat(['hold', 'staffPhoto', 'staffProfile', 'sessionType', 'preferredTherapist', 'resumeBookingId']));
         }
         if (forAccount) {
             const title = document.querySelector('.book-title');
@@ -729,20 +729,19 @@
             go(PATHS.type);
             return;
         }
-        const entry = wanted && ONLINE_THERAPISTS[firstName(wanted)];
-        if (!entry) {
-            save({ preferredTherapist: null });
+        if (!wanted) {
             go(PATHS.therapist);
             return;
         }
-        let match = entry.zohoStaffId ? { id: entry.zohoStaffId } : null;
-        if (!match) {
-            let staff = [];
-            try {
-                staff = await get('/api/staff');
-            } catch (err) { /* handled below */ }
-            match = staff.find((p) => firstName(p.name) === entry.zohoStaff);
-        }
+        const first = firstName(wanted);
+        const entry = ONLINE_THERAPISTS[first] || { zohoStaff: first, profile: '/' + first, photo: '/assets/' + first + '.webp' };
+        let staff = [];
+        try {
+            staff = await get('/api/staff');
+        } catch (err) { /* handled below */ }
+        const match = staff.find((p) => firstName(p.name) === first) ||
+            staff.find((p) => firstName(p.name) === entry.zohoStaff) ||
+            (entry.zohoStaffId ? staff.find((p) => String(p.id) === String(entry.zohoStaffId)) : null);
         if (!match) {
             save({ preferredTherapist: null });
             go(PATHS.therapist);
@@ -929,7 +928,7 @@
             }
             if (String(picked.id) !== String(state.serviceId)) {
                 // A different plan can need a different length of time: let go of any held time.
-                if (state.hold) post('/api/slots/release', { session_token: state.token }).catch(() => {});
+                if (state.hold) post('/api/slots/release', { session_token: state.token, hold_token: state.hold.token }).catch(() => {});
                 clearFrom(['date', 'time', 'hold']);
             }
             save({
@@ -1020,7 +1019,7 @@
 
         function releaseIfStale() {
             if (hold && !holdMatchesPick()) {
-                post('/api/slots/release', { session_token: state.token }).catch(() => {});
+                post('/api/slots/release', { session_token: state.token, hold_token: hold.token }).catch(() => {});
                 hold = null;
                 save({ hold: null });
             }
@@ -1153,6 +1152,7 @@
         async function holdFor(service, time) {
             const { res, data } = await post('/api/slots/hold', {
                 session_token: state.token,
+                hold_token: hold && hold.token,
                 service_id: service.id,
                 staff_id: state.staffId,
                 date: pick.date,
@@ -1164,7 +1164,8 @@
                 staffId: String(state.staffId),
                 date: pick.date,
                 time,
-                until: data.held_until || Date.now() + (data.hold_minutes || 10) * 60 * 1000
+                until: data.held_until || Date.now() + (data.hold_minutes || 10) * 60 * 1000,
+                token: data.hold_token || null
             };
             save({ hold });
             return { ok: true };
@@ -1211,6 +1212,8 @@
                 const { res, data } = await post('/api/payment/rebook', {
                     session_token: state.token,
                     order_id: state.rebookOrderId,
+                    staff_id: state.staffId,
+                    hold_token: hold && hold.token,
                     date: pick.date,
                     time: pick.time
                 });
@@ -1384,7 +1387,12 @@
             name: state.name,
             email: state.email,
             notes: state.notes || '',
-            hp_confirm: state.hp || ''
+            hp_confirm: state.hp || '',
+            hold_token: state.hold && state.hold.token,
+            // One key per visit to this page: a retry of the same click never books twice,
+            // while a changed time or plan (a new visit) always makes a fresh booking.
+            attempt_key: 'web-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12),
+            resume_booking_id: state.resumeBookingId || undefined
         };
 
         function fail(res, data) {
@@ -1453,6 +1461,11 @@
             }
             setStatus(statusEl, 'Opening secure payment…');
             const { res, data } = await post('/api/payment/create-order', booking);
+            if (res.ok && data.booked) {
+                // Covered by the client's package or wallet: nothing to pay.
+                go(PATHS.confirmation + '?booking=success' + (prepaid ? '&mode=prepaid' : ''));
+                return;
+            }
             if (!res.ok) {
                 if (data.free) {
                     await bookWithoutPayment('/api/book');
@@ -1618,7 +1631,7 @@
         if (key === 'success' || key === 'prepaid') {
             // Booking finished: keep the verification (so a second booking
             // skips OTP) but clear what was booked.
-            clearFrom(SCHEDULE_KEYS.concat(['notes', 'hp', 'creditMode', 'sessionType', 'credits', 'rebookOrderId']));
+            clearFrom(SCHEDULE_KEYS.concat(['notes', 'hp', 'creditMode', 'sessionType', 'credits', 'rebookOrderId', 'resumeBookingId', 'hold']));
         }
     }
 
