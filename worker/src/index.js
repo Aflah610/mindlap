@@ -417,6 +417,8 @@ async function sendOtpViaMeta(env, phone) {
   });
   if (res.ok) return 'SUCCESS';
   const detail = await res.text().catch(() => '');
+  // Forget our code so the login is checked by whoever sends the fallback code.
+  await holdsCall(env, 'otp-drop', { phone });
   return 'WhatsApp delivery failed: ' + res.status + ' ' + detail.slice(0, 300);
 }
 
@@ -429,13 +431,29 @@ async function verifyOtpViaMeta(env, phone, code) {
   return result || 'No OTP record';
 }
 
-const sendOtp = (env, phone) =>
-  env.OTP_PROVIDER === 'meta' ? sendOtpViaMeta(env, phone) : callOtpApi(env.ZOHO_CREATOR_SEND_OTP_URL, { Phone: phone });
+const zohoSendOtp = (env, phone) => callOtpApi(env.ZOHO_CREATOR_SEND_OTP_URL, { Phone: phone });
+const zohoVerifyOtp = (env, phone, code) => callOtpApi(env.ZOHO_CREATOR_VERIFY_OTP_URL, { Phone: phone, Entered_OTP: code });
 
-const verifyOtp = (env, phone, code) =>
-  env.OTP_PROVIDER === 'meta'
-    ? verifyOtpViaMeta(env, phone, code)
-    : callOtpApi(env.ZOHO_CREATOR_VERIFY_OTP_URL, { Phone: phone, Entered_OTP: code });
+/** Sends from Mindlap's own number when switched on; if Meta refuses, Zoho sends the code instead. */
+async function sendOtp(env, phone) {
+  if (env.OTP_PROVIDER !== 'meta') return zohoSendOtp(env, phone);
+  let result;
+  try {
+    result = await sendOtpViaMeta(env, phone);
+  } catch (err) {
+    result = 'WhatsApp delivery failed: ' + errorText(err);
+  }
+  if (!/whatsapp delivery failed/i.test(result)) return result;
+  console.error('Meta OTP send failed, using Zoho instead', result);
+  return zohoSendOtp(env, phone);
+}
+
+/** Codes we sent are checked here; a phone with no code of ours got the Zoho fallback. */
+async function verifyOtp(env, phone, code) {
+  if (env.OTP_PROVIDER !== 'meta') return zohoVerifyOtp(env, phone, code);
+  const result = await verifyOtpViaMeta(env, phone, code);
+  return result === 'No OTP record' ? zohoVerifyOtp(env, phone, code) : result;
+}
 
 /** Finds the Creator record for a therapist/service by its Zoho Bookings ID. */
 async function findCreatorRecordByBookingsId(env, reportName, fieldName, bookingsId) {
@@ -806,6 +824,10 @@ export class SlotHolds {
       const prev = await this.state.storage.get(key);
       if (prev && prev.sentAt + body.gapMs > now) return reply({ ok: false });
       await this.state.storage.put(key, { hash: body.hash, sentAt: now, expiresAt: now + body.ttlMs, attempts: 0 });
+      return reply({ ok: true });
+    }
+    if (op === 'otp-drop') {
+      await this.state.storage.delete('otp:' + body.phone);
       return reply({ ok: true });
     }
     if (op === 'otp-check') {
