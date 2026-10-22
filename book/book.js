@@ -704,12 +704,13 @@
 
     /**
      * Site therapists (profile first name) that can be booked online, and the
-     * Zoho Bookings staff whose calendar they use. Add a line per therapist
-     * once they exist in Zoho; until then their buttons stay on WhatsApp.
+     * first name of their staff record in the Waky booking app. Add a line per
+     * therapist once they exist there; until then their buttons stay on WhatsApp.
      */
     const ONLINE_THERAPISTS = {
-        // zohoStaffId: Nasheel's ID in Zoho Bookings (saves looking it up on every booking).
-        rashin: { zohoStaff: 'nasheel', zohoStaffId: '445145000000031006', profile: '/rashin.html', photo: '/assets/rashin.webp' }
+        rashin: { zohoStaff: 'rishin', profile: '/rashin.html', photo: '/assets/rashin.webp' },
+        christine: { zohoStaff: 'christine', profile: '/christine.html', photo: '/assets/christine.webp' },
+        jasmin: { zohoStaff: 'jasmin', profile: '/jasmin.html', photo: '/assets/jasmin.webp' }
     };
 
     function firstName(name) {
