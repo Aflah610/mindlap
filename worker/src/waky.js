@@ -48,6 +48,38 @@ let catalogCache = null; // { at, value } per isolate
  * (the old Zoho Bookings list). A package becomes one entry per service it
  * covers, with id "pkg:<packageId>:<serviceId>".
  */
+// The site used to name Rashin by his Zoho Bookings staff id. Bookings started before book.js matched therapists by
+// name may still send it, so it is swapped for the booking app's id on the way in and back on the way out.
+// Old Zoho id -> first name of the staff member in the booking app.
+const STAFF_ALIASES = { '445145000000031006': 'rishin' };
+
+export async function staffAliases(env) {
+  const c = await catalog(env);
+  const pairs = [];
+  for (const [oldId, first] of Object.entries(STAFF_ALIASES)) {
+    const p = c.staff.find((x) => String(x.name || '').trim().split(/[\s-]+/)[0].toLowerCase() === first);
+    if (p) pairs.push([oldId, p.id]);
+  }
+  return pairs;
+}
+
+const swapIds = (text, pairs, toNew) =>
+  pairs.reduce((t, [oldId, newId]) => (toNew ? t.split(oldId).join(newId) : t.split(newId).join(oldId)), text);
+
+export async function aliasRequest(request, url, pairs) {
+  for (const [k, v] of url.searchParams) url.searchParams.set(k, swapIds(v, pairs, true));
+  if (request.method !== 'POST' || url.pathname === '/api/payment/webhook') return request;
+  const text = await request.clone().text();
+  const swapped = swapIds(text, pairs, true);
+  return swapped === text ? request : new Request(request, { body: swapped });
+}
+
+export async function aliasResponse(response, pairs) {
+  if (!/json/i.test(response.headers.get('content-type') || '')) return response;
+  const text = await response.text();
+  return new Response(swapIds(text, pairs, false), { status: response.status, headers: response.headers });
+}
+
 async function catalog(env) {
   if (catalogCache && Date.now() - catalogCache.at < 60 * 1000) return catalogCache.value;
   const [svcRes, pkgRes] = await Promise.all([waky(env, 'GET', '/services'), waky(env, 'GET', '/packages')]);
@@ -83,7 +115,7 @@ async function catalog(env) {
       ? services.filter((s) => p.serviceIds.includes(s.id))
       : services.filter((s) => typeOf(s.name) === typeOf(p.name));
     for (const s of covered) {
-      let name = String(p.name || 'Package');
+      let name = String(p.name || 'Package').replace(/ · ₹[\d,]+ tier$/, '');
       if (!/(\d+)\s*session/i.test(name) && p.credits) name = p.credits + ' Session ' + name;
       if (!/package/i.test(name)) name += ' package';
       if (typeOf(s.name) === 'couple' && !/couple/i.test(name)) name = 'Couple ' + name;
@@ -99,6 +131,7 @@ async function catalog(env) {
         duration: (Number(s.durationMin) || 60) + ' mins',
         durationMin: Number(s.durationMin) || 60,
         credits: p.credits,
+        creditValuePaise: Number(p.creditValuePaise) || 0,
         assigned_staffs: staffByService[s.id].map((x) => x.id)
       };
       items.push(item);
@@ -107,9 +140,28 @@ async function catalog(env) {
   }
   const staff = {};
   Object.values(staffByService).flat().forEach((p) => { staff[p.id] = { id: p.id, name: p.name }; });
-  const value = { items, byId, staff: Object.values(staff) };
+  // Each person's own price per service (or the service's price when they have none).
+  const priceOf = {};
+  for (const s of services) {
+    priceOf[s.id] = { base: Number(s.pricePaise) || 0 };
+    for (const p of staffByService[s.id]) priceOf[s.id][p.id] = p.pricePaise == null ? priceOf[s.id].base : Number(p.pricePaise);
+  }
+  const value = { items, byId, staff: Object.values(staff), priceOf };
   catalogCache = { at: Date.now(), value };
   return value;
+}
+
+// The price list as one therapist charges it: their own price for each service, and only the packages made for that
+// price (one credit = one of their sessions). Without a therapist, the services' base prices and base packages.
+function pricedFor(c, staffId) {
+  const priceFor = (serviceId) => {
+    const prices = c.priceOf[serviceId] || {};
+    return staffId && prices[staffId] !== undefined ? prices[staffId] : prices.base || 0;
+  };
+  return c.items.flatMap((item) => {
+    if (item.kind !== 'package') return [{ ...item, price: priceFor(item.id) / 100 }];
+    return item.creditValuePaise === priceFor(item.serviceId) ? [item] : [];
+  });
 }
 
 /** "pkg:<p>:<s>" or a plain service id -> { serviceId, packageId? } */
@@ -277,7 +329,7 @@ export async function handleWaky(request, env, url, headers, h) {
   // -- Catalogue ---------------------------------------------------------------
   if (path === '/api/services' && request.method === 'GET') {
     const c = await catalog(env);
-    return json(wrap(c.items));
+    return json(wrap(pricedFor(c, url.searchParams.get('staff_id'))));
   }
 
   if (path === '/api/staff' && request.method === 'GET') {
