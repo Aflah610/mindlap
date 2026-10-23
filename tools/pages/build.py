@@ -5,6 +5,7 @@
 Text lives in content.py. The site header/footer are taken from privacy.html,
 so they always match the rest of the site.
 """
+import datetime
 import html
 import json
 import os
@@ -90,7 +91,7 @@ def page(path, title, desc, body, schema):
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css?v={CSS_V}">
-    <link rel="stylesheet" href="/pages.css?v=5">
+    <link rel="stylesheet" href="/pages.css?v=6">
     <script type="application/ld+json">{json.dumps(schema, ensure_ascii=False)}</script>
 </head>
 <body class="sv-page">
@@ -187,6 +188,38 @@ def related(current_slug):
     </section>'''
 
 
+# When the service pages were last checked. Change it whenever the wording is reviewed again.
+UPDATED_ON = '2026-10-23'
+
+
+def reviewer(slug):
+    """The psychologist who checked a page, from therapists.json, or None until someone has."""
+    if not slug:
+        return None
+    people = json.load(open(os.path.join(ROOT, 'tools', 'pages', 'therapists.json'), encoding='utf-8'))
+    return next(t for t in people if t['slug'] == slug)
+
+
+def byline(s):
+    day = datetime.date.fromisoformat(UPDATED_ON)
+    parts = [f'Last updated <time datetime="{UPDATED_ON}">{day.day} {day:%B %Y}</time>']
+    who = reviewer(s.get('reviewed_by'))
+    if who:
+        parts.insert(0, f'Reviewed by <a href="/{who["slug"]}">{e(who["name"])}</a>, {e(who["role"])}')
+    return f'<p class="sv-byline">{" · ".join(parts)}</p>'
+
+
+def web_page(s, path):
+    """Tells search engines when the page was updated and, once set, which psychologist reviewed it."""
+    node = {'@type': 'MedicalWebPage', 'url': f'{SITE}/{path.replace("index.html", "")}', 'name': s['title'],
+            'dateModified': UPDATED_ON, 'inLanguage': 'en', 'publisher': {'@type': 'Organization', 'name': 'Mindlap', 'url': SITE}}
+    who = reviewer(s.get('reviewed_by'))
+    if who:
+        node['reviewedBy'] = {'@type': 'Person', 'name': who['name'], 'jobTitle': who['role'], 'url': f'{SITE}/{who["slug"]}'}
+        node['lastReviewed'] = UPDATED_ON
+    return node
+
+
 def build_service(s):
     path = f'services/{s["slug"]}/index.html'
     items = [('Home', '/'), ('Services', '/services/'), (s['short'], None)]
@@ -198,6 +231,7 @@ def build_service(s):
             {crumbs(items)}
             <h1>{e(s['title'])}</h1>
             <p class="sv-lead">{e(s['lead'])}</p>
+            {byline(s)}
         </div>
     </header>
 
@@ -221,10 +255,11 @@ def build_service(s):
             {'@type': 'FAQPage', 'mainEntity': [
                 {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in s['faqs']]},
             {'@type': 'Service', 'name': s['title'], 'serviceType': s['short'], 'areaServed': ['Kerala', 'India', 'Worldwide'],
-             'availableLanguage': ['Malayalam', 'English'], 'provider': {'@type': 'Organization', 'name': 'MindLap', 'url': SITE}},
+             'availableLanguage': ['Malayalam', 'English'], 'provider': {'@type': 'Organization', 'name': 'Mindlap', 'url': SITE}},
+            web_page(s, path),
         ],
     }
-    write(path, page(path, f'{s["title"]} | MindLap', s['meta'], body, schema))
+    write(path, page(path, f'{s["title"]} | Mindlap', s['meta'], body, schema))
     return path
 
 
@@ -255,7 +290,7 @@ def build_hub():
         <article class="sv-article">
                 <p>Life can sometimes feel difficult to manage. You may be experiencing anxiety, stress, depression, relationship problems, emotional struggles, or difficult past experiences. Sometimes, you may simply feel overwhelmed and not know where to start.</p>
                 <p>Our online psychological consultation services provide a confidential and comfortable space where you can talk about what you are going through and receive professional support.</p>
-                <p>Whether you are in Kerala, another part of India, or living abroad, MindLap makes online mental health support more accessible to Malayalees.</p>
+                <p>Whether you are in Kerala, another part of India, or living abroad, Mindlap makes online mental health support more accessible to Malayalees.</p>
         </article>
         {aside('a consultation')}
     </div>
@@ -269,7 +304,7 @@ def build_hub():
 
     <section class="sv-band-plain">
         <div class="sv-wrap">
-            <h2>Why choose MindLap?</h2>
+            <h2>Why choose Mindlap?</h2>
             {why_html()}
         </div>
     </section>
@@ -277,7 +312,7 @@ def build_hub():
     <section class="sv-wrap sv-prose">
         <h2>Psychological Support for Malayalees, Wherever You Are</h2>
         <p>You may be living in Kerala, another part of India, or outside the country. You may be a student, working professional, parent, or someone simply trying to understand what you are feeling.</p>
-        <p>Mental health support should be accessible wherever you are. MindLap is committed to making online psychological consultation and mental health support more accessible to Malayalees.</p>
+        <p>Mental health support should be accessible wherever you are. Mindlap is committed to making online psychological consultation and mental health support more accessible to Malayalees.</p>
     </section>
 
     {close_band('Need Support?', ['You do not have to wait until things become overwhelming before seeking support.', 'If something is affecting your thoughts, emotions, relationships, or everyday life, talking to a professional can be a positive step.'], 'Book an online consultation', 'Hello Mindlap, I would like to book an online psychological consultation.')}
@@ -287,8 +322,8 @@ def build_hub():
         {'@type': 'ItemList', 'itemListElement': [
             {'@type': 'ListItem', 'position': i + 1, 'name': n, 'url': f'{SITE}/services/{slug}/'} for i, (n, slug, _) in enumerate(HUB_LIST)]},
     ]}
-    write(path, page(path, 'Mental Health & Psychological Services for Malayalees | MindLap',
-                     'Online counselling and therapy in Malayalam: anxiety, depression, stress, relationships, couple therapy, trauma, ADHD and panic attacks. Confidential support from MindLap.',
+    write(path, page(path, 'Psychological Services for Malayalees | Mindlap',
+                     'Online counselling in Malayalam for anxiety, depression, stress, relationships, couples, trauma, ADHD and panic attacks. Confidential support from Mindlap.',
                      body, schema))
     return path
 
@@ -302,12 +337,12 @@ def build_kerala():
                ('Emotional well-being', 'emotional-support-malayalam'), ('ADHD-related concerns', 'adhd-consultation-malayalam'),
                ('Panic attacks', 'panic-attack-counselling-malayalam'), ('Personal and emotional challenges', 'online-psychological-consultation-malayalam')]
     links = ''.join(f'<li><a href="/services/{s}/">{e(n)}</a></li>' for n, s in support)
-    steps = [('Contact MindLap', 'Reach out to our team and let us know that you are interested in an online counselling session.'),
+    steps = [('Contact Mindlap', 'Reach out to our team and let us know that you are interested in an online counselling session.'),
              ('Share your requirements', 'Tell our coordinator about the type of support you are looking for and your preferred consultation details.'),
-             ('Schedule your consultation', 'The MindLap team will help you with the available consultation options and suitable timing.'),
+             ('Schedule your consultation', 'The Mindlap team will help you with the available consultation options and suitable timing.'),
              ('Attend your online session', 'Once your consultation is scheduled, attend the session online from a suitable private space.')]
     step_html = ''.join(f'<li><span class="sv-step-n">{i + 1}</span><div><h3>{e(t)}</h3><p>{e(d)}</p></div></li>' for i, (t, d) in enumerate(steps))
-    faqs = [('Is online counselling available in Malayalam?', 'Yes. MindLap provides online counselling in Malayalam, subject to professional and service availability.'),
+    faqs = [('Is online counselling available in Malayalam?', 'Yes. Mindlap provides online counselling in Malayalam, subject to professional and service availability.'),
             ('What if I am not sure which service I need?', 'You can contact our team and discuss your requirements. Our coordinator can help you with the next steps.'),
             ('Can I attend from outside Kerala?', 'Yes. Whether you live in Kerala, another part of India, or abroad, online counselling can make professional support easier to access.')]
     body = f'''    <main>
@@ -321,12 +356,12 @@ def build_kerala():
 
     <div class="sv-wrap sv-body">
         <article class="sv-article">
-                <p>MindLap provides <strong>online counselling in Kerala</strong> for individuals looking for professional support with anxiety, stress, depression, relationships, emotional well-being, trauma, ADHD, and other personal concerns. Our online consultations are designed to make psychological support more accessible, comfortable, and convenient for Malayalees.</p>
+                <p>Mindlap provides <strong>online counselling in Kerala</strong> for individuals looking for professional support with anxiety, stress, depression, relationships, emotional well-being, trauma, ADHD, and other personal concerns. Our online consultations are designed to make psychological support more accessible, comfortable, and convenient for Malayalees.</p>
                 <h2>Book an Online Counselling Session</h2>
-                <p>Taking the first step towards your mental well-being does not have to be difficult. Whether you are dealing with a specific concern or simply feel that you need someone to talk to, you can reach out to the MindLap team.</p>
+                <p>Taking the first step towards your mental well-being does not have to be difficult. Whether you are dealing with a specific concern or simply feel that you need someone to talk to, you can reach out to the Mindlap team.</p>
                 <p>Tell us what kind of support you are looking for, and our coordinator can help you with the next steps and consultation details.</p>
                 <h2>Online Counselling in Malayalam</h2>
-                <p>For many Malayalees, talking about personal and emotional concerns in Malayalam feels more natural and comfortable. MindLap provides <strong>online counselling in Malayalam</strong> so you can express your thoughts, feelings, and experiences in a language you are comfortable with, subject to professional and service availability.</p>
+                <p>For many Malayalees, talking about personal and emotional concerns in Malayalam feels more natural and comfortable. Mindlap provides <strong>online counselling in Malayalam</strong> so you can express your thoughts, feelings, and experiences in a language you are comfortable with, subject to professional and service availability.</p>
                 <h2>What Can You Seek Support For?</h2>
                 <ul class="sv-list sv-list-links">{links}</ul>
                 <p>If you are unsure which service is right for you, you can contact our team and discuss your requirements.</p>
@@ -342,10 +377,10 @@ def build_kerala():
     </section>
 
     <section class="sv-wrap sv-prose">
-        <h2>Why choose MindLap?</h2>
+        <h2>Why choose Mindlap?</h2>
         {why_html()}
         <h2>Online Counselling for Malayalees</h2>
-        <p>Whether you live in Kerala, another part of India, or abroad, online counselling can make professional support easier to access. For Malayalees who prefer communicating in Malayalam, MindLap aims to provide a comfortable language environment for discussing personal and emotional concerns.</p>
+        <p>Whether you live in Kerala, another part of India, or abroad, online counselling can make professional support easier to access. For Malayalees who prefer communicating in Malayalam, Mindlap aims to provide a comfortable language environment for discussing personal and emotional concerns.</p>
         {faqs_html(faqs)}
     </section>
 
@@ -356,14 +391,75 @@ def build_kerala():
         {'@type': 'FAQPage', 'mainEntity': [
             {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in faqs]},
     ]}
-    write(path, page(path, 'Online Counselling in Kerala, in Malayalam | MindLap',
-                     'Online counselling in Kerala and in Malayalam for anxiety, stress, depression, relationships, trauma and ADHD. Talk to a psychologist from home. Book with MindLap.',
+    write(path, page(path, 'Online Counselling in Kerala, in Malayalam | Mindlap',
+                     'Online counselling in Kerala, in Malayalam, for anxiety, stress, depression, relationships, trauma and ADHD. Talk to a psychologist from home with Mindlap.',
                      body, schema))
     return path
 
 
+def build_about():
+    """About page. Facts only: what Mindlap does, the team from therapists.json, and how to reach us."""
+    path = 'about/index.html'
+    people = json.load(open(os.path.join(ROOT, 'tools', 'pages', 'therapists.json'), encoding='utf-8'))
+    methods = []
+    for t in people:
+        methods += [m for m in t['methods'] if m not in methods]
+    team = ''.join(f'''<li><a href="/{t['slug']}">
+                    <img src="/assets/{t['slug']}-card.webp" alt="" width="56" height="56" loading="lazy">
+                    <span><strong>{e(t['name'])}</strong><small>{e(t['role'])}</small></span>
+                </a></li>''' for t in people)
+    items = [('Home', '/'), ('About Mindlap', None)]
+    body = f'''    <main>
+    <header class="sv-head">
+        <div class="sv-wrap">
+            {crumbs(items)}
+            <h1>About Mindlap</h1>
+            <p class="sv-lead">Mindlap offers online counselling and therapy in Malayalam, so Malayalees in Kerala and around the world can talk to a qualified psychologist in their own language, from wherever they are.</p>
+        </div>
+    </header>
+
+    <div class="sv-wrap sv-body">
+        <article class="sv-article">
+                <h2>What we do</h2>
+                <p>We provide confidential online sessions for individuals and couples, for concerns such as anxiety, stress, depression, relationship difficulties, trauma, OCD and ADHD. Sessions take place over video, so you can join from home in Kerala, elsewhere in India or abroad.</p>
+                <p>Every session is with a psychologist who holds a postgraduate degree in psychology. You can read each psychologist's qualifications, areas of focus and way of working on their profile.</p>
+
+                <h2>How we work</h2>
+                <p>Our psychologists use evidence-based approaches such as {e(', '.join(methods))}, chosen to fit each person's needs and pace. What you share stays private: how we collect, store and protect your information is explained in our <a href="/privacy">privacy policy</a>.</p>
+                <p>Booking is simple. Choose a psychologist and a time online, or message our coordinator on WhatsApp and we will find a time that suits you.</p>
+
+                <h2>Where to find us</h2>
+                <p>Mindlap, Phase 1, 3rd Floor, Hilite Business Park, Hilite City, NH 66, Kozhikode, Kerala 673014.<br>
+                Phone and WhatsApp: <a href="tel:{PHONE_TEL}">{PHONE_SHOW}</a> · Email: <a href="mailto:Officialmindlap@gmail.com">Officialmindlap@gmail.com</a></p>
+        </article>
+        {aside('a therapy session')}
+    </div>
+
+    <section class="sv-related pf-others">
+        <div class="sv-wrap">
+            <h2>Our psychologists</h2>
+            <ul>{team}</ul>
+        </div>
+    </section>
+
+    {close_band('Talk to someone who understands', ['Tell our coordinator a little about what you are looking for, and we will help you choose a psychologist and a time.'], 'Message us on WhatsApp', 'Hello Mindlap, I would like to know more about therapy sessions.')}
+    </main>'''
+    schema = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            crumb_schema([('Home', '/'), ('About Mindlap', '/about/')]),
+            {'@type': 'AboutPage', 'url': f'{SITE}/about/', 'name': 'About Mindlap', 'dateModified': UPDATED_ON,
+             'about': {'@id': f'{SITE}/#organization'}},
+        ],
+    }
+    out = page(path, 'About Mindlap | Online Therapy in Malayalam', 'Mindlap offers confidential online counselling and therapy in Malayalam with qualified psychologists, for clients in Kerala, across India and abroad.', body, schema)
+    out = out.replace('class="nav-link active">Services', 'class="nav-link">Services')
+    write(path, out)
+    return path
+
+
 def build_sitemap(paths):
-    today = '2026-10-21'
+    today = UPDATED_ON
     urls = ['/', '/privacy', '/terms'] + ['/' + p.replace('index.html', '') for p in paths]
     urls += [f'/{n}' for n in ('rashin', 'anasooya', 'theresa', 'christine', 'jasmin', 'fathima', 'ansha')]
     rows = ''.join(
@@ -392,14 +488,14 @@ def build_404():
         <div class="sv-wrap"><ul>{links}</ul></div>
     </section>
     </main>'''
-    out = page(path, 'Page not found | MindLap', 'This page could not be found.', body, {'@context': 'https://schema.org', '@type': 'WebPage', 'name': 'Page not found'})
+    out = page(path, 'Page not found | Mindlap', 'This page could not be found.', body, {'@context': 'https://schema.org', '@type': 'WebPage', 'name': 'Page not found'})
     out = out.replace('<meta name="viewport"', '<meta name="robots" content="noindex">\n    <meta name="viewport"', 1)
     out = out.replace('class="nav-link active">Services', 'class="nav-link">Services')
     write(path, out)
 
 
 if __name__ == '__main__':
-    built = [build_hub(), build_kerala()] + [build_service(s) for s in SERVICES]
+    built = [build_hub(), build_kerala(), build_about()] + [build_service(s) for s in SERVICES]
     build_sitemap(built)
     build_404()
     for p in built:

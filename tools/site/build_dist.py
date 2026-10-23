@@ -12,7 +12,7 @@ import subprocess
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 DIST = os.path.join(ROOT, 'dist')
 
-PUBLIC_DIRS = ('assets/', 'book/', 'account/', 'services/', 'online-counselling-kerala/')
+PUBLIC_DIRS = ('assets/', 'book/', 'account/', 'services/', 'online-counselling-kerala/', 'about/')
 PUBLIC_FILES = ('index.css', 'index.js', 'pages.css', 'manifest.json', 'favicon.ico', 'robots.txt', 'sitemap.xml')
 
 HEADERS = """/*

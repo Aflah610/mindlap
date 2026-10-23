@@ -66,6 +66,17 @@
     margin: 0;
 }
 
+.sv-byline {
+    font-size: 0.9rem;
+    color: var(--sv-muted);
+    margin: 16px 0 0;
+}
+
+.sv-byline a {
+    color: var(--sv-ink);
+    font-weight: 600;
+}
+
 /* ---- Body: article + booking card ---- */
 .sv-body {
     display: grid;

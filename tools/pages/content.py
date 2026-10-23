@@ -1,4 +1,4 @@
-# Copy for the service pages, from MindLap's digital marketing documents.
+# Copy for the service pages, from Mindlap's digital marketing documents.
 # Edit text here, then run:  python tools/pages/build.py
 
 SERVICES = [
@@ -6,7 +6,7 @@ SERVICES = [
         'slug': 'online-psychological-consultation-malayalam',
         'short': 'Online Psychological Consultation',
         'title': 'Online Psychological Consultation in Malayalam',
-        'meta': 'Talk to a mental health professional online, in Malayalam. MindLap offers confidential psychological consultation for Malayalees in Kerala, India and abroad.',
+        'meta': 'Talk to a mental health professional online, in Malayalam. Confidential psychological consultation for Malayalees in Kerala, India and abroad.',
         'card': 'Not sure what you are going through? Start with a conversation with a professional.',
         'lead': 'Sometimes you may know that you need support, but you may not know exactly what type of support you need.',
         'intro': [
@@ -34,14 +34,14 @@ SERVICES = [
             ], None),
             ('Online Psychological Support for Malayalees', [
                 'Whether you are living in Kerala, another part of India, or abroad, online psychological consultation can make professional support more accessible.',
-                'MindLap aims to provide a comfortable environment where Malayalees can seek psychological support in Malayalam. We believe psychological support should be easier to access and should not be surrounded by shame or judgment.',
+                'Mindlap aims to provide a comfortable environment where Malayalees can seek psychological support in Malayalam. We believe psychological support should be easier to access and should not be surrounded by shame or judgment.',
             ], None),
         ],
         'faqs': [
-            ('Can I get psychological consultation in Malayalam?', 'Yes. MindLap provides online psychological consultation in Malayalam, subject to professional and service availability.'),
+            ('Can I get psychological consultation in Malayalam?', 'Yes. Mindlap provides online psychological consultation in Malayalam, subject to professional and service availability.'),
             ('Do I need to know what problem I have?', 'No. You can simply discuss what you are experiencing and allow the professional to understand your concerns.'),
-            ('Can Malayalees living abroad use MindLap?', 'Online consultations may be available depending on service availability and applicable requirements.'),
-            ('Is online psychological consultation confidential?', 'MindLap aims to provide a confidential and comfortable environment for consultations.'),
+            ('Can Malayalees living abroad use Mindlap?', 'Online consultations may be available depending on service availability and applicable requirements.'),
+            ('Is online psychological consultation confidential?', 'Mindlap aims to provide a confidential and comfortable environment for consultations.'),
         ],
         'close': ('Start Your Journey Towards Better Mental Well-being', [
             'You do not have to wait until you know exactly what is wrong before seeking support.',
@@ -52,13 +52,13 @@ SERVICES = [
         'slug': 'individual-therapy-malayalam',
         'short': 'Individual Therapy',
         'title': 'Online Individual Therapy in Malayalam',
-        'meta': 'One-to-one online therapy in Malayalam for anxiety, stress, low mood, relationships, self-esteem and life challenges. Confidential sessions with MindLap.',
+        'meta': 'One-to-one online therapy in Malayalam for anxiety, stress, low mood, relationships, self-esteem and life challenges. Confidential sessions with Mindlap.',
         'card': 'One-to-one support for anxiety, stress, low mood, self-esteem and everyday challenges.',
         'lead': 'Sometimes, life can feel difficult to manage even when you cannot clearly explain why.',
         'intro': [
             'You may feel stressed, emotionally tired, confused, overwhelmed, or simply unable to handle things the way you used to.',
             'Online Individual Therapy in Malayalam gives you a private and comfortable space to talk about what you are going through with a mental health professional.',
-            'At MindLap, we provide online psychological support for Malayalees who prefer to express their thoughts and feelings in Malayalam. You can access support from the comfort of your home, whether you are living in Kerala, another part of India, or abroad.',
+            'At Mindlap, we provide online psychological support for Malayalees who prefer to express their thoughts and feelings in Malayalam. You can access support from the comfort of your home, whether you are living in Kerala, another part of India, or abroad.',
         ],
         'sections': [
             ('What Is Individual Therapy?', [
@@ -91,10 +91,10 @@ SERVICES = [
             ], None),
         ],
         'faqs': [
-            ('Can I get individual therapy in Malayalam?', 'Yes. MindLap offers online psychological support in Malayalam, subject to professional and service availability.'),
+            ('Can I get individual therapy in Malayalam?', 'Yes. Mindlap offers online psychological support in Malayalam, subject to professional and service availability.'),
             ('Can I attend individual therapy from home?', 'Yes. Online therapy allows you to attend your session from a suitable private environment.'),
             ('Do I need a diagnosis to start therapy?', 'No. You can seek professional support for personal, emotional, relationship, or everyday concerns without already knowing a diagnosis.'),
-            ('Is online individual therapy confidential?', 'MindLap aims to provide a confidential and comfortable environment for consultations.'),
+            ('Is online individual therapy confidential?', 'Mindlap aims to provide a confidential and comfortable environment for consultations.'),
         ],
         'close': ('Take the First Step', [
             'You do not have to have everything figured out before asking for help.',
@@ -105,7 +105,7 @@ SERVICES = [
         'slug': 'anxiety-counselling-malayalam',
         'short': 'Anxiety Counselling',
         'title': 'Online Anxiety Counselling in Malayalam',
-        'meta': 'Online anxiety counselling in Malayalam for overthinking, constant worry, restlessness and fear. Professional, confidential support from MindLap.',
+        'meta': 'Online anxiety counselling in Malayalam for overthinking, constant worry, restlessness and fear. Professional, confidential support from Mindlap.',
         'card': 'For constant worry, overthinking, restlessness and difficulty relaxing.',
         'lead': 'Do you often find yourself worrying about things that have not happened yet?',
         'intro': [
@@ -137,7 +137,7 @@ SERVICES = [
             ], None),
         ],
         'faqs': [
-            ('Is online anxiety counselling available in Malayalam?', 'Yes. MindLap provides online anxiety counselling in Malayalam, subject to professional and service availability.'),
+            ('Is online anxiety counselling available in Malayalam?', 'Yes. Mindlap provides online anxiety counselling in Malayalam, subject to professional and service availability.'),
             ('Can counselling help with overthinking?', 'Counselling can provide a space to understand patterns of thinking and explore healthier ways of managing difficult thoughts.'),
             ('Do I need to have a diagnosis to seek anxiety counselling?', 'No. You can discuss your concerns with a professional without having a diagnosis.'),
             ('Can Malayalees living abroad access online counselling?', 'Online consultations may be available for Malayalees living outside Kerala or India, subject to service availability and applicable requirements.'),
@@ -151,7 +151,7 @@ SERVICES = [
         'slug': 'depression-therapy-malayalam',
         'short': 'Depression Counselling',
         'title': 'Online Therapy for Depression in Malayalam',
-        'meta': 'Online depression counselling in Malayalam for persistent low mood, loss of interest and emotional exhaustion. Confidential support from MindLap.',
+        'meta': 'Online depression counselling in Malayalam for persistent low mood, loss of interest and emotional exhaustion. Confidential support from Mindlap.',
         'card': 'For persistent low mood, loss of interest, low motivation and feeling disconnected.',
         'lead': 'There are times when everything may feel difficult.',
         'intro': [
@@ -174,7 +174,7 @@ SERVICES = [
                 'You can discuss your emotions, thoughts, everyday difficulties, relationships, or other concerns in a comfortable and confidential environment.',
             ], None),
             ('Why Choose Therapy in Malayalam?', [
-                'Talking about difficult emotions can be easier when you can express yourself in a familiar language. MindLap provides online therapy for depression in Malayalam for Malayalees who prefer to communicate in Malayalam during psychological support.',
+                'Talking about difficult emotions can be easier when you can express yourself in a familiar language. Mindlap provides online therapy for depression in Malayalam for Malayalees who prefer to communicate in Malayalam during psychological support.',
             ], None),
             ('How Can Depression Therapy Help?', [
                 'Therapy provides a space to understand your emotional experiences and the challenges affecting your everyday life.',
@@ -182,10 +182,10 @@ SERVICES = [
             ], None),
         ],
         'faqs': [
-            ('Can I get online therapy for depression in Malayalam?', 'Yes. MindLap provides online psychological support in Malayalam, subject to professional and service availability.'),
+            ('Can I get online therapy for depression in Malayalam?', 'Yes. Mindlap provides online psychological support in Malayalam, subject to professional and service availability.'),
             ('Do I need to know if I have depression before starting therapy?', 'No. You can discuss your experiences with a professional without diagnosing yourself.'),
             ('Can online counselling help with low mood?', 'Professional counselling can provide a space to understand persistent low mood and other emotional concerns.'),
-            ('Is online depression counselling confidential?', 'MindLap aims to provide a confidential and comfortable environment for consultations.'),
+            ('Is online depression counselling confidential?', 'Mindlap aims to provide a confidential and comfortable environment for consultations.'),
         ],
         'close': ("You Don't Have to Hide How You Feel", [
             'You do not have to deal with emotional struggles completely alone.',
@@ -196,7 +196,7 @@ SERVICES = [
         'slug': 'trauma-counselling-malayalam',
         'short': 'Trauma Counselling',
         'title': 'Online Trauma Counselling in Malayalam',
-        'meta': 'Online trauma and childhood trauma counselling in Malayalam. Talk about difficult past experiences at your own pace, with confidential support from MindLap.',
+        'meta': 'Online trauma and childhood trauma counselling in Malayalam. Talk about difficult experiences at your own pace, with confidential support from Mindlap.',
         'card': 'For childhood and past experiences that still affect how you feel, trust and relate.',
         'lead': 'Difficult experiences from the past can sometimes continue to affect us long after the situation has ended.',
         'intro': [
@@ -229,9 +229,9 @@ SERVICES = [
         ],
         'faqs': [
             ('Do I have to talk about my entire past during the first session?', 'No. You can discuss your concerns at a pace that feels appropriate for you.'),
-            ('Can trauma counselling be done online?', 'Yes. MindLap provides online trauma counselling in Malayalam.'),
+            ('Can trauma counselling be done online?', 'Yes. Mindlap provides online trauma counselling in Malayalam.'),
             ('Can childhood experiences be discussed during trauma counselling?', 'Yes. Childhood experiences and their emotional impact can be discussed with a mental health professional.'),
-            ('Is trauma counselling confidential?', 'MindLap aims to provide a confidential and non-judgmental environment.'),
+            ('Is trauma counselling confidential?', 'Mindlap aims to provide a confidential and non-judgmental environment.'),
         ],
         'close': ('You Can Take Your Time', [
             'You do not have to rush your healing or explain everything at once.',
@@ -242,7 +242,7 @@ SERVICES = [
         'slug': 'relationship-counselling-malayalam',
         'short': 'Relationship Counselling',
         'title': 'Online Relationship Counselling in Malayalam',
-        'meta': 'Online relationship counselling in Malayalam for communication problems, trust concerns, repeated arguments and toxic relationship patterns. MindLap.',
+        'meta': 'Online relationship counselling in Malayalam for communication problems, trust concerns, repeated arguments and toxic relationship patterns. Mindlap.',
         'card': 'For communication problems, trust concerns, repeated conflict and unhealthy patterns.',
         'lead': 'Relationships can bring happiness and support, but they can also become difficult.',
         'intro': [
@@ -275,8 +275,8 @@ SERVICES = [
         'faqs': [
             ('Can I attend relationship counselling alone?', 'Yes. You can seek individual support for your own relationship concerns.'),
             ('Does my partner need to attend?', 'The appropriate format depends on the situation and professional guidance.'),
-            ('Can relationship counselling be done in Malayalam?', 'Yes. MindLap provides online psychological support in Malayalam, subject to professional and service availability.'),
-            ('Is online relationship counselling confidential?', 'MindLap aims to provide a confidential and non-judgmental environment.'),
+            ('Can relationship counselling be done in Malayalam?', 'Yes. Mindlap provides online psychological support in Malayalam, subject to professional and service availability.'),
+            ('Is online relationship counselling confidential?', 'Mindlap aims to provide a confidential and non-judgmental environment.'),
         ],
         'close': ('Your Relationship Concerns Deserve a Safe Space', [
             'You do not have to keep difficult relationship concerns to yourself.',
@@ -287,7 +287,7 @@ SERVICES = [
         'slug': 'couple-therapy-malayalam',
         'short': 'Couple Therapy',
         'title': 'Online Couple Therapy in Malayalam',
-        'meta': 'Online couple therapy in Malayalam for communication difficulties, frequent arguments, trust and emotional distance. Sessions from home with MindLap.',
+        'meta': 'Online couple therapy in Malayalam for communication difficulties, frequent arguments, trust and emotional distance. Sessions from home with Mindlap.',
         'card': 'A structured space for couples to talk, understand each other and handle conflict.',
         'lead': 'Every couple experiences disagreements and difficult periods.',
         'intro': [
@@ -314,7 +314,7 @@ SERVICES = [
             ], None),
         ],
         'faqs': [
-            ('Is couple therapy available online?', 'Yes. MindLap provides online couple therapy in Malayalam, subject to professional and service availability.'),
+            ('Is couple therapy available online?', 'Yes. Mindlap provides online couple therapy in Malayalam, subject to professional and service availability.'),
             ('Do both partners have to attend?', 'The appropriate session format can depend on the concerns involved and professional guidance.'),
             ('What can we discuss during couple therapy?', 'Couples can discuss communication, conflicts, emotional concerns, trust, relationship difficulties, and other issues affecting their relationship.'),
         ],
@@ -327,7 +327,7 @@ SERVICES = [
         'slug': 'stress-counselling-malayalam',
         'short': 'Stress Counselling',
         'title': 'Online Stress Counselling in Malayalam',
-        'meta': 'Online stress counselling in Malayalam for work pressure, study pressure, family and financial stress. Professional, confidential support from MindLap.',
+        'meta': 'Online stress counselling in Malayalam for work pressure, study pressure, family and financial stress. Professional, confidential support from Mindlap.',
         'card': 'For work, study, family and financial pressure that is getting hard to manage.',
         'lead': 'Work pressure, studies, relationships, family responsibilities, financial concerns, and major life changes can all create stress.',
         'intro': [
@@ -355,7 +355,7 @@ SERVICES = [
             ], None),
         ],
         'faqs': [
-            ('Can stress counselling be done online?', 'Yes. MindLap provides online stress counselling in Malayalam.'),
+            ('Can stress counselling be done online?', 'Yes. Mindlap provides online stress counselling in Malayalam.'),
             ('Is all stress a sign of a mental health condition?', 'No. Stress can be a normal response to difficult situations. Professional support can be considered when it becomes difficult to manage or affects everyday life.'),
             ('Can Malayalees living abroad use online stress counselling?', 'Online support may be available depending on service availability and applicable requirements.'),
         ],
@@ -367,7 +367,7 @@ SERVICES = [
         'slug': 'adhd-consultation-malayalam',
         'short': 'ADHD Consultation',
         'title': 'Online ADHD Consultation in Malayalam',
-        'meta': 'Online ADHD consultation in Malayalam for adults and students struggling with focus, forgetfulness, organisation and time management. MindLap.',
+        'meta': 'Online ADHD consultation in Malayalam for adults and students struggling with focus, forgetfulness, organisation and time management. Mindlap.',
         'card': 'For difficulty focusing, forgetfulness, organisation and time management.',
         'lead': 'Difficulty focusing, forgetting tasks, struggling with organisation, or finding it difficult to manage time can affect studies, work, relationships, and everyday life.',
         'intro': [
@@ -393,7 +393,7 @@ SERVICES = [
             ], None),
         ],
         'faqs': [
-            ('Can ADHD consultation be done online?', 'Yes. MindLap provides online ADHD consultation in Malayalam, subject to professional and service availability.'),
+            ('Can ADHD consultation be done online?', 'Yes. Mindlap provides online ADHD consultation in Malayalam, subject to professional and service availability.'),
             ('Does difficulty focusing mean I have ADHD?', 'Not necessarily. Difficulty with attention can have many possible causes. Professional consultation can help you understand your concerns.'),
             ('Can adults seek ADHD consultation?', 'Yes. Adults can also seek professional support for attention, organisation, and other concerns.'),
         ],
@@ -405,7 +405,7 @@ SERVICES = [
         'slug': 'panic-attack-counselling-malayalam',
         'short': 'Panic Attack Support',
         'title': 'Online Panic Attack Counselling in Malayalam',
-        'meta': 'Online panic attack and panic disorder counselling in Malayalam. Understand triggers and patterns, and the fear of another attack. MindLap.',
+        'meta': 'Online panic attack and panic disorder counselling in Malayalam. Understand triggers and patterns, and the fear of another attack. Mindlap.',
         'card': 'For sudden intense fear, racing thoughts and the fear of another attack.',
         'lead': 'A panic attack can feel sudden, intense, and frightening.',
         'intro': [
@@ -430,7 +430,7 @@ SERVICES = [
             ], None),
         ],
         'faqs': [
-            ('Can panic attack counselling be done online?', 'Yes. MindLap provides online panic attack counselling in Malayalam.'),
+            ('Can panic attack counselling be done online?', 'Yes. Mindlap provides online panic attack counselling in Malayalam.'),
             ('Can counselling help with fear of another panic attack?', 'Professional support can help you understand your experiences and explore appropriate ways of managing panic-related concerns.'),
             ('Can Malayalees living abroad access panic counselling?', 'Online consultations may be available depending on service availability and applicable requirements.'),
         ],
@@ -443,7 +443,7 @@ SERVICES = [
         'slug': 'emotional-support-malayalam',
         'short': 'Emotional Well-being',
         'title': 'Online Emotional Support in Malayalam',
-        'meta': 'Feeling overwhelmed, stuck or lonely? Online emotional support in Malayalam. No diagnosis needed. Confidential psychological support from MindLap.',
+        'meta': 'Feeling overwhelmed, stuck or lonely? Online emotional support in Malayalam. No diagnosis needed. Confidential psychological support from Mindlap.',
         'card': 'For feeling overwhelmed, stuck, lonely or confused. No diagnosis needed.',
         'lead': 'You do not need to have a specific mental health condition to seek psychological support.',
         'intro': [
@@ -471,7 +471,7 @@ SERVICES = [
         'faqs': [
             ('Do I need a diagnosis to seek emotional support?', 'No. You can seek support for personal and emotional challenges without having a diagnosis.'),
             ('Can I discuss everyday life problems?', 'Yes. Everyday emotional and personal concerns can be discussed during a psychological consultation.'),
-            ('Is emotional support available in Malayalam?', 'Yes. MindLap provides online psychological support in Malayalam, subject to professional and service availability.'),
+            ('Is emotional support available in Malayalam?', 'Yes. Mindlap provides online psychological support in Malayalam, subject to professional and service availability.'),
         ],
         'close': ('Your Emotional Well-being Matters', [
             'You do not have to wait until things become overwhelming before seeking support.',

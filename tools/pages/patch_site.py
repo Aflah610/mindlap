@@ -93,11 +93,11 @@ NEW = '''  <header class="page-header">
   </header>
 
   <section class="page-content">
-    <p>MindLap respects your privacy and is committed to protecting your personal information. This Privacy Policy explains how we collect, use, store, and protect information when you use our website, services, and online psychological consultation platform.</p>
-    <p>By using the MindLap website or services, you agree to the practices described in this Privacy Policy.</p>
+    <p>Mindlap respects your privacy and is committed to protecting your personal information. This Privacy Policy explains how we collect, use, store, and protect information when you use our website, services, and online psychological consultation platform.</p>
+    <p>By using the Mindlap website or services, you agree to the practices described in this Privacy Policy.</p>
 
     <h2>1. Information We Collect</h2>
-    <p>Depending on how you interact with MindLap, we may collect information such as:</p>
+    <p>Depending on how you interact with Mindlap, we may collect information such as:</p>
     <ul>
       <li>Name</li>
       <li>Phone number</li>
@@ -132,11 +132,11 @@ NEW = '''  <header class="page-header">
     </ul>
 
     <h2>4. Confidentiality</h2>
-    <p>MindLap aims to maintain a confidential and respectful environment for individuals seeking psychological support.</p>
+    <p>Mindlap aims to maintain a confidential and respectful environment for individuals seeking psychological support.</p>
     <p>However, confidentiality may have legal or professional limitations in certain situations, including circumstances where disclosure may be required by applicable law or where there is a serious safety concern.</p>
 
     <h2>5. Sharing of Information</h2>
-    <p>MindLap does not intend to sell your personal information.</p>
+    <p>Mindlap does not intend to sell your personal information.</p>
 
     <h2>6. Data Security</h2>
     <p>We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that no security measures are perfect or impenetrable.</p>
@@ -154,6 +154,6 @@ a = p.index('  <header class="page-header">')
 b = p.index('    <!-- Footer Section -->')
 p = p[:a] + NEW + '\n' + p[b:]
 p = p.replace('content="Read the Privacy Policy of Mindlap to understand how we protect, handle, and secure your personal and session consultation information."',
-              'content="How MindLap collects, uses, stores and protects your personal and mental health information when you use our website and online psychological consultation services."')
+              'content="How Mindlap collects, uses, stores and protects your personal and mental health information when you use our website and online psychological consultation services."')
 open('privacy.html', 'w', encoding='utf-8', newline='').write(p)
 print('privacy updated')

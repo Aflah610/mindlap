@@ -57,7 +57,7 @@ def about(t):
     areas = joined(a.lower() if a.lower() not in ('ocd', 'adhd', 'ptsd') else a for a, _ in t['focus'][:4])
     methods = joined(t['methods'])
     return [
-        f"{t['name']} is a {t['role'].lower()} at MindLap, offering online counselling and therapy in Malayalam. "
+        f"{t['name']} is a {t['role'].lower()} at Mindlap, offering online counselling and therapy in Malayalam. "
         f"Sessions with {first} focus on {areas}.",
         f"{first} works with evidence-based methods including {methods}. Sessions are held online over video, "
         f"so clients across Kerala, from Kozhikode and Malappuram to Kochi and Thiruvananthapuram, and Malayalees "
@@ -71,7 +71,7 @@ def faqs(t):
         (f'Does {first} offer counselling in Malayalam?',
          f'Yes. Sessions with {first} are held in Malayalam, online, so you can attend from anywhere.'),
         (f'How do I book a session with {first}?',
-         f'Message MindLap on WhatsApp or call {b.PHONE_SHOW}. Our coordinator will share available times with {first} and confirm your session.'),
+         f'Message Mindlap on WhatsApp or call {b.PHONE_SHOW}. Our coordinator will share available times with {first} and confirm your session.'),
         (f'How much does a session with {first} cost?',
          f"A session costs {t['fee']}. Ask our coordinator about session packages if you plan to continue therapy."),
         ('Can I attend if I live outside Kerala?',
@@ -90,7 +90,7 @@ def others(current):
                 </a></li>''')
     return f'''<section class="sv-related pf-others">
         <div class="sv-wrap">
-            <h2>Other psychologists at MindLap</h2>
+            <h2>Other psychologists at Mindlap</h2>
             <ul>{''.join(cards)}</ul>
         </div>
     </section>'''
@@ -120,7 +120,7 @@ def build_profile(t):
         <div class="sv-wrap">
             {b.crumbs(items)}
             <div class="pf-intro">
-                <img class="pf-photo" src="/{t['photo']}" alt="{e(t['name'])}, {e(t['role'])} at MindLap" width="260" height="260">
+                <img class="pf-photo" src="/{t['photo']}" alt="{e(t['name'])}, {e(t['role'])} at Mindlap" width="260" height="260">
                 <div class="pf-intro-text">
                     <p class="pf-role">{e(t['role'])}</p>
                     <h1>{e(t['name'])}</h1>
@@ -169,14 +169,21 @@ def build_profile(t):
          'image': f"{b.SITE}/{t['photo']}", 'knowsLanguage': t['languages'],
          'knowsAbout': [a for a, _ in t['focus']] + [METHODS.get(m, m) for m in t['methods']],
          'hasCredential': t['education'],
-         'worksFor': {'@id': f'{b.SITE}/#medicalbusiness', '@type': 'MedicalBusiness', 'name': 'MindLap counselling'}},
+         'worksFor': {'@id': f'{b.SITE}/#medicalbusiness', '@type': 'MedicalBusiness', 'name': 'Mindlap counselling'}},
         {'@type': 'FAQPage', 'mainEntity': [
             {'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in q_and_a]},
     ]}
-    top = joined(a for a, _ in t['focus'][:3])
-    title = f"{t['name']}, {t['role']} | Online Counselling in Malayalam | MindLap"
-    desc = (f"{t['name']} is a {t['role'].lower()} at MindLap offering online counselling in Malayalam for {top.lower()}. "
-            f"{t['education']}. Book an online session from Kerala or abroad.")
+    # Google shows about 60 characters of a title and 155 of a description, so use the longest form that fits.
+    title = next(x for x in (f"{t['name']}, {t['role']} | Online Counselling in Malayalam | Mindlap",
+                             f"{t['name']}, {t['role']} | Malayalam Counselling | Mindlap",
+                             f"{t['name']}, {t['role']} | Mindlap") if len(x) <= 60)
+    areas = [a.lower() if a.lower() not in ('ocd', 'adhd', 'ptsd') else a for a, _ in t['focus']]
+    desc = ''
+    for n in range(len(areas), 0, -1):
+        desc = (f"{t['name']}, {t['role'].lower()} at Mindlap. Online counselling in Malayalam for "
+                f"{joined(areas[:n])}. Book from Kerala or abroad.")
+        if len(desc) <= 155:
+            break
     html_out = b.page(path, title, desc, body, schema)
     if t.get('book_online', True):
         # Booked online through the booking page; therapists not in the booking app yet stay on WhatsApp.
