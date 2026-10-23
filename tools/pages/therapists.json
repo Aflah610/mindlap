@@ -321,5 +321,65 @@
       "Malayalam"
     ],
     "fee": "₹1,000"
+  },
+  {
+    "slug": "ansha",
+    "name": "Ansha",
+    "role": "Psychologist",
+    "education": "MSc Psychology, Dr. Harisingh Gour Vishwavidyalaya (Central University), Madhya Pradesh",
+    "methods": [
+      "CBT"
+    ],
+    "photo": "assets/ansha.webp",
+    "focus": [
+      [
+        "OCD",
+        "Understanding obsessive thoughts and compulsions, and learning steady ways to reduce them."
+      ],
+      [
+        "Anxiety & Stress Management",
+        "Building practical coping skills to feel calmer and more in control."
+      ],
+      [
+        "Depression",
+        "Supporting low mood with structure, understanding and gentle steps forward."
+      ],
+      [
+        "Remedial Training & Career Guidance",
+        "Helping with learning difficulties and choosing a clear path in studies and work."
+      ],
+      [
+        "Relationship Concerns",
+        "Improving communication and understanding in close relationships."
+      ],
+      [
+        "Behavioural Modification",
+        "Changing unhelpful habits and patterns with clear, achievable steps."
+      ]
+    ],
+    "approach": [
+      [
+        "Cognitive Behavioural Therapy (CBT)",
+        "Working on the link between thoughts, feelings and actions to bring practical change."
+      ],
+      [
+        "Evidence-informed care",
+        "Using approaches backed by research, explained in simple words."
+      ],
+      [
+        "Supportive and tailored",
+        "Care shaped around each person's needs, pace and goals."
+      ]
+    ],
+    "qualifications": [
+      "MSc Psychology, Dr. Harisingh Gour Vishwavidyalaya (Central University), Madhya Pradesh.",
+      "Experience: 4 months as a trainee Remedial Trainer, supporting children with learning difficulties and neurodevelopmental conditions.",
+      "Research & academic work: Paper presented on Depression Among Women. Dissertation on the Relationship Between Cognitive Emotion Regulation, Digital Well-being, Overthinking and Depression Among Young Adults. Project on Attitude Towards Homosexuals Among Young Adults."
+    ],
+    "languages": [
+      "Malayalam"
+    ],
+    "fee": "₹1,000",
+    "book_online": false
   }
 ]

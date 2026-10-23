@@ -178,6 +178,9 @@ def build_profile(t):
     desc = (f"{t['name']} is a {t['role'].lower()} at MindLap offering online counselling in Malayalam for {top.lower()}. "
             f"{t['education']}. Book an online session from Kerala or abroad.")
     html_out = b.page(path, title, desc, body, schema)
+    if t.get('book_online', True):
+        # Booked online through the booking page; therapists not in the booking app yet stay on WhatsApp.
+        html_out = html_out.replace(f'href="{e(b.wa(msg))}" target="_blank" rel="noopener"', f'href="/book/?therapist={first}"')
     html_out = html_out.replace('class="nav-link active">Services', 'class="nav-link">Services')
     html_out = html_out.replace('<body class="sv-page">', '<body class="sv-page pf-page">')
     b.write(path, html_out)

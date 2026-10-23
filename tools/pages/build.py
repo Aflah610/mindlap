@@ -365,7 +365,7 @@ def build_kerala():
 def build_sitemap(paths):
     today = '2026-10-21'
     urls = ['/', '/privacy', '/terms'] + ['/' + p.replace('index.html', '') for p in paths]
-    urls += [f'/{n}' for n in ('rashin', 'anasooya', 'theresa', 'christine', 'jasmin', 'fathima')]
+    urls += [f'/{n}' for n in ('rashin', 'anasooya', 'theresa', 'christine', 'jasmin', 'fathima', 'ansha')]
     rows = ''.join(
         f'''  <url>
     <loc>{SITE}{u}</loc>
