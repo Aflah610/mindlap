@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 max: 9,
                 key: 'low',
                 label: 'Low',
-                copy: function (n) { return 'Your answers suggest ' + n + ' is not weighing on you heavily at the moment. That is worth protecting — a session can help you build on what is already working.'; }
+                copy: function (n) { return 'Your answers suggest ' + n + ' is not weighing on you heavily at the moment. That is worth protecting, and a session can help you build on what is already working.'; }
             },
             {
                 max: 19,
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 max: 40,
                 key: 'high',
                 label: 'High',
-                copy: function (n) { return 'Your answers suggest ' + n + ' is weighing on you a great deal right now. You do not have to carry this alone — speaking with a professional soon is a good next step.'; }
+                copy: function (n) { return 'Your answers suggest ' + n + ' is weighing on you a great deal right now. You do not have to carry this alone. Speaking with a professional soon is a good next step.'; }
             }
         ];
 

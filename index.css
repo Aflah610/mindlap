@@ -4864,8 +4864,9 @@ select.phone-input-prefix {
     color: var(--primary-light);
 }
 
+/* No line before the label */
 .cta-eyebrow::before {
-    background-color: var(--accent-color);
+    display: none;
 }
 
 /* Phones: black headline text and outline, like desktop */
