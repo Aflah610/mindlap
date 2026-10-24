@@ -4767,9 +4767,9 @@ select.phone-input-prefix {
     --brand-ink: #111111;
 }
 
-/* "matters" in the closing banner, green too */
+/* "matters" in the closing banner, in the brand violet */
 .cta-banner .text-gradient {
-    background: linear-gradient(135deg, var(--brand-green) 20%, var(--brand-green-bright) 100%);
+    background: linear-gradient(135deg, var(--primary-color) 20%, var(--accent-color) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -4861,11 +4861,11 @@ select.phone-input-prefix {
 }
 
 .cta-eyebrow {
-    color: var(--brand-green);
+    color: var(--primary-light);
 }
 
 .cta-eyebrow::before {
-    background-color: var(--brand-green-bright);
+    background-color: var(--accent-color);
 }
 
 /* Phones: black headline text and outline, like desktop */
