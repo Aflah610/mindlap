@@ -5355,3 +5355,10 @@ footer[id] {
     color: #111;
     font-weight: 600;
 }
+
+/* Phones: the Call / Chat bar steps aside while someone is answering the self-check (index.js) */
+@media (max-width: 768px) {
+    body.quiz-answering.quiz-in-view .sticky-contact-bar {
+        display: none;
+    }
+}

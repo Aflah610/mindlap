@@ -423,6 +423,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // The picker presents its cards straight on the section background;
             // only the question and result screens sit inside a panel.
             cardEl.classList.toggle('is-picking', name === 'category');
+            // On phones the Call / Chat bar would cover the answers; it steps aside while questions are on screen.
+            document.body.classList.toggle('quiz-answering', name === 'question');
+        }
+
+        // Scrolled away mid-quiz, the bar comes back.
+        if ('IntersectionObserver' in window) {
+            new IntersectionObserver(function (entries) {
+                document.body.classList.toggle('quiz-in-view', entries[0].isIntersecting);
+            }).observe(cardEl);
         }
 
         // Screens differ a lot in height, so the top of the card can end up above
