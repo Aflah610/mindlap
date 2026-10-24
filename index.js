@@ -500,16 +500,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     '</button>';
             }).join('');
 
+            showCheer(index, total);
+            screens.question.classList.remove('is-entering');
+            void screens.question.offsetWidth;
+            screens.question.classList.add('is-entering');
+
+            let picked = false;
             scaleListEl.querySelectorAll('.scale-option').forEach(function (btn) {
                 btn.addEventListener('click', function () {
+                    // One tap per question: show the choice, then move on.
+                    if (picked) return;
+                    picked = true;
                     answers[index] = parseInt(btn.dataset.value, 10);
-                    if (index === current.questions.length - 1) {
-                        progressBarEl.style.width = '100%';
-                        showResult();
-                    } else {
-                        index++;
-                        renderQuestion();
-                    }
+                    scaleListEl.querySelectorAll('.scale-option').forEach(function (b) { b.classList.remove('is-selected'); });
+                    btn.classList.add('is-selected', 'is-picked');
+                    scaleListEl.classList.add('has-pick');
+                    progressBarEl.style.width = (((index + 1) / total) * 100) + '%';
+                    setTimeout(function () {
+                        if (index === current.questions.length - 1) {
+                            showResult();
+                        } else {
+                            index++;
+                            renderQuestion();
+                        }
+                    }, 420);
                 });
             });
 
@@ -517,6 +531,27 @@ document.addEventListener('DOMContentLoaded', () => {
             backBtn.insertAdjacentHTML('afterbegin',
                 icon('<line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>', '') +
                 (index === 0 ? 'Choose a different area' : 'Previous question'));
+        }
+
+        // Ten questions is a lot; a word of encouragement after the third and the seventh keeps people going.
+        const CHEERS = {
+            3: { title: 'Great start, 3 done!', text: 'Only 7 quick questions left. Your honest answers give the clearest picture.' },
+            7: { title: 'Almost there!', text: 'Just 3 more and you will see your result.' }
+        };
+        const cheerEl = document.createElement('div');
+        cheerEl.className = 'assessment-cheer';
+        cheerEl.setAttribute('role', 'status');
+        questionEl.parentNode.insertBefore(cheerEl, questionEl);
+
+        function showCheer(done, total) {
+            const cheer = total === 10 ? CHEERS[done] : null;
+            cheerEl.classList.remove('is-shown');
+            if (!cheer) { cheerEl.innerHTML = ''; return; }
+            cheerEl.innerHTML = '<span class="assessment-cheer-icon" aria-hidden="true">' +
+                icon('<path d="M12 2l2.9 6.9 7.1.6-5.4 4.7 1.6 7L12 17.5 5.8 21.2l1.6-7L2 9.5l7.1-.6z"></path>', '') + '</span>' +
+                '<span><strong>' + cheer.title + '</strong> ' + cheer.text + '</span>';
+            void cheerEl.offsetWidth;
+            cheerEl.classList.add('is-shown');
         }
 
         function goBack() {
