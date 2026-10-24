@@ -3,6 +3,14 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-25 · Codex · shared system overview
+
+- Added `docs/OVERVIEW.md` with Aflah's ecosystem summary, completed work, pending
+  migrations, owner decisions and handover guidance; linked it from `AGENTS.md`.
+- Same overview added to the booking app. Documentation only; live behaviour unchanged.
+- Open: MCH dry run and count review remain next. Existing account-page change
+  and local assets were left untouched; personal PDFs must never be published.
+
 ## 2026-10-25 · Claude Code · state at handover
 
 Live on mindlap.in:

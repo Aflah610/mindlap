@@ -19,6 +19,8 @@ project for the same owner, Aflah. Keep it true: when something here changes, up
 
 ## What this repo is
 
+- Shared ecosystem context and outstanding work: `docs/OVERVIEW.md`. Check the work log for newer updates.
+
 - `mindlap.in`: a static site on **Cloudflare Pages**. Pushing to `main` publishes it (GitHub Action runs
   `tools/site/build_dist.py`, which copies only public files to `dist/`).
 - `worker/`: the Cloudflare Worker `mindlap-booking-api` (`https://mindlap-booking-api.nasheel.workers.dev`).
