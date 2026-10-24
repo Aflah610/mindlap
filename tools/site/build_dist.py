@@ -37,7 +37,7 @@ HEADERS = """/*
 # /rashin.html -> /rashin. These cover a few old addresses explicitly.
 # Staff admin panel = Waky Booking's admin. Update this address when Waky moves
 # from its development URL to production (or to admin.mindlap.in).
-WAKY_ADMIN = 'https://booking-app-50046547819.development.catalystappsail.in'
+WAKY_ADMIN = 'https://book.mindlap.in'
 
 REDIRECTS = f"""/index.html  /  301
 /adminpanelofmindlap  {WAKY_ADMIN}/  302
