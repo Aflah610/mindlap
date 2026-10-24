@@ -3,6 +3,18 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-25 · Codex · cross-project security review
+
+- Added `docs/SECURITY-REVIEW-2026-10-25.md` in both projects: three high-priority
+  findings (admin identity edits, booking mutation permissions, payment capture)
+  and four medium-priority findings. All remain open; no live fixes deployed.
+- Added offline synthetic probes in `tools/security/review-checks.cjs`; six code
+  paths confirmed without client data, real payments or production writes.
+- Live sampled private routes refused unauthenticated access; production npm audit
+  has no known advisories. AWS account/network/backups and legacy systems were
+  not independently verified. Read the report before expanding access/importing data.
+- Existing account-page edit and local assets untouched. Personal PDFs not staged.
+
 ## 2026-10-25 · Codex · shared system overview
 
 - Added `docs/OVERVIEW.md` with Aflah's ecosystem summary, completed work, pending
