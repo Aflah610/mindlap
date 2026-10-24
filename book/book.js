@@ -831,7 +831,6 @@
             banner.querySelector('[data-credits]').textContent = state.credits;
         }
 
-        const tabs = $('plan-tabs');
         const list = $('plan-list');
         const statusEl = $('plan-status');
         const nextBtn = $('plan-next');
@@ -844,8 +843,9 @@
             setStatus(statusEl, 'Could not load sessions right now. Please try again shortly or book on WhatsApp.', 'error');
             return;
         }
-        const packages = services.filter((s) => isPackage(s.name)).sort((a, b) => packageSessions(a.name) - packageSessions(b.name));
-        const singles = services.filter((s) => !isPackage(s.name)).sort((a, b) => Number(b.price) - Number(a.price));
+        // Prepaid clients book single sessions only; their credits pay for them.
+        const packages = state.creditMode ? [] : services.filter((s) => isPackage(s.name)).sort((a, b) => packageSessions(a.name) - packageSessions(b.name));
+        const singles = services.filter((s) => !isPackage(s.name)).sort((a, b) => Number(a.price) - Number(b.price));
         if (!services.length) {
             setStatus(statusEl, state.staffName + ' has no ' + state.sessionType + ' ' +
                 'sessions open for online booking. Please choose another therapist or book on WhatsApp.', 'error');
@@ -857,58 +857,53 @@
         const singlePrice = paidSingles.length ? Math.min.apply(null, paidSingles) : 0;
 
         let picked = services.find((s) => String(s.id) === String(state.serviceId)) || null;
-        // Lands on Packages unless they already chose a single session (or there are no packages).
-        let tab = state.creditMode || !packages.length || (picked && !isPackage(picked.name)) ? 'single' : 'package';
+
+        const personIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a7 7 0 0 1 16 0v1"></path></svg>';
+
+        function card(s, inner) {
+            return '<button type="button" class="option-card plan-row" role="radio" aria-checked="' +
+                String(!!picked && picked.id === s.id) + '" data-value="' + escapeHtml(s.id) + '">' + inner + '</button>';
+        }
+
+        function singleCard(s) {
+            const price = Number(s.price) || 0;
+            const sub = state.creditMode ? 'Paid from your prepaid sessions'
+                : singles.length > 1 ? s.name : (price ? money(price, s.currency) + ' per session' : 'Free');
+            return card(s,
+                '<span class="plan-icon">' + personIcon + '</span>' +
+                '<span class="plan-row-main"><span class="plan-row-title">1 session</span>' +
+                    '<span class="plan-row-sub">' + escapeHtml(sub) + '</span></span>' +
+                '<span class="plan-row-price"><span class="plan-row-amount">' +
+                    escapeHtml(state.creditMode ? 'Prepaid' : (price ? money(price, s.currency) : 'Free')) + '</span></span>');
+        }
 
         function packageCard(s) {
             const n = packageSessions(s.name);
             const price = Number(s.price) || 0;
             const full = n && singlePrice ? n * singlePrice : 0;
-            const save = full > price ? Math.round((1 - price / full) * 100) : 0;
-            return '<span class="option-body">' +
-                    '<span class="option-kicker">' + (n ? n + ' sessions' : 'Package') + '</span>' +
-                    '<span class="option-title">' + escapeHtml(n ? n + '-session package' : s.name) + '</span>' +
-                    '<span class="plan-price"><span class="option-price">' + escapeHtml(money(price, s.currency)) + '</span>' +
-                        (save ? '<s>' + escapeHtml(money(full, s.currency)) + '</s>' : '') + '</span>' +
-                    (n ? '<span class="option-meta">' + escapeHtml(money(Math.round(price / n), s.currency)) + ' per session</span>' : '') +
-                '</span>';
-        }
-
-        function singleCard(s) {
-            return '<span class="option-body">' +
-                    '<span class="option-kicker">Single session</span>' +
-                    '<span class="option-title">' + escapeHtml(s.name) + '</span>' +
-                    (state.creditMode ? '<span class="option-meta">Covered by your prepaid sessions</span>'
-                        : '<span class="option-price">' + escapeHtml(Number(s.price) ? money(s.price, s.currency) : 'Free') + '</span>') +
-                '</span>';
+            return card(s,
+                '<span class="plan-row-main"><span class="plan-row-title">' + escapeHtml(n ? n + ' sessions' : s.name) + '</span>' +
+                    (n ? '<span class="plan-row-sub">' + escapeHtml(money(Math.round(price / n), s.currency)) + ' per session</span>' : '') + '</span>' +
+                '<span class="plan-row-price"><span class="plan-row-amount">' + escapeHtml(money(price, s.currency)) + '</span>' +
+                    (full > price ? '<s>' + escapeHtml(money(full, s.currency)) + '</s>' : '') + '</span>');
         }
 
         function render() {
-            tabs.hidden = !!state.creditMode;
-            tabs.querySelectorAll('[data-tab]').forEach((btn) => {
-                const on = btn.dataset.tab === tab;
-                btn.setAttribute('aria-selected', String(on));
-                btn.classList.toggle('active', on);
-            });
-            const shown = tab === 'package' ? packages : singles;
-            list.innerHTML = shown.length ? shown.map((s) =>
-                '<button type="button" class="option-card plan-card" role="radio" aria-checked="' +
-                    String(!!picked && picked.id === s.id) + '" data-value="' + escapeHtml(s.id) + '">' +
-                    (tab === 'package' ? packageCard(s) : singleCard(s)) +
-                '</button>'
-            ).join('') : '<p class="booking-slots-empty">No ' + (tab === 'package' ? 'packages' : 'single sessions') +
-                ' open for online booking with ' + escapeHtml(state.staffName) + '.</p>';
-            list.querySelectorAll('.plan-card').forEach((card) => {
-                card.addEventListener('click', () => {
-                    picked = services.find((s) => s.id === card.dataset.value);
+            list.innerHTML = (singles.length ? '<div class="plan-singles">' + singles.map(singleCard).join('') + '</div>' : '') +
+                (packages.length
+                    ? '<div class="plan-packages"><span class="plan-packages-label">Packages</span>' + packages.map(packageCard).join('') + '</div>'
+                    : '');
+            list.querySelectorAll('.plan-row').forEach((row) => {
+                row.addEventListener('click', () => {
+                    picked = services.find((s) => s.id === row.dataset.value);
                     render();
                 });
             });
             nextBtn.disabled = !picked;
             footerSummary.innerHTML = picked
-                ? '<strong>' + escapeHtml(isPackage(picked.name) && packageSessions(picked.name) ? packageSessions(picked.name) + '-session package' : picked.name) + '</strong> ' +
+                ? '<strong>' + escapeHtml(isPackage(picked.name) && packageSessions(picked.name) ? packageSessions(picked.name) + ' sessions' : '1 session') + '</strong> ' +
                     (state.creditMode ? 'prepaid' : escapeHtml(money(picked.price, picked.currency)))
-                : 'Choose a ' + (tab === 'package' ? 'package' : 'session') + '.';
+                : 'Choose a plan.';
             renderSummary(Object.assign({}, state, {
                 serviceName: picked && picked.name,
                 price: picked ? Number(picked.price) || 0 : undefined,
@@ -917,13 +912,6 @@
                 time: null
             }));
         }
-
-        tabs.querySelectorAll('[data-tab]').forEach((btn) => {
-            btn.addEventListener('click', () => {
-                tab = btn.dataset.tab;
-                render();
-            });
-        });
 
         nextBtn.addEventListener('click', () => {
             if (!picked) {

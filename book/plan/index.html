@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css?v=129">
-    <link rel="stylesheet" href="/book/book.css?v=12">
+    <link rel="stylesheet" href="/book/book.css?v=13">
 </head>
 
 <body class="book-page" data-page="plan">
@@ -68,19 +68,14 @@
                     <p>Booking with your prepaid sessions (<strong data-credits></strong> left). No payment needed.</p>
                 </div>
 
-                <div class="plan-tabs" id="plan-tabs" role="tablist" aria-label="Plan type">
-                    <button type="button" role="tab" data-tab="package" aria-selected="true" aria-controls="plan-list">Packages</button>
-                    <button type="button" role="tab" data-tab="single" aria-selected="false" aria-controls="plan-list">Single session</button>
-                </div>
-
-                <div class="option-grid plan-list" id="plan-list" role="radiogroup" aria-label="Plans">
+                <div class="plan-list" id="plan-list" role="radiogroup" aria-label="Plans">
                     <p class="booking-slots-loading">Loading plans…</p>
                 </div>
 
                 <p id="plan-status" class="booking-status" role="status"></p>
 
                 <div class="step-footer">
-                    <div class="step-footer-summary" id="plan-summary">Choose a package.</div>
+                    <div class="step-footer-summary" id="plan-summary">Choose a plan.</div>
                     <button type="button" id="plan-next" class="btn btn-primary btn-lg" disabled>Continue</button>
                 </div>
             </div>
@@ -88,7 +83,7 @@
         </main>
     </div>
 
-    <script src="/book/book.js?v=35"></script>
+    <script src="/book/book.js?v=36"></script>
 </body>
 
 </html>

@@ -1776,3 +1776,122 @@ body.book-page {
 #credit-banner + .plan-tabs + .plan-list {
     margin-top: 16px;
 }
+
+/* Plan page: one session on top, then the Packages panel (matches the session plan artwork). */
+.plan-list {
+    display: grid;
+    gap: 16px;
+}
+
+.plan-singles {
+    display: grid;
+    gap: 10px;
+}
+
+.plan-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    border-radius: 18px;
+}
+
+.plan-row[aria-checked="true"]::after {
+    top: 10px;
+    right: 10px;
+}
+
+.plan-icon {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--bg-lavender);
+    color: var(--primary-light);
+}
+
+.plan-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.plan-row-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.plan-row-title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1.25;
+    color: var(--text-main);
+}
+
+.plan-row-sub {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+}
+
+.plan-row-price {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+    padding-right: 10px;
+}
+
+.plan-row-amount {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.45rem;
+    line-height: 1.15;
+    color: var(--accent-color);
+}
+
+.plan-row-price s {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+}
+
+.plan-packages {
+    display: grid;
+    gap: 12px;
+    padding: 16px 12px 14px;
+    border-radius: 22px;
+    background: var(--bg-lavender);
+}
+
+.plan-packages-label {
+    justify-self: start;
+    margin: 0 0 2px 4px;
+    padding: 8px 26px;
+    border-radius: 12px;
+    background: var(--bg-white);
+    color: var(--primary-light);
+    font-weight: 600;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 8px rgba(74, 46, 128, 0.08);
+}
+
+.plan-packages .plan-row {
+    border-color: transparent;
+    box-shadow: 0 2px 10px rgba(74, 46, 128, 0.06);
+}
+
+.plan-packages .plan-row[aria-checked="true"] {
+    border-color: var(--primary-color);
+}
+
+@media (max-width: 480px) {
+    .plan-row { padding: 16px; gap: 12px; }
+    .plan-icon { width: 44px; height: 44px; }
+    .plan-row-title { font-size: 1.1rem; }
+    .plan-row-amount { font-size: 1.25rem; }
+}
