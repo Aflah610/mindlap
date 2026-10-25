@@ -3,6 +3,19 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-25 · Codex · continued Claude's CCD WhatsApp work
+
+- Latest Claude work was in booking-app, beyond this website log: Meta app live, Google sign-in/Meet setup,
+  staff changes, and MCH dry run completed. Its docs/WORKLOG.md is the current detailed source.
+- Took over the interrupted ccd-number branch (waky-mch worktree). CCD WhatsApp settings/routing now live at
+  book.mindlap.in/admin/settings/whatsapp, code c48457f; verified separate enabled sales and CCD connect buttons.
+  CCD/OTP replies stay out of sales leads. Both numbers remain unconnected; no live messages or workflows enabled.
+- PR #1 merged; CI passed 446 tests, lint, typecheck, production build, Docker and production dependency audit.
+- Next: Aflah connects the CCD phone, Meta billing, permanent sending token, approved templates and an opted-in test.
+  Activation handover/template drafts: booking-app docs/whatsapp-ccd-handover.md. Zoho 774 cutover, Calendar connections,
+  security findings and MCH real import remain open; MCH import still needs approval after security fixes.
+- Website code unchanged. Existing account-page edit and personal PDFs left untouched.
+
 ## 2026-10-25 · Codex · cross-project security review
 
 - Added `docs/SECURITY-REVIEW-2026-10-25.md` in both projects: three high-priority
