@@ -3,6 +3,16 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-26 · Codex · S3 deployed and synthetic regression suite saved
+
+- Deployed Claude's captured-payment-only Worker fix using Wrangler 4.152.0 after Aflah authorised deployment.
+  Live Worker version d9d18226-56c0-44d7-8a6c-e50e9f682407. Public GET /api/services returned HTTP 200 JSON.
+- Added tools/security/payment-capture.test.mjs: failed capture never confirms bookings or credits, failed state
+  refetch stays pending, concurrent capture is recovered, captured callbacks succeed, and webhook failures return 503.
+  All six tests passed using synthetic data and mocked network calls. No real payment was initiated or changed.
+- S1/S2 remain in booking-app main; S4-S7 remediation in progress there. Existing account-page edit and personal
+  files left untouched. Meta Coexistence case still awaits a non-destructive resolution; do not delete CCD account.
+
 ## 2026-10-25 · Claude Code · S3 payment fix committed, worker NOT deployed yet
 
 - worker/src/waky.js: a Razorpay payment counts as paid only once captured; a failed capture is re-checked with
