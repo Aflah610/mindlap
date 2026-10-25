@@ -145,7 +145,7 @@ NEW = '''  <header class="page-header">
     <p>We may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated date.</p>
 
     <h2>8. Contact Us</h2>
-    <p>If you have questions about this Privacy Policy, please contact us at <a href="mailto:Officialmindlap@gmail.com">Officialmindlap@gmail.com</a>.</p>
+    <p>If you have questions about this Privacy Policy, please contact us at <a href="mailto:support@mindlap.in">support@mindlap.in</a>.</p>
   </section>
 '''
 if 'Clients Under 18' in p:

@@ -430,7 +430,7 @@ def build_about():
 
                 <h2>Where to find us</h2>
                 <p>Mindlap, Phase 1, 3rd Floor, Hilite Business Park, Hilite City, NH 66, Kozhikode, Kerala 673014.<br>
-                Phone and WhatsApp: <a href="tel:{PHONE_TEL}">{PHONE_SHOW}</a> · Email: <a href="mailto:Officialmindlap@gmail.com">Officialmindlap@gmail.com</a></p>
+                Phone and WhatsApp: <a href="tel:{PHONE_TEL}">{PHONE_SHOW}</a> · Email: <a href="mailto:support@mindlap.in">support@mindlap.in</a></p>
         </article>
         {aside('a therapy session')}
     </div>
