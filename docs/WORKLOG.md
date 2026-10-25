@@ -3,6 +3,14 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-25 · Claude Code · S3 payment fix committed, worker NOT deployed yet
+
+- worker/src/waky.js: a Razorpay payment counts as paid only once captured; a failed capture is re-checked with
+  Razorpay, otherwise stays pending (browser retries) and the webhook answers 503 so Razorpay resends. Offline checks
+  5/5 (capture fail, Razorpay down, already captured, success, package order).
+- NOT live: `npx wrangler@4 deploy` (from worker/) was blocked by the agent's safety check; Aflah must run it.
+- Booking-app S1/S2 fixes are on main (c2a69b6, CI passed); see booking-app docs/WORKLOG.md.
+
 ## 2026-10-25 · Codex · continued Claude's CCD WhatsApp work
 
 - Latest Claude work was in booking-app, beyond this website log: Meta app live, Google sign-in/Meet setup,
