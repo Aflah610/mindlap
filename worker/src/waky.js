@@ -260,9 +260,19 @@ export async function finalizeWakyPayment(env, h, order, payment) {
     return { status: 'pending', message: 'Payment is ' + payment.status + '.' };
   }
   if (payment.status === 'authorized') {
-    // Capture first: Razorpay gives authorised-only money back after a few days.
-    await h.razorpayRequest(env, 'POST', 'payments/' + payment.id + '/capture', { amount: payment.amount, currency: payment.currency })
-      .catch((err) => console.error('Capture failed', payment.id, h.errorText(err)));
+    // Capture first: Razorpay gives authorised-only money back after a few days, so nothing counts as paid until the money is
+    // actually taken. If the capture call fails, ask Razorpay again (another request may have captured it meanwhile).
+    try {
+      payment = await h.razorpayRequest(env, 'POST', 'payments/' + payment.id + '/capture', { amount: payment.amount, currency: payment.currency });
+    } catch (err) {
+      console.error('Capture failed', payment.id, h.errorText(err));
+      const now = await h.razorpayRequest(env, 'GET', 'payments/' + payment.id).catch(() => null);
+      if (!now || now.status !== 'captured') {
+        return { status: 'pending', retry: true, message: 'We could not take the payment yet. Please wait a moment and refresh.' };
+      }
+      payment = now;
+    }
+    if (payment.status !== 'captured') return { status: 'pending', retry: true, message: 'Payment is ' + payment.status + '.' };
   }
 
   if (notes.kind === 'booking') {
@@ -573,6 +583,8 @@ export async function handleWaky(request, env, url, headers, h) {
     if (['payment.captured', 'payment.authorized'].includes(event.event)) {
       const result = await finalizeWakyPayment(env, h, order, payment);
       console.log('Waky webhook finalize', payment.order_id, result.status);
+      // Not finished (capture failed, or the booking app was unreachable): answer with an error so Razorpay sends it again.
+      if (result.retry || result.status === 'error') return new Response('Retry later', { status: 503 });
     }
     return new Response('OK', { status: 200 });
   }
