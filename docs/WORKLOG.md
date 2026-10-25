@@ -3,6 +3,15 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-26 · Codex · unpaid attempts removed from registered Clients
+
+- Aflah reported four unpaid website contacts showing in booking-app Clients. Corrected the directory and CSV
+  registration filter; empty case-history records do not qualify. Paid/free and manual/imported/existing-care
+  registrations remain visible. No contact, payment or booking records deleted.
+- Live Clients refreshed: No clients yet / Showing 0 clients. Verified all five Payment failed attempts remain in
+  Bookings. PR #5, code 2e98bc3, final handover 8a2bc0f; main CI passed 492 tests / 45 files and all build checks.
+- Website functional files and existing personal/local edits untouched. Booking-app AGENTS.md records the rule.
+
 ## 2026-10-26 · Codex · S3-S7 complete and live
 
 - S3 Worker payment-capture fix deployed and verified; six synthetic regression tests pass, catalogue GET 200.
