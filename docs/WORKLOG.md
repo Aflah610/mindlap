@@ -3,6 +3,19 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-26 · Codex · S3-S7 complete and live
+
+- S3 Worker payment-capture fix deployed and verified; six synthetic regression tests pass, catalogue GET 200.
+- Booking-app S4/S5 permission fixes, S6 public-only HTTPS webhook delivery with DNS pinning, and S7 nonce CSP /
+  security headers are on main and live (code fbd368f; final handover cfd5122). Preserved Claude's case-list change.
+- Final main validation passed 490 tests across 45 files, lint, typecheck, production build, Docker and production
+  dependency audit. Corrected two clinical regression fixtures that briefly blocked main CI; both are resolved.
+- Live login has matching fresh nonces on all ten scripts plus nosniff, no-referrer, HSTS and framing DENY.
+  /book retains Mindlap website embedding; health ok, unauthenticated client search 401, Worker catalogue 200.
+- Updated security review with remediation evidence and remaining operational scope. No production client records,
+  real payments or customer messages used. No server login/key used. CCD Coexistence still awaits Meta's specialist;
+  do not delete/re-register the existing WhatsApp account. Existing account-page edit and personal files untouched.
+
 ## 2026-10-26 · Codex · S3 deployed and synthetic regression suite saved
 
 - Deployed Claude's captured-payment-only Worker fix using Wrangler 4.152.0 after Aflah authorised deployment.

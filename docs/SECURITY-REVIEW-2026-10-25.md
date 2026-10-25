@@ -1,7 +1,32 @@
 # Mindlap security review
 
 Date: 25 October 2026. Reviewer: Codex.
-Status: review complete for the scope below; findings remain open. No fixes deployed.
+Status: S1-S7 remediation implemented and validated on 26 October 2026. Deployment verification below.
+The finding descriptions retain the original review evidence; they describe the pre-fix behaviour.
+
+## Remediation on 26 October 2026
+
+- S1/S2: Claude added central admin-record protection and booking/financial mutation permission checks.
+- S3: captured-payment-only Worker finalisation deployed as version d9d18226-56c0-44d7-8a6c-e50e9f682407.
+  Six synthetic capture/retry checks passed; public GET /api/services returned 200. No real payment was made.
+- S4: assigned therapists require current clinical write permission to read/write their cases. Read-all access
+  alone cannot change intake/notes, sign/delete notes, add addenda or send follow-ups. Explicit clinical-admin
+  authority remains. Service checks protect direct actions, with matching read-only page controls.
+- S5: contact-dependent client search requires both clients.view and clients.contact, covering results and matching.
+- S6: workflows accept only public HTTPS destinations. Delivery validates every DNS answer, pins a public address
+  to the TLS socket, verifies the original hostname and refuses redirects. Previously saved unsafe URLs fail closed.
+- S7: booking app sends nosniff, no-referrer, HSTS and Permissions-Policy; per-request nonce CSP protects scripts.
+  Private pages deny framing, while /book embeds allow the Mindlap website. Inline styles remain allowed for compatibility.
+- Booking-app revision fbd368f passed 490 tests in 45 files, lint, typecheck, production build, Docker and production
+  dependency audit (zero production advisories). Local built login returned 200 with ten matching nonced scripts;
+  two requests had different nonces, and Chrome rendered without application CSP violations.
+- Live verified at 04:42 IST on 26 October: login 200 with fresh matching script nonces, nosniff, no-referrer, HSTS
+  and framing DENY; /book allows Mindlap embeds without X-Frame-Options; health ok; unauthenticated search 401;
+  Worker catalogue 200. This confirms the application protections are serving publicly; no authenticated attack was run.
+
+No production clinical records, real payments, customer messages or authenticated attack probes were used.
+Infrastructure egress controls, backup/session/operational hardening and the website's optional script CSP remain
+outside these seven application fixes. The scope limitations below still apply.
 
 ## Scope and limits
 
@@ -217,5 +242,5 @@ CSP. Consider a compatible CSP there too because login tokens use localStorage.
   parameterised Drizzle queries. Deployment runs the app as an unprivileged user;
   the production app port is not published directly by the checked-in compose file.
 
-Next work: remediate S1-S3 with targeted tests, then S4-S7 and the operational
-verification. Keep both projects' work logs current as each finding is closed.
+Next work: maintain the regression suite and complete the separate operational
+verification items above. Keep both projects' work logs current.
