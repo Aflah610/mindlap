@@ -3,6 +3,19 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-26 - Codex - Cloudflare booking-app OTP connection prepared
+
+- Inspected Creator functions: effective five-minute expiry, six-digit codes, Meta English Authentication template
+  with matching body/Copy Code button. Recorded parity in booking-app docs/otp-migration.md; no Creator changes.
+- Added opt-in OTP_PROVIDER=booking routing before catalogue loading. Booking app owns codes and Meta delivery;
+  Cloudflare retains website sessions, phone/IP limits and the current phone/reference association only.
+- Limits and reference storage fail closed. No Creator fallback on the booking provider, no session on upstream
+  errors or phone/reference mismatch. Out-of-order resend replies cannot overwrite a newer reference.
+- Thirteen synthetic Worker/payment regression checks pass, including real session HMAC/24-hour lifetime and
+  replay refusal. Added Node 22 CI workflow. Live routing still meta; no OTP key/server settings or cutover yet.
+- Booking-app backend migration and verification changes are in PR #6. Final provisioning/cutover awaits tested
+  code, OTP-only service-key creation, secure Meta settings and a live delivery/verification test.
+
 ## 2026-10-26 · Codex · unpaid attempts removed from registered Clients
 
 - Aflah reported four unpaid website contacts showing in booking-app Clients. Corrected the directory and CSV

@@ -1,3 +1,4 @@
+import { handleBookingOtp } from './otp-booking.js';
 import { aliasRequest, aliasResponse, handleWaky, staffAliases } from './waky.js';
 /**
  * Mindlap - Zoho Bookings API proxy
@@ -817,6 +818,29 @@ export class SlotHolds {
       return reply({ ok: true });
     }
 
+    // Only the current booking-app reference is kept here; the code and hash stay in the booking app.
+    if (['otp-reference-set', 'otp-reference-get', 'otp-reference-drop'].includes(op)) {
+      if (!parseE164(body.phone)) return reply({ ok: false });
+      const key = 'otp-reference:' + body.phone;
+      const current = await this.state.storage.get(key);
+      if (op === 'otp-reference-set') {
+        if (!/^OTP-REF-[A-Z0-9]{10,32}$/.test(body.reference || '') || !Number.isFinite(body.expiresAt) ||
+            body.expiresAt <= Date.now() || body.expiresAt > Date.now() + 10 * 60 * 1000) return reply({ ok: false });
+        if (current && current.expiresAt >= body.expiresAt && current.reference !== body.reference) return reply({ ok: false });
+        await this.state.storage.put(key, { reference: body.reference, expiresAt: body.expiresAt });
+        return reply({ ok: true });
+      }
+      if (op === 'otp-reference-drop') {
+        if (current?.reference === body.reference) await this.state.storage.delete(key);
+        return reply({ ok: true });
+      }
+      if (!current || current.expiresAt <= Date.now()) {
+        if (current) await this.state.storage.delete(key);
+        return reply({ reference: null });
+      }
+      return reply({ reference: current.reference });
+    }
+
     // One-time codes sent from Mindlap's WhatsApp number: only an HMAC of the code is stored.
     if (op === 'otp-put') {
       const key = 'otp:' + body.phone;
@@ -1188,6 +1212,11 @@ export default {
     }
 
     try {
+      const otpReply = await handleBookingOtp(request, env, url, headers, {
+        jsonResponse, parseE164, clientIp, holdsCall, createSessionToken
+      });
+      if (otpReply) return otpReply;
+
       // Waky Booking is the booking system: its routes are answered from waky.js.
       // OTP login and anything Waky doesn't own fall through to the code below.
       if (env.BOOKING_ENGINE === 'waky') {

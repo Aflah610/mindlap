@@ -42,7 +42,8 @@ ZOHO_CREATOR_APP = "mindlap-booking-engine"
 # Zoho Catalyst) or "zoho" (the old Zoho Bookings + Creator code, kept for rollback).
 BOOKING_ENGINE = "waky"
 WAKY_API_URL = "https://book.mindlap.in"
-# OTP codes: "zoho" = Zoho Creator Send_OTP/Verify_OTP; "meta" = sent straight from
+# OTP codes: "booking" = booking-app OTP + direct Meta delivery (needs BOOKING_OTP_API_KEY).
+# Legacy "zoho" = Creator; "meta" = sent straight from
 # Mindlap's WhatsApp number (needs the WHATSAPP_TOKEN secret and Meta billing set up).
 OTP_PROVIDER = "meta"
 WHATSAPP_PHONE_NUMBER_ID = "1427401513782694"
@@ -59,3 +60,5 @@ WHATSAPP_OTP_TEMPLATE = "mindlap_verification_code"
 #   SESSION_TOKEN_SECRET
 #   RAZORPAY_KEY_ID
 #   RAZORPAY_KEY_SECRET
+
+# BOOKING_OTP_API_KEY: dedicated booking-app key with only the otp scope, stored as a Worker secret.
