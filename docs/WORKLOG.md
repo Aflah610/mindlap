@@ -13,8 +13,10 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   errors or phone/reference mismatch. Out-of-order resend replies cannot overwrite a newer reference.
 - Thirteen synthetic Worker/payment regression checks pass, including real session HMAC/24-hour lifetime and
   replay refusal. Added Node 22 CI workflow. Live routing still meta; no OTP key/server settings or cutover yet.
-- Booking-app backend migration and verification changes are in PR #6. Final provisioning/cutover awaits tested
-  code, OTP-only service-key creation, secure Meta settings and a live delivery/verification test.
+- Booking-app PR #6 passed 497 tests / 46 files and all build checks; Worker PR mindlap#5 passed its CI.
+  Both remain drafts. Automatic review blocked backend main publication pending specific live-deployment approval.
+- Awaiting Aflah approval for production cutover, OTP-only key creation and previously blocked SSH-key use for
+  server Meta settings. No production OTP provider, credential or Creator setting changed. Do not bypass the block.
 
 ## 2026-10-26 · Codex · unpaid attempts removed from registered Clients
 
