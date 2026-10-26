@@ -3,6 +3,19 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-26 - Codex - OTP integration published; current provider retained
+
+- Aflah approved deployment and setup. Published tested integration 77a13e7 to main; backend 94bc080 is on its
+  production main with check, Docker and publish green. Backend public health is ok.
+- Created the dedicated OTP-only booking-app key and uploaded BOOKING_OTP_API_KEY to this Cloudflare Worker.
+  Temporary plaintext key file removed; no credentials in Git or output. SESSION_TOKEN_SECRET unchanged.
+- Worker OTP_PROVIDER remains meta: no cutover or live OTP test yet. Server Meta configuration is pending SSH
+  access (two timeouts). Aflah asked Codex to handle the current-IP SSH rule; saved AWS booking session reports
+  Mumbai restricted and needs the correct account/session. No firewall or Creator changes made.
+- Resume by configuring the four server OTP_META/template variables, checking backend deployment/migration,
+  deploying OTP_PROVIDER=booking, and validating one authorised send plus user verification and admin report.
+  Preserve Creator history and CCD account. Prior automatic approval block was superseded by explicit approval.
+
 ## 2026-10-26 - Codex - Cloudflare booking-app OTP connection prepared
 
 - Inspected Creator functions: effective five-minute expiry, six-digit codes, Meta English Authentication template
