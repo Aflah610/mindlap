@@ -5,7 +5,7 @@ This repo is the website; booking app work is logged in the booking-app repo's `
 
 ## 2026-10-27 · Claude Code · MCH closed to everyone (reversible)
 
-- mchoperationmanager.site now answers 503 with a "MCH has moved to book.mindlap.in" page (site, /api and /admin).
+- mchoperationmanager.site now sends no page at all (nginx 444: browser shows a bare connection error), on http and https.
 - On the MCH EC2 server: `~/mch-off.sh` closes it, `~/mch-on.sh` reopens it exactly as before (tested both ways).
   The containers are stopped (no auto-restart); the database and media volumes are untouched.
 - Backup taken first: `~/mch-backup-2026-10-27/` (database dump + media) on the same server.
