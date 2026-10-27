@@ -3,6 +3,14 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-27 · Claude Code · profile badge with Log out on the booking pages
+
+- book/book.js `renderProfileBadge`: when logged in, the booking pages' top bar (/book/* and /account/) shows the same
+  profile badge as the home page; Log out (and View bookings) live in its menu only. Log out clears the login and
+  the saved draft, then goes home. book.js?v=37 on all nine pages.
+- account/index.html: its long-uncommitted change was only the book.css/book.js version bumps; committed with v=37.
+- Booking app (book.mindlap.in) phone layout: Sign out badge is hidden on small screens; being fixed in booking-app.
+
 ## 2026-10-26 - Codex - OTP integration published; current provider retained
 
 - Aflah approved deployment and setup. Published tested integration 77a13e7 to main; backend 94bc080 is on its
