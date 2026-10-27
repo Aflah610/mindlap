@@ -3,6 +3,14 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-27 · Claude Code · MCH closed to everyone (reversible)
+
+- mchoperationmanager.site now answers 503 with a "MCH has moved to book.mindlap.in" page (site, /api and /admin).
+- On the MCH EC2 server: `~/mch-off.sh` closes it, `~/mch-on.sh` reopens it exactly as before (tested both ways).
+  The containers are stopped (no auto-restart); the database and media volumes are untouched.
+- Backup taken first: `~/mch-backup-2026-10-27/` (database dump + media) on the same server.
+- Open: the EC2 instance itself still runs and costs money; stopping or deleting it is Aflah's call.
+
 ## 2026-10-27 · Claude Code · profile badge with Log out on the booking pages
 
 - book/book.js `renderProfileBadge`: when logged in, the booking pages' top bar (/book/* and /account/) shows the same
