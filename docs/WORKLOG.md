@@ -12,7 +12,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   and 1280x650: consent/payment visible, no horizontal or page overflow. At 390x844 it returns to the existing
   mobile flex layout. Screenshot saved and viewport override reset. No payment/booking/message sent.
 - Public build and diff checks pass. Rebuilt dist, confirming synthetic state/API removed and real Razorpay SDK
-  restored. CSS v24 on all nine loading pages. Publishing; live verification follows. Deferred bugs remain open.
+  restored. CSS v24 on all nine loading pages. Live checkout HTML loads v24 and its laptop grid rules are verified.
+  Deployment 3ee19f8 passed. Deferred bugs remain open.
 
 ## 2026-10-28 - Codex - Your details form matches Aflah's reference
 
