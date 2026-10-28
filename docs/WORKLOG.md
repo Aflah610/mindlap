@@ -3,6 +3,25 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - Redesigned booking screens fit one mobile viewport
+
+- Aflah reported scrolling and a hidden final package on his phone. Removed oversized fixed bottom spacing
+  across number entry, code entry and session choice; spacing and illustration size now follow usable dynamic
+  viewport height. Compact sizing for short screens preserves every control rather than clipping overflow.
+- Plan footer now participates in the layout and stays at the bottom using available free space; it cannot
+  cover packages. Cards, gaps, icons and headings compact on short screens. Back shares the heading row on
+  short screens. Header remains usable with the logged-in account badge. No price, booking or OTP logic changes.
+- Mobile country dropdown stays within the screen with only its long result list scrolling internally.
+  Number input is 16px on mobile to avoid automatic browser zoom. No overflow suppression applied to the page;
+  enlarged accessibility text and unusually short/keyboard-covered screens can still scroll to reach controls.
+- Synthetic local browser checks: 320x568, 360x640 and 393x736 plan layouts, all four package choices visible
+  above Continue, selected 12-session footer and prepaid mode fit; number, OTP code and session-choice screens
+  at 320x568 all had document height equal to viewport height and no horizontal overflow. Country popup stays
+  within viewport. No live OTP, booking, payment or client write. Screenshot saved; viewport override restored.
+- CSS-only change. All nine loading pages use CSS v18. Build and diff checks pass; removed preview server/script
+  and rebuilt dist, verifying production API and no fixture code. Publishing; live verification follows.
+  Deferred booking logic issues remain open.
+
 ## 2026-10-28 - Codex - Plan selection redesigned from Aflah's reference
 
 - Choose a plan now uses a light single-column layout, single-session card, grouped Packages with coloured
