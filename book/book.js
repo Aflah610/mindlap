@@ -1492,11 +1492,32 @@
         if (!state.rebookOrderId) saveDraft(state);
 
         const date = parseIsoDate(state.date);
-        $('review-month').textContent = date ? date.toLocaleDateString('en-IN', { month: 'short' }) : '';
-        $('review-day').textContent = date ? date.getDate() : '';
-        $('review-service').textContent = state.serviceName;
-        $('review-when').textContent = longDate(state.date) + ' at ' + state.time;
-        $('review-therapist').textContent = 'With ' + state.staffName + ' · Online video session';
+        const sessionCount = packageSessions(state.serviceName) || 1;
+        const checkoutProfiles = [{"slug":"rashin","name":"Rashin PK","role":"Consultant Psychologist","photo":"assets/rashin.webp"},{"slug":"theresa","name":"Theresa P Thomas","role":"Consultant Psychologist","photo":"assets/theresa.webp"},{"slug":"christine","name":"Christine","role":"Consultant Psychologist","photo":"assets/christine.webp"},{"slug":"jasmin","name":"Jasmin","role":"Consultant Psychologist","photo":"assets/jasmin.webp"},{"slug":"fathima","name":"Fathima Sidhyc","role":"Consultant Psychologist","photo":"assets/fathima.webp"},{"slug":"ansha","name":"Ansha","role":"Psychologist","photo":"assets/ansha.webp"}];
+        const profileSlug = String(state.staffProfile || '').replace(/^\//, '').replace(/\.html$/, '') || firstName(state.staffName);
+        const profile = checkoutProfiles.find(item => item.slug === profileSlug || (profileSlug === 'rishin' && item.slug === 'rashin'));
+        $('review-therapist').textContent = profile ? profile.name : state.staffName;
+        $('review-role').textContent = profile ? profile.role : 'Your therapist';
+        if (profile) {
+            const photo = $('review-photo');
+            photo.addEventListener('error', () => { photo.hidden = true; $('review-photo-fallback').hidden = false; });
+            photo.src = '/' + profile.photo;
+            photo.hidden = false;
+            $('review-photo-fallback').hidden = true;
+        }
+        $('review-service').textContent = state.sessionType === 'couple' ? 'Couple therapy' : 'Individual therapy';
+        $('review-sessions').textContent = sessionCount + (sessionCount === 1 ? ' session' : ' sessions');
+        $('review-price').textContent = state.creditMode ? 'Prepaid' : money(state.price, state.currency);
+        $('review-date').textContent = date ? date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : state.date;
+        const timeParts = String(state.time).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        let timeDescription = String(state.time).replace(/^0/, '');
+        if (timeParts && Number(state.duration) > 0) {
+            const start = (Number(timeParts[1]) % 12 + (timeParts[3].toUpperCase() === 'PM' ? 12 : 0)) * 60 + Number(timeParts[2]);
+            const end = (start + Number(state.duration)) % 1440;
+            timeDescription += ' – ' + (Math.floor(end / 60) % 12 || 12) + ':' + String(end % 60).padStart(2, '0') + (end >= 720 ? ' PM' : ' AM');
+        }
+        $('review-time').textContent = timeDescription;
+        $('pay-session-count').textContent = sessionCount + (sessionCount === 1 ? ' session' : ' sessions');
         $('review-name').textContent = state.name;
         $('review-email').textContent = state.email;
         $('review-phone').textContent = state.phone;
@@ -1523,7 +1544,20 @@
             $('pay-online-info').hidden = true;
             payBtn.textContent = 'Confirm booking';
         } else {
-            payBtn.textContent = 'Agree & pay ' + money(state.price, state.currency);
+            payBtn.textContent = 'Agree & Pay';
+        }
+        if (sessionCount > 1 && !prepaid && !free) {
+            // Savings are derived from the same therapist's real single-session catalogue, never a fixed offer.
+            get('/api/services', { staff_id: state.staffId }).then(services => {
+                const singles = bookableServices(services, state.staffId, state).filter(service => !isPackage(service.name)
+                    && (service.currency || 'INR') === (state.currency || 'INR') && Number(service.price) > 0);
+                if (!singles.length) return;
+                const original = Math.min(...singles.map(service => Number(service.price))) * sessionCount;
+                if (original > Number(state.price)) {
+                    $('pay-original').textContent = money(original, state.currency);
+                    $('pay-original').hidden = false;
+                }
+            }).catch(() => {});
         }
         const idleLabel = payBtn.textContent;
         const consent = $('pay-consent');
@@ -1670,6 +1704,7 @@
         payBtn.addEventListener('click', async () => {
             if (!consent.checked) {
                 consent.parentElement.classList.add('needs-attention');
+                consent.focus();
                 setStatus(statusEl, 'Please tick the box to agree to the Terms & Conditions and Privacy Policy.', 'error');
                 return;
             }

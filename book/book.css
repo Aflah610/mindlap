@@ -2239,3 +2239,93 @@ body.schedule-choice-page { height: 100dvh; }
 .schedule-choice-page .modal-cta-box p { margin: 0; font-size: 12px; line-height: 1.4; }
 
 @media (max-height: 650px) { .schedule-choice-page #time-block { min-height: 64px; } }
+
+/* Review and consent before the existing secure payment flow. */
+body.checkout-choice-page { height: 100dvh; }
+.checkout-choice-page .checkout-choice-main { min-height: 0; }
+.checkout-choice-page .book-title { margin-bottom: 4px; }
+.checkout-lead { margin: 0 0 18px; color: #969aa4; font-size: 17px; line-height: 1.4; }
+.checkout-content { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto; padding: 2px 3px 8px; }
+.checkout-choice-page .checkout-review { flex-shrink: 0; padding: 14px; margin: 0; border: 1px solid #e8e8ef; border-radius: 15px; box-shadow: none; background: #fff; }
+.checkout-therapist { display: flex; align-items: center; gap: 13px; padding-bottom: 12px; }
+.checkout-therapist img, .checkout-photo-fallback { flex: 0 0 48px; width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: top; }
+.checkout-photo-fallback { display: grid; place-items: center; background: #edf4fa; color: #49617d; }
+.checkout-photo-fallback svg { width: 27px; height: 27px; }
+.checkout-photo-fallback[hidden], .checkout-therapist img[hidden] { display: none; }
+.checkout-therapist-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: #8b909d; }
+.checkout-therapist-main strong { color: #151a25; font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 500; }
+.checkout-edit { flex-shrink: 0; color: #6a7a8d; font-size: 12px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.checkout-service { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-top: 1px solid #f3f3f7; }
+.checkout-service > span { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.checkout-service strong { font-family: 'Outfit', sans-serif; color: #151a25; font-size: 18px; font-weight: 500; }
+.checkout-service > span > span { color: #8b909d; font-size: 14px; }
+.checkout-mode { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 12px 0; border-block: 1px solid #f0f0f5; font-size: 14px; }
+.checkout-mode strong { font-size: 13px; color: #667282; font-weight: 500; }
+.checkout-datetime { display: flex; gap: 12px; align-items: center; padding-top: 12px; }
+.checkout-datetime > div { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.checkout-datetime > div + div { border-left: 1px solid #eeeef5; padding-left: 12px; }
+.checkout-datetime > div > span:last-child { display: flex; flex-direction: column; gap: 4px; }
+.checkout-datetime small { color: #8b909d; font-size: 12px; }
+.checkout-datetime strong { font-size: 13px; font-weight: 500; color: #202633; }
+.checkout-detail-icon { flex: 0 0 30px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: #f2f5fb; color: #6a7b93; }
+.checkout-detail-icon svg { width: 18px; height: 18px; }
+.checkout-bill { flex-shrink: 0; padding: 14px; border: 1px solid #eeeef4; border-radius: 15px; background: #fafbfe; }
+.checkout-bill h2 { margin: 0 0 14px; color: #8992a1; font-size: 12px; text-transform: uppercase; letter-spacing: .07em; font-weight: 500; }
+.checkout-bill .pay-line { align-items: center; font-size: 14px; }
+.checkout-bill-prices { display: flex; gap: 12px; align-items: center; }
+.checkout-bill-prices s { color: #969ba5; font-size: 13px; }
+.checkout-bill-prices strong { color: #151a25; font-size: 17px; }
+.checkout-bill .pay-total { margin: 12px 0 0; padding-top: 12px; border-top: 1px solid #eeeef4; font-size: 16px; font-weight: 500; }
+.checkout-bill .pay-total strong { font-size: 20px; color: #151a25; }
+.checkout-client { flex-shrink: 0; padding: 2px 12px; color: #7c8494; font-size: 12px; }
+.checkout-client summary, .checkout-payment-info summary { cursor: pointer; }
+.checkout-client > a { display: inline-block; margin-top: 10px; }
+.checkout-client .review-list { margin-top: 10px; }
+.checkout-choice-page .pay-consent { flex-shrink: 0; margin: 0; padding: 14px; border: 1px solid #e9e9f2; border-radius: 14px; background: #fff; color: #9298a5; font-size: 13px; line-height: 1.5; }
+.checkout-choice-page .pay-consent a { font-weight: 400; color: #657286; text-decoration: underline; }
+.checkout-choice-page .pay-consent input { width: 19px; height: 19px; margin-top: 3px; }
+.checkout-payment-info { flex-shrink: 0; padding: 0 12px; color: #8a92a0; font-size: 11px; }
+.checkout-payment-info p { line-height: 1.5; margin-top: 8px; }
+.checkout-choice-page .booking-status { flex-shrink: 0; margin-top: 0; font-size: 13px; }
+.checkout-choice-page .checkout-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; gap: 16px; }
+.checkout-back-button { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; background: #edeef5; color: #333d50; }
+.checkout-back-button svg { width: 25px; height: 25px; }
+.checkout-choice-page #pay-btn { max-width: 75%; min-width: min(220px, 70%); font-weight: 500; white-space: normal; }
+.checkout-choice-page .hold-banner { margin: 0 0 10px; padding: 7px 8px; font-size: 11px; }
+.checkout-choice-page .hold-clock { font-size: 11px; }
+@media (max-width: 600px) {
+    .checkout-choice-page .checkout-choice-main { padding-inline: 18px; }
+    .checkout-choice-page .book-title { font-size: 29px; }
+    .checkout-lead { font-size: 15px; margin-bottom: 14px; }
+    .checkout-datetime { gap: 8px; flex-wrap: wrap; }
+    .checkout-datetime > .checkout-edit { margin-left: auto; }
+    .checkout-datetime > div { gap: 7px; }
+    .checkout-datetime > div + div { padding-left: 8px; }
+    .checkout-datetime strong { font-size: 12px; }
+    .checkout-detail-icon { flex-basis: 26px; width: 26px; height: 26px; }
+}
+@media (max-height: 650px) {
+    .checkout-choice-page .book-title { font-size: 26px; }
+    .checkout-lead { font-size: 13px; margin-bottom: 10px; }
+    .checkout-content { gap: 9px; }
+    .checkout-choice-page .checkout-review, .checkout-bill { padding: 10px; }
+    .checkout-therapist { padding-bottom: 9px; }
+    .checkout-therapist img, .checkout-photo-fallback { flex-basis: 38px; width: 38px; height: 38px; }
+    .checkout-therapist-main strong { font-size: 16px; }
+    .checkout-therapist-main { font-size: 12px; }
+    .checkout-service, .checkout-mode { padding-block: 9px; }
+    .checkout-service strong { font-size: 16px; }
+    .checkout-mode { font-size: 12px; }
+    .checkout-bill h2 { margin-bottom: 10px; }
+    .checkout-choice-page .pay-consent { padding: 10px; font-size: 12px; }
+}
+
+.checkout-content { line-height: 1.35; gap: 10px; }
+.checkout-datetime strong { line-height: 1.4; }
+
+@media (min-height: 651px) {
+    .checkout-choice-page .checkout-choice-main { padding-top: 12px; }
+    .checkout-choice-page .book-back { margin-bottom: 10px; }
+    .checkout-lead { margin-bottom: 10px; }
+    .checkout-content { gap: 8px; }
+}

@@ -3,6 +3,27 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - Review, consent and Agree & Pay design
+
+- Recreated Aflah's checkout reference with Almost there heading; therapist photo/name/role from existing
+  public profile metadata, editable session/package, online mode, date and duration-derived time range (IST),
+  bill summary, package saving when the same therapist's current single price supports it, consent card and
+  bottom Back / Agree & Pay controls. Real service price, currency and package session count retained.
+- Your details/notes and existing payment information remain available in expandable sections. Existing hold
+  countdown stays visible. Header/account badge retained. Core review/consent visible at 390x844; smaller
+  screens can scroll the review region while payment stays visible (320x568 checked, no page overflow).
+- Existing Terms & Conditions, Privacy Policy and online-therapy consent retained; no invented refund policy,
+  offline location or coupon capability. Consent stays unchecked by default and focuses if payment attempted
+  without it. Prepaid/free bookings still show Confirm booking with zero total; paid bookings use Agree & Pay.
+- Existing order/verify/abandon, prepaid/free endpoints, hold/idempotency and Razorpay processing unchanged.
+  Synthetic checks: required consent, controlled create-order error and enabled retry, details expansion,
+  accurate package saving, single-session no false discount, prepaid balance/zero total and free zero total.
+  No live payment/order/booking or message created. Preview removed real Razorpay SDK and used a local API
+  that rejects payment/booking attempts. Deleted preview script/server and rebuilt dist with real SDK/API back.
+- JS syntax, unique HTML IDs, public build, diff and all 13 existing payment/OTP regressions pass. Screenshot
+  saved; viewport reset. CSS v21 / JS v44 on all nine loading pages. Publishing; live verification follows.
+  Previously deferred booking logic issues remain open.
+
 ## 2026-10-28 - Codex - Date-first schedule screen from Aflah's reference
 
 - Schedule now uses the light single-column layout: therapist/service summary with Change, five visible date
