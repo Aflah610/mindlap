@@ -17,7 +17,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   OTP, booking, payment or client write. Auth/session/credit/payment logic unchanged.
 - JS syntax, public build, diff and all 13 payment/OTP regressions pass. Production dist has no fixture code.
   Global CSS v164, index JS v41 and book JS v47 updated on every loading page; generated pages rebuilt from
-  their normal templates. Isolated localhost preview stays separate. Publishing; live verification follows.
+  their normal templates. Isolated localhost preview stays separate. Deployment d73573b passed; live JS47,
+  home JS41/CSS164 and signed-out home Log In visibility verified in the browser.
   Previously deferred bugs remain open.
 
 ## 2026-10-28 - Codex - Prepaid screen matches the booking journey
