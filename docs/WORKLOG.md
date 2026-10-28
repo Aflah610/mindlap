@@ -18,7 +18,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   viewport reset. No live hold/booking/payment/message or client write.
 - JS syntax, public build, diff and all 13 payment/OTP regressions pass. Preview server/script removed, dist
   rebuilt with production API and no fixture code. CSS v22 / JS v45 on all nine loading pages.
-- Publishing; live verification follows. Previously deferred booking logic issues remain open.
+- Deployment 30901cc passed; live selected-date markup, JS v45 and CSS v22 verified with no fixture code.
+  Previously deferred booking logic issues remain open.
 
 ## 2026-10-28 - Codex - Review, consent and Agree & Pay design
 
