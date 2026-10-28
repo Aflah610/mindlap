@@ -16,7 +16,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   overflow. Screenshot saved. No OTP, payment, booking or live client record created during testing.
 - JS syntax, unique HTML IDs, public build, diff check and all 13 existing payment/OTP regressions pass.
   Removed local preview script and rebuilt dist; confirmed production API and no fixture code. Temporary
-  browser viewport restored. CSS v17 / JS v42 on all nine loading pages. Publishing; live verification follows.
+  browser viewport restored. CSS v17 / JS v42 on all nine loading pages. Deployment f069e09 passed; live
+  plan markup, CSS layout and JS icons verified, with production API retained and no fixture code.
   Previously deferred booking logic issues remain open.
 
 ## 2026-10-28 - Codex - Searchable country picker for OTP number entry
