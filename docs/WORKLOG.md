@@ -3,6 +3,22 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - Your details form matches Aflah's reference
+
+- Details step now uses the shared light single-column header and Your details heading/copy, icon inputs for
+  full name/email, a read-only shaded verified WhatsApp field, Use a different number link-style button and
+  full-width Review booking with arrow. Existing hold countdown retained. Optional notes and session information
+  remain in one expandable section below the primary button so the initial form stays compact.
+- Indian phone spacing is display-only; the original verified phone/token remains in state for booking. Existing
+  name/email validation, form trimming, draft/name updates, honeypot and checkout routing remain unchanged.
+- Synthetic local checks: empty-name error, invalid-email error, valid trimmed name/email and optional note
+  carried into checkout, read-only phone, and different-number route returned to /book/ verification. 390x736
+  and 320x568 fit without page scrolling and with Review booking visible. Screenshot saved; viewport reset.
+- No live booking/payment/OTP/message or client write. Removed local preview script/server, rebuilt dist and
+  confirmed production API retained with no fixture code. JS syntax, unique HTML IDs, public build, diff and
+  all 13 existing payment/OTP regressions pass. CSS v23 / JS v46 bumped on all nine loading pages.
+- Publishing; live verification follows. Previously deferred booking logic issues remain open.
+
 ## 2026-10-28 - Codex - Collapse date picker after choosing a day
 
 - Aflah clarified that after selection only the chosen day should remain and times should sit higher. Schedule

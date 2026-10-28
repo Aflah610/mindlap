@@ -2346,3 +2346,52 @@ body.checkout-choice-page { height: 100dvh; }
 .schedule-choice-page.date-picked .schedule-resume-note { padding-block: 7px; margin-bottom: 10px; }
 .schedule-choice-page.date-picked #date-block { margin-bottom: 12px; }
 @media (max-width: 350px) { .selected-date { padding: 8px; gap: 7px; } .selected-date strong { font-size: 12px; } .selected-date button { font-size: 11px; } }
+
+/* Client details: three clear icon fields and one primary review action. */
+.details-choice-page .details-choice-main { max-width: 680px; padding-bottom: 20px; }
+.details-choice-page .details-content { padding: 0; margin: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.details-choice-page .book-title { margin-bottom: 6px; }
+.details-lead { color: #9499a3; font-size: 17px; line-height: 1.5; margin: 0 0 24px; }
+.details-choice-page .booking-form { display: flex; flex-direction: column; gap: 20px; }
+.details-choice-page .booking-field { gap: 8px; }
+.details-choice-page .booking-field label { color: #262c37; font-size: 15px; font-weight: 500; }
+.details-input { display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px; border: 1px solid #e4e5ea; border-radius: 10px; background: #fff; }
+.details-input:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 3px #8e66de15; }
+.details-input > svg { flex: 0 0 23px; width: 23px; height: 23px; color: #8b929d; }
+.details-choice-page .details-input input { flex: 1; width: 0; min-width: 0; min-height: 54px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; outline: 0; box-shadow: none; color: #252c39; font-size: 16px; }
+.details-choice-page .details-input input::placeholder { color: #a0a5af; opacity: 1; }
+.details-readonly { background: #f8f9fc; }
+.details-change-number { align-self: flex-start; padding: 0; border: 0; background: none; color: #456985; font-size: 14px; line-height: 1.5; cursor: pointer; }
+.details-change-number:hover { text-decoration: underline; }
+.details-choice-page .details-review-button { display: flex; align-items: center; justify-content: center; gap: 16px; width: 100%; min-height: 54px; padding: 12px 18px; margin-top: 8px; border: 0; border-radius: 999px; background: #748198; color: #fff; font-size: 17px; font-weight: 500; box-shadow: none; }
+.details-choice-page .details-review-button:hover { background: var(--primary-color); transform: none; }
+.details-review-button svg { width: 24px; height: 24px; }
+.details-extra { color: #8892a1; font-size: 12px; }
+.details-extra summary { cursor: pointer; }
+.details-extra p { margin-top: 8px; }
+.details-extra textarea { margin-top: 10px; font-size: 16px; }
+.details-choice-page .booking-status { margin: 0; }
+.details-choice-page .hold-banner { padding: 8px 10px; margin-bottom: 14px; font-size: 11px; }
+.details-choice-page .hold-clock { font-size: 11px; }
+@media (max-width: 600px) {
+    .details-lead { font-size: 15px; margin-bottom: 22px; }
+    .details-choice-page .booking-form { gap: 18px; }
+    .details-choice-page .booking-field label { font-size: 14px; }
+    .details-input { min-height: 50px; padding-inline: 14px; }
+    .details-choice-page .details-input input { min-height: 48px; }
+    .details-choice-page .details-review-button { min-height: 50px; font-size: 16px; }
+}
+@media (max-height: 650px) {
+    .details-choice-page .book-title { font-size: 26px; }
+    .details-lead { font-size: 14px; margin-bottom: 14px; }
+    .details-choice-page .booking-form { gap: 12px; }
+    .details-choice-page .booking-field { gap: 5px; }
+    .details-input { min-height: 44px; }
+    .details-choice-page .details-input input { min-height: 42px; }
+    .details-choice-page .details-review-button { min-height: 46px; margin-top: 2px; }
+    .details-choice-page .hold-banner { margin-bottom: 10px; padding-block: 6px; }
+}
+
+.details-choice-page .details-choice-main { padding-bottom: 10px; }
+.details-choice-page .booking-field label { line-height: 1.4; }
+.details-extra > label { display: block; margin-top: 12px; }

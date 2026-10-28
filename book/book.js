@@ -1468,7 +1468,7 @@
         // A time is picked: from here on the booking can be resumed from the home page.
         if (!state.rebookOrderId) saveDraft(state);
 
-        $('details-phone').value = state.phone || '';
+        $('details-phone').value = (state.phone || '').replace(/^\+91(\d{5})(\d{5})$/, '+91 $1 $2');
         $('details-name').value = state.name || '';
         $('details-email').value = state.email || '';
         $('details-notes').value = state.notes || '';
