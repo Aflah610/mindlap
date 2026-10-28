@@ -21,7 +21,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   No live payment/order/booking or message created. Preview removed real Razorpay SDK and used a local API
   that rejects payment/booking attempts. Deleted preview script/server and rebuilt dist with real SDK/API back.
 - JS syntax, unique HTML IDs, public build, diff and all 13 existing payment/OTP regressions pass. Screenshot
-  saved; viewport reset. CSS v21 / JS v44 on all nine loading pages. Publishing; live verification follows.
+  saved; viewport reset. CSS v21 / JS v44 on all nine loading pages. Deployment 1df87d4 passed; live checkout
+  markup, JS v44 and CSS v21 verified, with no fixture code.
   Previously deferred booking logic issues remain open.
 
 ## 2026-10-28 - Codex - Date-first schedule screen from Aflah's reference
