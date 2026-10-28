@@ -1508,7 +1508,8 @@ export default {
         startOfToday.setHours(0, 0, 0, 0);
 
         const visible = appointments.filter(
-          (a) => a.booking_status && a.booking_status !== 'Failed' && a.booking_status !== 'Creating Appointment'
+          (a) => a.booking_status && !/fail|pending|creating/i.test(a.booking_status) &&
+            ['paid', 'prepaid'].includes(String(a.payment_status || '').toLowerCase().replace(/[\s-]+/g, '_'))
         );
 
         const enriched = visible

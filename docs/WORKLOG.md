@@ -3,6 +3,27 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - Your bookings dashboard, paid sessions only
+
+- Aflah wants View bookings to show credits, paid upcoming sessions and history, matching today's booking
+  journey with restrained violet. Rebuilt /account/ on a white canvas: neutral balance cards, Use credits link,
+  responsive tabs and clear date/therapist/service/time/reference/payment cards. Laptop uses balance sidebar.
+  Home-only account badge/log out rule retained; this page has Back to site and no profile badge.
+- Worker /api/sessions now excludes unpaid/pending/failed/unknown-payment attempts and paid visits still needing
+  a new time. Only paid/prepaid-confirmed visits qualify, including full credit coverage (paid with zero cash due).
+  Same policy applied to legacy Creator handler and defensively to browser data before account eligibility/counts.
+  Failed-only users with no credits return to therapists. Existing recovery routes remain available.
+- API failures return 503 instead of false empty history. Browser keeps retry/error states and does not interpret
+  unavailable history/balance as a new client or display an unknown balance as zero. Credit balance shows even at
+  zero when successfully loaded; a positive balance links through the existing verified prepaid flow.
+- All 15 account/payment/OTP regressions pass; account tests exercise the actual Worker handler and browser
+  eligibility functions with synthetic responses. Syntax, public build and Wrangler 4 dry-run pass.
+  Browser: failed-only redirect, API retry, paid history counts, keyboard tabs, credit-only/empty states and
+  Use credits navigation checked. 320px phone and laptop checked without horizontal overflow. Screenshots use
+  sample Alex data only and are outside the repo; no real charges, messages or live client-data writes.
+- Book JS v48/CSS v26 updated across loading pages. AGENTS.md records paid-only client booking policy.
+  Publishing Worker and website now; live asset/deployment verification follows.
+
 ## 2026-10-28 - Codex - Home services show four options with View more
 
 - Aflah requested four entries under How we can help, revealing the rest only after View more.

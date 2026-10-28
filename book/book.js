@@ -96,6 +96,12 @@
         } catch (err) { /* badge falls back to an icon */ }
     }
 
+    // Also defend against an older cached API reply: an attempt is not an account session.
+    function confirmedAccountSession(session) {
+        const payment = String(session.payment_status || '').toLowerCase().replace(/[\s-]+/g, '_');
+        return ['paid', 'prepaid'].includes(payment) && !/fail|pending|creating/i.test(String(session.booking_status || ''));
+    }
+
     /** Prepaid credits + booked sessions for the logged-in client. Returns null if the login expired. */
     async function loadAccount(token) {
         const [sessions, credits] = await Promise.all([
@@ -103,7 +109,11 @@
             post('/api/credits/check', { session_token: token }).catch(() => null)
         ]);
         if ((sessions && handleAuthError(sessions.res, sessions.data)) || (credits && handleAuthError(credits.res, credits.data))) return null;
-        const data = sessions && sessions.res.ok ? sessions.data : null;
+        const rawData = sessions && sessions.res.ok ? sessions.data : null;
+        const data = rawData ? Object.assign({}, rawData, {
+            upcoming: (Array.isArray(rawData.upcoming) ? rawData.upcoming : []).filter(confirmedAccountSession),
+            past: (Array.isArray(rawData.past) ? rawData.past : []).filter(confirmedAccountSession)
+        }) : null;
         const creditCount = credits && credits.res.ok && credits.data.has_credits ? Number(credits.data.credits) || 0 : 0;
         const wallet = credits && credits.res.ok ? Number(credits.data.wallet_credit) || 0 : 0;
         const booked = data ? (data.upcoming || []).length + (data.past || []).length : 0;
@@ -111,8 +121,9 @@
             data,
             name: data && data.customer && data.customer.name,
             credits: creditCount,
+            creditsKnown: !!(credits && credits.res.ok),
             wallet,
-            known: !!data || !!(credits && credits.res.ok),
+            known: !!data && !!(credits && credits.res.ok),
             hasAccount: creditCount > 0 || wallet > 0 || booked > 0
         };
     }
@@ -1867,7 +1878,7 @@
 
         const data = account.data;
         const name = loadAuth().name || (data && data.customer && data.customer.name);
-        $('account-greeting').textContent = name ? 'Hi, ' + name : 'Hi there';
+        $('account-greeting').textContent = name ? 'Welcome back, ' + name : 'Welcome back';
 
         if (account.wallet > 0) {
             const box = $('account-wallet');
@@ -1875,16 +1886,20 @@
             box.querySelector('[data-wallet]').textContent = money(account.wallet, 'INR');
         }
 
-        if (account.credits > 0) {
+        if (account.creditsKnown) {
             const box = $('account-credits');
             box.hidden = false;
             box.querySelector('[data-credits]').textContent = account.credits;
-            box.querySelector('[data-credits-label]').textContent = account.credits === 1 ? 'prepaid session left' : 'prepaid sessions left';
+            box.querySelector('[data-credits-label]').textContent = account.credits === 1 ? 'prepaid session available' : 'prepaid sessions available';
+            $('account-use-credits').hidden = !(account.credits > 0);
+        } else {
+            $('account-balance-error').hidden = false;
         }
 
         const sessionsEl = $('account-sessions');
         if (!data) {
-            sessionsEl.innerHTML = '<p class="booking-slots-empty">Could not load your sessions right now. Please try again shortly.</p>';
+            sessionsEl.innerHTML = '<div class="account-empty"><strong>We could not load your sessions</strong><p>Please try again in a moment.</p><button type="button" class="btn btn-outline" id="account-retry">Try again</button></div>';
+            $('account-retry').addEventListener('click', () => window.location.reload());
             return;
         }
 
@@ -1911,15 +1926,18 @@
                   '<span class="day">' + d.getDate() + '</span>' +
                   '<span class="dow">' + d.toLocaleDateString('en-IN', { weekday: 'short' }) + '</span>'
                 : '<span class="day">?</span>';
-            const meta = [clock(sess.start_time), sess.service_name].filter(Boolean).map(escapeHtml).join('<span class="dot">·</span>');
+            const meta = [clock(sess.start_time), clock(sess.end_time)].filter(Boolean).map(escapeHtml).join(' – ');
+            const paymentText = Number(sess.amount) > 0 ? 'Paid ' + money(sess.amount, 'INR') : 'Paid';
             return '<li class="account-session">' +
                 '<div class="account-date">' + tile + '</div>' +
                 '<div class="account-session-main">' +
+                    '<div class="account-session-top"><span class="account-badge ' + statusClass(sess.booking_status) + '">' + escapeHtml(sess.booking_status || 'Confirmed') + '</span>' +
+                        (sess.reference ? '<span class="account-reference">' + escapeHtml(sess.reference) + '</span>' : '') + '</div>' +
                     '<strong>' + escapeHtml(sess.therapist_name || 'Your therapist') + '</strong>' +
-                    '<span class="account-meta">' + meta + '</span>' +
-                    (sess.amount > 0 ? '<span class="account-amount">' + escapeHtml(money(sess.amount, 'INR')) + '</span>' : '') +
+                    '<span class="account-service">' + escapeHtml(sess.service_name || 'Therapy session') + '</span>' +
+                    '<span class="account-meta">' + meta + ' <span class="account-timezone">IST</span></span>' +
+                    '<span class="account-amount">' + escapeHtml(paymentText) + '</span>' +
                 '</div>' +
-                '<span class="account-badge ' + statusClass(sess.booking_status) + '">' + escapeHtml(sess.booking_status || '') + '</span>' +
             '</li>';
         };
 
@@ -1929,24 +1947,37 @@
             all: (data.upcoming || []).concat(data.past || [])
         };
         const empty = {
-            upcoming: 'No upcoming sessions. <a href="/#therapists">Book a session</a>',
-            past: 'No past sessions yet.',
-            all: 'No sessions yet.'
+            upcoming: '<strong>No upcoming sessions</strong><p>Your next confirmed session will appear here.</p>',
+            past: '<strong>No past sessions yet</strong><p>Your session history will appear here.</p>',
+            all: '<strong>No confirmed sessions yet</strong><p>Choose a therapist when you are ready to begin.</p>'
         };
         const tabs = $('account-tabs');
         const show = (key) => {
-            tabs.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === key)));
+            tabs.querySelectorAll('[data-tab]').forEach((b) => {
+                b.setAttribute('aria-selected', String(b.dataset.tab === key));
+                b.tabIndex = b.dataset.tab === key ? 0 : -1;
+            });
+            sessionsEl.setAttribute('aria-labelledby', 'account-tab-' + key);
             sessionsEl.innerHTML = groups[key].length
                 ? '<ul class="account-list">' + groups[key].map(card).join('') + '</ul>'
-                : '<p class="account-empty">' + empty[key] + '</p>';
+                : '<div class="account-empty">' + empty[key] + '</div>';
         };
         tabs.querySelectorAll('[data-tab]').forEach((b) => {
             const n = groups[b.dataset.tab].length;
             b.querySelector('.count').textContent = n;
             b.addEventListener('click', () => show(b.dataset.tab));
+            b.addEventListener('keydown', (event) => {
+                const buttons = Array.from(tabs.querySelectorAll('[data-tab]'));
+                const current = buttons.indexOf(b);
+                const next = event.key === 'ArrowRight' ? (current + 1) % buttons.length : event.key === 'ArrowLeft' ? (current + buttons.length - 1) % buttons.length : event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : -1;
+                if (next < 0) return;
+                event.preventDefault();
+                show(buttons[next].dataset.tab);
+                buttons[next].focus();
+            });
         });
         tabs.hidden = false;
-        show(groups.upcoming.length ? 'upcoming' : 'past');
+        show(groups.upcoming.length || !groups.past.length ? 'upcoming' : 'past');
     }
 
     // -----------------------------------------------------------------

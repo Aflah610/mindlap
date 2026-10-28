@@ -41,6 +41,9 @@ project for the same owner, Aflah. Keep it true: when something here changes, up
 - **Account / Log out:** the profile badge appears only on the home page; signed-out visitors see Log In there.
   Booking steps and the account page show Back to site without an account badge. Log out stays only inside the
   home-page profile badge menu, including on mobile.
+- **View bookings:** `/account/` shows prepaid balances and paid/prepaid-confirmed upcoming sessions and history.
+  Failed or pending payment attempts belong to recovery, never account eligibility or session counts. Match the
+  light booking-journey UI with neutral cards and restrained violet accents.
 - Brand colour is violet (`--primary-color #4A2E80`, `--accent-color #8E66DE`).
 - Copy is in plain English (British spelling) and without long dashes.
 - Never put the WhatsApp number or other contact details in a URL query except the existing `wa.me` links.

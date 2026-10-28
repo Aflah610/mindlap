@@ -204,8 +204,9 @@ const zohoDate = (isoDate) => {
 
 // ---- Bookings helpers -------------------------------------------------------
 
-async function bookingsForPhone(env, phone, view) {
+async function bookingsForPhone(env, phone, view, strict = false) {
   const r = await waky(env, 'GET', '/bookings?phone=' + encodeURIComponent(phone) + '&view=' + view);
+  if (strict && (!r.ok || !Array.isArray(r.data))) throw new Error('Could not load confirmed sessions');
   return r.ok && Array.isArray(r.data) ? r.data : [];
 }
 
@@ -653,7 +654,11 @@ export async function handleWaky(request, env, url, headers, h) {
   if (path === '/api/sessions' && request.method === 'POST') {
     const { s } = await session();
     if (!s) return reverify();
-    const [upcoming, past] = await Promise.all([bookingsForPhone(env, s.phone, 'upcoming'), bookingsForPhone(env, s.phone, 'past')]);
+    const lists = await Promise.all([bookingsForPhone(env, s.phone, 'upcoming', true), bookingsForPhone(env, s.phone, 'past', true)]).catch(() => null);
+    if (!lists) return json({ error: 'Could not load your sessions. Please try again shortly.' }, 503);
+    // Payment attempts belong to recovery, not a client's confirmed session history.
+    const confirmed = (b) => b.payment && b.payment.status === 'paid' && b.payment.action !== 'choose_new_time';
+    const [upcoming, past] = lists.map(items => items.filter(confirmed));
     const map = (b) => {
       const t = isoToIst(b.start);
       const end = isoToIst(b.end);
