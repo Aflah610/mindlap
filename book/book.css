@@ -2329,3 +2329,20 @@ body.checkout-choice-page { height: 100dvh; }
     .checkout-lead { margin-bottom: 10px; }
     .checkout-content { gap: 8px; }
 }
+
+/* After choosing, retain one compact date row and give the room back to times. */
+.schedule-choice-page .date-strip[hidden], .schedule-choice-page .pick-label[hidden], .selected-date[hidden] { display: none; }
+.selected-date { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #e0eaf6; border-radius: 12px; background: #f5f8fd; }
+.selected-date-icon { flex: 0 0 25px; color: #647e9a; }
+.selected-date-icon svg { width: 23px; height: 23px; }
+.selected-date > span:nth-child(2) { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.selected-date small { color: #89919e; font-size: 11px; line-height: 1.3; }
+.selected-date strong { color: #263d56; font-size: 14px; font-weight: 500; line-height: 1.35; }
+.selected-date button { margin-left: auto; flex-shrink: 0; padding: 8px 0 8px 6px; border: 0; background: none; color: #546f8b; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.selected-date button:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 3px; border-radius: 3px; }
+.schedule-choice-page.date-picked .book-back { margin-bottom: 8px; }
+.schedule-choice-page.date-picked .book-title { margin-bottom: 12px; }
+.schedule-choice-page.date-picked .schedule-session { padding-block: 8px; margin-bottom: 10px; }
+.schedule-choice-page.date-picked .schedule-resume-note { padding-block: 7px; margin-bottom: 10px; }
+.schedule-choice-page.date-picked #date-block { margin-bottom: 12px; }
+@media (max-width: 350px) { .selected-date { padding: 8px; gap: 7px; } .selected-date strong { font-size: 12px; } .selected-date button { font-size: 11px; } }

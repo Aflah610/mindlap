@@ -1081,7 +1081,7 @@
         if (new URLSearchParams(window.location.search).get('resume') === 'taken') {
             // From "Resume your booking": everything is kept except the time.
             const note = document.createElement('div');
-            note.className = 'modal-cta-box';
+            note.className = 'modal-cta-box schedule-resume-note';
             note.innerHTML = '<p>Your earlier time is no longer available. Pick a new date and time - your session and details are saved.</p>';
             $('date-block').parentNode.insertBefore(note, $('date-block'));
         }
@@ -1116,6 +1116,7 @@
         let holding = false;
         let hold = state.hold || null; // { staffId, date, time, until }
         const pick = { date: state.date || null, time: state.time || null, service: null };
+        let datePickerOpen = !pick.date;
 
         function slotMinutes(slot) {
             const m = String(slot).trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
@@ -1150,7 +1151,7 @@
         }
 
         function refresh() {
-            const ready = pick.date && pick.time && pick.service && holdMatchesPick();
+            const ready = !datePickerOpen && pick.date && pick.time && pick.service && holdMatchesPick();
             nextBtn.disabled = !ready || holding;
             if (ready) {
                 const line = escapeHtml(pick.service.name) + (rebook ? ' · already paid' : state.creditMode ? ' · prepaid' : ' · ' + money(pick.service.price, pick.service.currency));
@@ -1167,7 +1168,7 @@
                 });
             } else {
                 clearInterval(holdTimer);
-                footerSummary.textContent = !pick.date ? 'Pick a date to see open times.'
+                footerSummary.textContent = datePickerOpen || !pick.date ? 'Pick a date to see open times.'
                     : !pick.time ? 'Pick a time.' : 'Holding your time…';
             }
             renderSummary(Object.assign({}, state, {
@@ -1209,6 +1210,20 @@
             }
         }
 
+        $('change-date').addEventListener('click', () => {
+            datePickerOpen = true;
+            ++dateRequest; // Ignore an availability response from before reopening the picker.
+            document.body.classList.remove('date-picked');
+            $('selected-date').hidden = true;
+            $('pick-date').hidden = false;
+            dateStrip.hidden = false;
+            $('change-date').setAttribute('aria-expanded', 'true');
+            $('time-block').hidden = true;
+            refresh();
+            const selected = dateStrip.querySelector('[aria-checked="true"]') || dateStrip.querySelector('.date-chip');
+            if (selected) selected.focus();
+        });
+
         dateStrip.addEventListener('keydown', event => {
             if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
             const dates = Array.from(dateStrip.querySelectorAll('.date-chip'));
@@ -1224,6 +1239,7 @@
         async function chooseDate(iso, restoring) {
             if (!restoring && pick.date !== iso) pick.time = null;
             pick.date = iso;
+            datePickerOpen = false;
             dateStrip.querySelectorAll('[role="radio"]').forEach((el) => el.setAttribute('aria-checked', String(el.dataset.value === iso)));
             dateStrip.querySelectorAll('[role="radio"]').forEach(el => { el.tabIndex = el.dataset.value === iso ? 0 : -1; });
             const chip = dateStrip.querySelector('[data-value="' + iso + '"]');
@@ -1235,11 +1251,19 @@
                 }
                 $('date-month').textContent = parseIsoDate(iso).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
             }
+            $('selected-date-label').textContent = parseIsoDate(iso).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+            $('selected-date').hidden = false;
+            $('pick-date').hidden = true;
+            dateStrip.hidden = true;
+            $('change-date').setAttribute('aria-expanded', 'false');
+            document.body.classList.add('date-picked');
+            if (!restoring) $('change-date').focus();
             releaseIfStale();
             setStatus(statusEl, '');
             refresh();
 
             $('time-block').hidden = false;
+            if (!restoring) $('time-block').scrollTop = 0;
             slotsWrap.innerHTML = '<p class="booking-slots-loading">Finding open times…</p>';
             const request = ++dateRequest;
             const results = await Promise.all(candidates.map((s) =>

@@ -3,6 +3,23 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - Collapse date picker after choosing a day
+
+- Aflah clarified that after selection only the chosen day should remain and times should sit higher. Schedule
+  now replaces the date heading/chip strip with a compact Selected date row and Change date button. Tightened
+  spacing above it, including the resume notice. The 30-day picker reopens on Change date and receives focus.
+- While choosing another date, times hide and Continue disables. Choosing a day collapses the picker, resets
+  time scrolling and shows live availability; a changed date still clears the previous time and releases stale
+  holds. Reopening invalidates old availability responses. Same-day selections can retain an existing hold.
+  Saved-date restore and next-day recovery also use the collapsed selected row. No backend/pricing changes.
+- Synthetic browser checked initial picker, selected Thursday row only, Change date reopening with times hidden
+  and Continue disabled, successful hold, different-day reset, empty Friday and next-day recovery to Saturday.
+  Resume notice included; 390x736 and 320x568 fit without page overflow, Continue visible. Screenshot saved and
+  viewport reset. No live hold/booking/payment/message or client write.
+- JS syntax, public build, diff and all 13 payment/OTP regressions pass. Preview server/script removed, dist
+  rebuilt with production API and no fixture code. CSS v22 / JS v45 on all nine loading pages.
+- Publishing; live verification follows. Previously deferred booking logic issues remain open.
+
 ## 2026-10-28 - Codex - Review, consent and Agree & Pay design
 
 - Recreated Aflah's checkout reference with Almost there heading; therapist photo/name/role from existing

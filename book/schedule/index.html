@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css?v=129">
-    <link rel="stylesheet" href="/book/book.css?v=21">
+    <link rel="stylesheet" href="/book/book.css?v=22">
 </head>
 
 <body class="book-page verify-page plan-choice-page schedule-choice-page" data-page="schedule">
@@ -39,6 +39,11 @@
     
                 <section class="pick-block" id="date-block" aria-labelledby="pick-date">
                     <h2 class="pick-label" id="pick-date"><span class="pick-num">1</span>Date<small id="date-month"></small></h2>
+                    <div class="selected-date" id="selected-date" hidden>
+                        <span class="selected-date-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6m10-6v6M3 11h18"/></svg></span>
+                        <span><small>Selected date</small><strong id="selected-date-label"></strong></span>
+                        <button type="button" id="change-date" aria-controls="date-strip" aria-expanded="false">Change date</button>
+                    </div>
                     <div class="date-strip" id="date-strip" role="radiogroup" aria-labelledby="pick-date"><p class="booking-slots-loading">Loading dates…</p></div>
                 </section>
     
@@ -57,7 +62,7 @@
             </div>
         </main>
 
-    <script src="/book/book.js?v=44"></script>
+    <script src="/book/book.js?v=45"></script>
 </body>
 
 </html>
