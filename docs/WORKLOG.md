@@ -20,7 +20,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
 - All 13 existing Worker regressions, JS syntax, HTML unique IDs, public build and diff checks pass. Removed fake
   server/script and test-only endpoint/session fixture, rebuilt dist and verified production API unchanged.
   Temporary viewport reset. book.css v15 and book.js v40 bumped on every loading page.
-- Publishing through normal main deployment; live assets to be checked. Nine booking logic issues remain deferred.
+- Deployment 97b896c passed. Live OTP markup, session cards, CSS v15 and JS v40 verified, including the original
+  production API and absence of test fixtures. Nine booking logic issues remain deferred.
 
 ## 2026-10-28 - Codex - OTP screen redesigned from Aflah's reference
 
