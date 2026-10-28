@@ -17,17 +17,11 @@ sys.path.insert(0, os.path.dirname(__file__))
 from content import SERVICES, HUB_LIST, WHY  # noqa: E402
 
 SITE = 'https://mindlap.in'
-WA = 'https://wa.me/917594000774?text='
 PHONE_TEL = '+917594000774'
 PHONE_SHOW = '+91 75940 00774'
 BY_SLUG = {s['slug']: s for s in SERVICES}
 
 e = html.escape
-
-
-def wa(text):
-    from urllib.parse import quote
-    return WA + quote(text)
 
 
 def read(path):
@@ -121,19 +115,17 @@ def crumb_schema(items):
     }
 
 
-def wa_button(label, message, cls='sv-btn'):
-    return (f'<a class="{cls}" href="{e(wa(message))}" target="_blank" rel="noopener">{e(label)}'
+def booking_button(label, href='/book/', cls='sv-btn'):
+    return (f'<a class="{cls}" href="{e(href)}">{e(label)}'
             '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>')
 
 
 def aside(service_name):
-    msg = f'Hello Mindlap, I would like to book {service_name}.'
     return f'''<aside class="sv-aside">
             <div class="sv-aside-card">
                 <p class="sv-aside-kicker">Book a session</p>
-                <p class="sv-aside-text">Message our coordinator. Tell us a little about what you are looking for and we will suggest a psychologist and a time that suits you.</p>
-                {wa_button('Chat on WhatsApp', msg, 'sv-btn sv-btn-block')}
-                <a class="sv-aside-call" href="tel:{PHONE_TEL}">or call {PHONE_SHOW}</a>
+                <p class="sv-aside-text">Choose a psychologist, pick a plan and find a time that suits you. Complete your booking securely online.</p>
+                {booking_button('Book a session', '/book/', 'sv-btn sv-btn-block')}
                 <ul class="sv-aside-facts">
                     <li>Online video sessions</li>
                     <li>In Malayalam</li>
@@ -160,7 +152,7 @@ def faqs_html(faqs):
     return f'<h2>Frequently Asked Questions</h2>\n                <div class="sv-faqs">{rows}</div>'
 
 
-def close_band(heading, paras, label, message):
+def close_band(heading, paras, label, href='/book/'):
     ps = ''.join(f'<p>{e(p)}</p>' for p in paras)
     return f'''<section class="sv-close">
         <div class="sv-wrap sv-close-inner">
@@ -168,7 +160,7 @@ def close_band(heading, paras, label, message):
                 <h2>{e(heading)}</h2>
                 {ps}
             </div>
-            {wa_button(label, message, 'sv-btn sv-btn-light')}
+            {booking_button(label, href, 'sv-btn sv-btn-light')}
         </div>
     </section>'''
 
@@ -244,7 +236,7 @@ def build_service(s):
         {aside(s['short'])}
     </div>
 
-    {close_band(s['close'][0], s['close'][1], s['close'][2], f"Hello Mindlap, I would like to book {s['short']}.")}
+    {close_band(s['close'][0], s['close'][1], s['close'][2], '/book/')}
 
     {related(s['slug'])}
     </main>'''
@@ -315,7 +307,7 @@ def build_hub():
         <p>Mental health support should be accessible wherever you are. Mindlap is committed to making online psychological consultation and mental health support more accessible to Malayalees.</p>
     </section>
 
-    {close_band('Need Support?', ['You do not have to wait until things become overwhelming before seeking support.', 'If something is affecting your thoughts, emotions, relationships, or everyday life, talking to a professional can be a positive step.'], 'Book an online consultation', 'Hello Mindlap, I would like to book an online psychological consultation.')}
+    {close_band('Need Support?', ['You do not have to wait until things become overwhelming before seeking support.', 'If something is affecting your thoughts, emotions, relationships, or everyday life, talking to a professional can be a positive step.'], 'Book an online consultation', '/book/')}
     </main>'''
     schema = {'@context': 'https://schema.org', '@graph': [
         crumb_schema([('Home', '/'), ('Services', '/services/')]),
@@ -337,9 +329,9 @@ def build_kerala():
                ('Emotional well-being', 'emotional-support-malayalam'), ('ADHD-related concerns', 'adhd-consultation-malayalam'),
                ('Panic attacks', 'panic-attack-counselling-malayalam'), ('Personal and emotional challenges', 'online-psychological-consultation-malayalam')]
     links = ''.join(f'<li><a href="/services/{s}/">{e(n)}</a></li>' for n, s in support)
-    steps = [('Contact Mindlap', 'Reach out to our team and let us know that you are interested in an online counselling session.'),
-             ('Share your requirements', 'Tell our coordinator about the type of support you are looking for and your preferred consultation details.'),
-             ('Schedule your consultation', 'The Mindlap team will help you with the available consultation options and suitable timing.'),
+    steps = [('Verify your number', 'Start online and verify your WhatsApp number with a code.'),
+             ('Choose your session', 'Choose your psychologist, session type and plan.'),
+             ('Confirm your time', 'Choose a date and time, review the details and pay securely to confirm.'),
              ('Attend your online session', 'Once your consultation is scheduled, attend the session online from a suitable private space.')]
     step_html = ''.join(f'<li><span class="sv-step-n">{i + 1}</span><div><h3>{e(t)}</h3><p>{e(d)}</p></div></li>' for i, (t, d) in enumerate(steps))
     faqs = [('Is online counselling available in Malayalam?', 'Yes. Mindlap provides online counselling in Malayalam, subject to professional and service availability.'),
@@ -384,7 +376,7 @@ def build_kerala():
         {faqs_html(faqs)}
     </section>
 
-    {close_band('Book Your Consultation', ['You do not need to wait until everything feels overwhelming before asking for support.', 'If something has been affecting your thoughts, emotions, relationships, or everyday life, taking the first step can make a difference.'], 'Book an online counselling session', 'Hello Mindlap, I would like to book an online counselling session.')}
+    {close_band('Book Your Consultation', ['You do not need to wait until everything feels overwhelming before asking for support.', 'If something has been affecting your thoughts, emotions, relationships, or everyday life, taking the first step can make a difference.'], 'Book an online counselling session', '/book/')}
     </main>'''
     schema = {'@context': 'https://schema.org', '@graph': [
         crumb_schema([('Home', '/'), ('Online Counselling in Kerala', '/online-counselling-kerala/')]),
@@ -426,11 +418,11 @@ def build_about():
 
                 <h2>How we work</h2>
                 <p>Our psychologists use evidence-based approaches such as {e(', '.join(methods))}, chosen to fit each person's needs and pace. What you share stays private: how we collect, store and protect your information is explained in our <a href="/privacy">privacy policy</a>.</p>
-                <p>Booking is simple. Choose a psychologist and a time online, or message our coordinator on WhatsApp and we will find a time that suits you.</p>
+                <p>Booking is simple. Choose a psychologist, select your session and plan, then pick a date and time. Pay securely online to confirm your booking.</p>
 
                 <h2>Where to find us</h2>
                 <p>Mindlap, Phase 1, 3rd Floor, Hilite Business Park, Hilite City, NH 66, Kozhikode, Kerala 673014.<br>
-                Phone and WhatsApp: <a href="tel:{PHONE_TEL}">{PHONE_SHOW}</a> · Email: <a href="mailto:support@mindlap.in">support@mindlap.in</a></p>
+                Phone: <a href="tel:{PHONE_TEL}">{PHONE_SHOW}</a> · Email: <a href="mailto:support@mindlap.in">support@mindlap.in</a></p>
         </article>
         {aside('a therapy session')}
     </div>
@@ -442,7 +434,7 @@ def build_about():
         </div>
     </section>
 
-    {close_band('Talk to someone who understands', ['Tell our coordinator a little about what you are looking for, and we will help you choose a psychologist and a time.'], 'Message us on WhatsApp', 'Hello Mindlap, I would like to know more about therapy sessions.')}
+    {close_band('Talk to someone who understands', ['Choose your psychologist, session plan and appointment time in our online booking flow.'], 'Book a session', '/book/')}
     </main>'''
     schema = {
         '@context': 'https://schema.org',

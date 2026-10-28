@@ -44,6 +44,9 @@ project for the same owner, Aflah. Keep it true: when something here changes, up
 - **View bookings:** `/account/` shows prepaid balances and paid/prepaid-confirmed upcoming sessions and history.
   Failed or pending payment attempts belong to recovery, never account eligibility or session counts. Match the
   light booking-journey UI with neutral cards and restrained violet accents.
+- **Booking navigation:** all booking buttons use `/book/`, retaining `?therapist=Name` when a therapist is chosen.
+  No WhatsApp navigation links anywhere, including self-check results, service/profile pages and floating/mobile
+  shortcuts. WhatsApp remains the delivery channel for OTPs and reminders; support can use email or phone.
 - Brand colour is violet (`--primary-color #4A2E80`, `--accent-color #8E66DE`).
 - Copy is in plain English (British spelling) and without long dashes.
 - Never put the WhatsApp number or other contact details in a URL query except the existing `wa.me` links.

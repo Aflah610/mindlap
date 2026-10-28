@@ -92,7 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryGrid = document.getElementById('category-grid');
 
     if (categoryGrid) {
-        const WA_NUMBER = '917594000774';
 
         const SCALE = [
             { value: 0, label: 'Never' },
@@ -600,9 +599,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const needsCrisisNote = typeof current.crisisIndex === 'number' &&
                 answers[current.crisisIndex] >= 2;
 
-            const waText = 'Hello Mindlap, I completed the self-check (' + current.label + ' - ' + band.label +
-                ') and would like to book a therapy session with ' + therapist.name + '.';
-
             const crisisBlock = needsCrisisNote
                 ? '<div class="result-crisis">' +
                     '<strong>Please reach out today.</strong>' +
@@ -641,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 '</div>' +
                 '<div class="result-actions">' +
                     '<button type="button" class="btn btn-outline" id="assessment-restart">Start over</button>' +
-                    '<a href="https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(waText) + '" target="_blank" class="btn btn-primary">Book a session</a>' +
+                    '<a href="/book/?therapist=' + encodeURIComponent(therapist.name.split(' ')[0]) + '" class="btn btn-primary">Book a session</a>' +
                 '</div>';
 
             screens.result.querySelector('#assessment-restart').addEventListener('click', reset);

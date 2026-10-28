@@ -3,6 +3,23 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-29 - Codex - All website bookings use our booking flow
+
+- Aflah removed WhatsApp redirects everywhere: home/header/hero/CTA, all six therapist cards/profiles,
+  self-check recommendation, service/hub/about/Kerala pages, floating and mobile shortcuts now use /book/.
+  Therapist selections retain their first-name query; self-check scores/answers are not put in the URL.
+- Replaced the WhatsApp floating/mobile icons with calendar icons and Book a session / Choose a time.
+  Removed the duplicate home booking CTA and all stale book-via-WhatsApp fallback copy. Support links in
+  account and confirmation use email. Phone/email contact remains; OTP/reminder delivery is unchanged.
+- Generated sources now render internal booking links directly. Ansha has online booking enabled; removed
+  old WhatsApp fallback generation. Updated booking FAQs, steps and structured answers to match online booking.
+- Public-build audit: 177 internal booking anchors, zero WhatsApp navigation links in HTML or browser JS,
+  all six therapist routes retained, no internal booking anchor opens a new tab. Syntax/build and all 16
+  account/payment/OTP tests pass. Mobile browser self-check -> recommended Jasmin -> /book/?therapist=Jasmin
+  reaches verification; no OTP sent or real booking created. Mobile shortcut/calendar checked.
+- CSS167, index JS45 and book JS50 bumped across consumers, generated pages rebuilt. AGENTS.md records the
+  permanent booking-only navigation policy. Publishing now; live asset/link verification follows.
+
 ## 2026-10-28 - Codex - Your bookings dashboard, paid sessions only
 
 - Aflah wants View bookings to show credits, paid upcoming sessions and history, matching today's booking

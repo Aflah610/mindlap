@@ -71,9 +71,9 @@ def faqs(t):
         (f'Does {first} offer counselling in Malayalam?',
          f'Yes. Sessions with {first} are held in Malayalam, online, so you can attend from anywhere.'),
         (f'How do I book a session with {first}?',
-         f'Message Mindlap on WhatsApp or call {b.PHONE_SHOW}. Our coordinator will share available times with {first} and confirm your session.'),
+         f'Choose Book a session with {first}, verify your number, then select your plan and appointment time. Complete payment online to confirm.'),
         (f'How much does a session with {first} cost?',
-         f"A session costs {t['fee']}. Ask our coordinator about session packages if you plan to continue therapy."),
+         f"A session costs {t['fee']}. Available session plans and packages are shown before payment."),
         ('Can I attend if I live outside Kerala?',
          'Yes. Sessions are online, so Malayalees living elsewhere in India or abroad can attend, subject to availability.'),
     ]
@@ -99,7 +99,6 @@ def others(current):
 def build_profile(t):
     first = first_name(t)
     path = f"{t['slug']}.html"
-    msg = f"Hello Mindlap, I would like to book a therapy session with {t['name']}."
     items = [('Home', '/'), ('Psychologists', '/#therapists'), (t['name'], None)]
 
     focus_rows = ''
@@ -131,7 +130,7 @@ def build_profile(t):
                         <li>{e(t['fee'])} per session</li>
                     </ul>
                     <div class="pf-actions">
-                        {b.wa_button(f'Book a session with {first}', msg)}
+                        {b.booking_button(f'Book a session with {first}', f'/book/?therapist={first}')}
                         <a class="pf-call" href="tel:{b.PHONE_TEL}">Call {b.PHONE_SHOW}</a>
                     </div>
                 </div>
@@ -157,7 +156,7 @@ def build_profile(t):
         </article>
     </div>
 
-    {b.close_band(f'Talk to {first}', [f'Tell our coordinator a little about what you are looking for, and we will find a time that suits you for an online session with {first}.'], f'Book with {first}', msg)}
+    {b.close_band(f'Talk to {first}', [f'Book an online session with {first}. Choose your plan, date and time, then confirm securely online.'], f'Book with {first}', f'/book/?therapist={first}')}
 
     {others(t['slug'])}
     </main>'''
@@ -185,9 +184,6 @@ def build_profile(t):
         if len(desc) <= 155:
             break
     html_out = b.page(path, title, desc, body, schema)
-    if t.get('book_online', True):
-        # Booked online through the booking page; therapists not in the booking app yet stay on WhatsApp.
-        html_out = html_out.replace(f'href="{e(b.wa(msg))}" target="_blank" rel="noopener"', f'href="/book/?therapist={first}"')
     html_out = html_out.replace('class="nav-link active">Services', 'class="nav-link">Services')
     html_out = html_out.replace('<body class="sv-page">', '<body class="sv-page pf-page">')
     b.write(path, html_out)

@@ -3700,8 +3700,8 @@ select.phone-input-prefix {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
 }
 
-.btn-whatsapp {
-    background-color: #25D366;
+.btn-book-online {
+    background-color: var(--primary-color);
     color: #ffffff;
 }
 
@@ -3773,7 +3773,7 @@ select.phone-input-prefix {
         background-color: var(--bg-white);
     }
 
-    .sticky-contact-chat {
+    .sticky-contact-book {
         background-color: var(--bg-lavender);
     }
 
@@ -3784,8 +3784,8 @@ select.phone-input-prefix {
         color: var(--primary-color);
     }
 
-    .sticky-contact-chat .sticky-contact-icon {
-        color: #25D366;
+    .sticky-contact-book .sticky-contact-icon {
+        color: var(--primary-color);
     }
 
     .sticky-contact-text {
@@ -3807,8 +3807,8 @@ select.phone-input-prefix {
         color: var(--text-muted);
     }
 
-    .sticky-contact-chat .sticky-contact-label,
-    .sticky-contact-chat .sticky-contact-number {
+    .sticky-contact-book .sticky-contact-label,
+    .sticky-contact-book .sticky-contact-number {
         color: var(--primary-color);
     }
 
@@ -4431,16 +4431,16 @@ select.phone-input-prefix {
     }
 
     .sticky-contact-call,
-    .sticky-contact-chat {
+    .sticky-contact-book {
         background-color: transparent;
         padding: 13px 8px;
     }
 
-    .sticky-contact-chat {
+    .sticky-contact-book {
         position: relative;
     }
 
-    .sticky-contact-chat::before {
+    .sticky-contact-book::before {
         content: '';
         position: absolute;
         left: 0;
@@ -4454,11 +4454,11 @@ select.phone-input-prefix {
         color: #1E1740;
     }
 
-    .sticky-contact-chat .sticky-contact-label {
+    .sticky-contact-book .sticky-contact-label {
         color: var(--primary-color);
     }
 
-    .sticky-contact-chat .sticky-contact-number {
+    .sticky-contact-book .sticky-contact-number {
         color: var(--text-muted);
     }
 

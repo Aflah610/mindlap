@@ -18,7 +18,7 @@
 
     const API = 'https://mindlap-booking-api.nasheel.workers.dev';
     const STORE_KEY = 'mindlapBooking';
-    const WHATSAPP_URL = 'https://wa.me/917594000774?text=Hello%20Mindlap%2C%20I%20would%20like%20to%20book%20a%20therapy%20session.';
+    const SUPPORT_URL = 'mailto:support@mindlap.in';
 
     const PATHS = {
         verify: '/book/',
@@ -831,7 +831,7 @@
     /**
      * Site therapists (profile first name) that can be booked online, and the
      * first name of their staff record in the Waky booking app. Add a line per
-     * therapist once they exist there; until then their buttons stay on WhatsApp.
+     * therapist through the booking flow. Unavailable therapists return to the selection page.
      */
     const ONLINE_THERAPISTS = {
         rashin: { zohoStaff: 'rishin', profile: '/rashin.html', photo: '/assets/rashin.webp' },
@@ -966,7 +966,7 @@
         try {
             services = bookableServices(await get('/api/services', { staff_id: state.staffId }), state.staffId, state);
         } catch (err) {
-            setStatus(statusEl, 'Could not load sessions right now. Please try again shortly or book on WhatsApp.', 'error');
+            setStatus(statusEl, 'Could not load sessions right now. Please refresh and try again shortly.', 'error');
             return;
         }
         // Prepaid clients book single sessions only; their credits pay for them.
@@ -974,7 +974,7 @@
         const singles = services.filter((s) => !isPackage(s.name)).sort((a, b) => Number(a.price) - Number(b.price));
         if (!services.length) {
             setStatus(statusEl, state.staffName + ' has no ' + state.sessionType + ' ' +
-                'sessions open for online booking. Please choose another therapist or book on WhatsApp.', 'error');
+                'sessions open for online booking. Please choose another therapist or try again later.', 'error');
             return;
         }
 
@@ -1450,7 +1450,7 @@
                 // The plan chosen on /book/plan/ (or, rebooking, the one already paid for).
                 candidates = all.filter((sv) => String(sv.id) === String(state.serviceId) && offeredBy(sv, state.staffId));
             } catch (err) {
-                setStatus(statusEl, 'Could not load sessions right now. Please try again shortly or book on WhatsApp.', 'error');
+                setStatus(statusEl, 'Could not load sessions right now. Please refresh and try again shortly.', 'error');
                 return;
             }
             if (!candidates.length) {
@@ -1459,7 +1459,7 @@
                     return;
                 }
                 $('date-block').hidden = true;
-                setStatus(statusEl, 'This session is no longer open for online booking. Please message us on WhatsApp.', 'error');
+                setStatus(statusEl, 'This session is no longer open for online booking. Please choose another session.', 'error');
                 return;
             }
             pick.service = candidates[0];
@@ -1624,7 +1624,7 @@
                 setTimeout(() => go(PATHS.schedule), 2500);
                 return;
             }
-            setStatus(statusEl, data.error || 'Something went wrong. Please try again or book via WhatsApp.', 'error');
+            setStatus(statusEl, data.error || 'Something went wrong. Please try again, or email support@mindlap.in for help.', 'error');
         }
 
         async function bookWithoutPayment(endpoint) {
@@ -1676,7 +1676,7 @@
         /** Opens Razorpay Checkout on this page. The slot is booked only after payment (see confirmPayment). */
         async function payOnline() {
             if (typeof Razorpay === 'undefined') {
-                setStatus(statusEl, 'Secure payment could not load. Please refresh the page or book via WhatsApp.', 'error');
+                setStatus(statusEl, 'Secure payment could not load. Please refresh the page and try again.', 'error');
                 idle();
                 return;
             }
@@ -1791,17 +1791,17 @@
         rebook: {
             icon: 'warn', title: 'Payment successful - please choose a new time',
             text: "Your payment went through, but we couldn't book that time (it was taken moments before you). Choose a new date and time - you won't be charged again.",
-            actions: [['Choose a new time', PATHS.schedule, 'btn-primary'], ['Message us on WhatsApp', WHATSAPP_URL, 'btn-secondary']]
+            actions: [['Choose a new time', PATHS.schedule, 'btn-primary'], ['Email support', SUPPORT_URL, 'btn-secondary']]
         },
         waiting: {
             icon: 'warn', title: 'You have a paid session waiting',
             text: "You've already paid for a session that still needs a date and time. Choose one now - no payment needed.",
-            actions: [['Choose a time', PATHS.schedule, 'btn-primary'], ['Message us on WhatsApp', WHATSAPP_URL, 'btn-secondary']]
+            actions: [['Choose a time', PATHS.schedule, 'btn-primary'], ['Email support', SUPPORT_URL, 'btn-secondary']]
         },
         error: {
             icon: 'warn', title: 'Something went wrong',
-            text: "We couldn't confirm your booking automatically. If money was taken, message us on WhatsApp and we'll sort it out right away.",
-            actions: [['Message us on WhatsApp', WHATSAPP_URL, 'btn-primary'], ['Back to home', '/', 'btn-secondary']]
+            text: "We couldn't confirm your booking automatically. If money was taken, email support@mindlap.in and we will help confirm the status.",
+            actions: [['Return to booking', PATHS.verify, 'btn-primary'], ['Email support', SUPPORT_URL, 'btn-secondary']]
         }
     };
 
@@ -1996,7 +1996,7 @@
 
     // Account and Log out controls belong to the home page, not the booking steps.
 
-    // Set to true to pause online booking (everyone books on WhatsApp).
+    // Maintenance switch: return visitors home while online booking is paused.
     const ONLINE_BOOKING_PAUSED = false;
 
     document.addEventListener('DOMContentLoaded', () => {
