@@ -18,7 +18,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   above Continue, selected 12-session footer and prepaid mode fit; number, OTP code and session-choice screens
   at 320x568 all had document height equal to viewport height and no horizontal overflow. Country popup stays
   within viewport. No live OTP, booking, payment or client write. Screenshot saved; viewport override restored.
-- CSS-only change. All nine loading pages use CSS v18. Build and diff checks pass; removed preview server/script
+- CSS-only change. All nine loading pages use CSS v19 (final readable card-height adjustment). Build and diff
+  checks pass; removed preview server/script
   and rebuilt dist, verifying production API and no fixture code. Publishing; live verification follows.
   Deferred booking logic issues remain open.
 

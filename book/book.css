@@ -2096,9 +2096,9 @@ body.verify-page { position: relative; isolation: isolate; min-height: 100vh; mi
     .plan-choice-page .plan-choice-main { padding-inline: 14px; }
     .plan-choice-page .plan-row, .plan-choice-page .plan-packages .plan-row { gap: 7px; padding-inline: 9px; }
     .plan-choice-page .plan-icon { flex-basis: 34px; width: 34px; height: 34px; }
-    .plan-choice-page .plan-row-title { font-size: 16px; }
-    .plan-choice-page .plan-row-sub { font-size: 11px; }
-    .plan-choice-page .plan-row-amount { font-size: 19px; }
+    .plan-choice-page .plan-row-title { font-size: 17px; }
+    .plan-choice-page .plan-row-sub { font-size: 12px; }
+    .plan-choice-page .plan-row-amount { font-size: 20px; }
     .plan-choice-page .step-footer { padding-inline: 14px; gap: 10px; }
     .plan-choice-page .step-footer .btn { min-width: 130px; }
 }
@@ -2168,14 +2168,14 @@ body.verify-page { min-height: 100dvh; }
     .plan-choice-page .book-title { padding-right: 65px; font-size: 26px; margin-bottom: 5px; }
     .plan-choice-page .book-lead { font-size: 11px; margin-bottom: 10px; }
     .plan-choice-page .plan-list { gap: 10px; }
-    .plan-choice-page .plan-row { min-height: 52px; padding-block: 6px; }
+    .plan-choice-page .plan-row { min-height: clamp(58px, calc((100dvh - 328px) / 4), 76px); padding-block: 6px; }
     .plan-choice-page .plan-packages { gap: 8px; padding-block: 8px; }
     .plan-choice-page .plan-packages-label { padding: 3px 14px; font-size: 13px; margin: 0; }
     .plan-choice-page .plan-icon { flex-basis: 34px; width: 34px; height: 34px; }
     .plan-choice-page .plan-icon svg { width: 23px; height: 23px; }
-    .plan-choice-page .plan-row-title { font-size: 16px; }
-    .plan-choice-page .plan-row-sub { font-size: 11px; }
-    .plan-choice-page .plan-row-amount { font-size: 19px; }
+    .plan-choice-page .plan-row-title { font-size: 17px; }
+    .plan-choice-page .plan-row-sub { font-size: 12px; }
+    .plan-choice-page .plan-row-amount { font-size: 20px; }
     .plan-choice-page .step-footer { padding-block: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
     .plan-choice-page .step-footer-summary, .plan-choice-page .step-footer-summary strong { font-size: 14px; }
 }
