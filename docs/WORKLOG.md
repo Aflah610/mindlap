@@ -7,11 +7,12 @@ This repo is the website; booking app work is logged in the booking-app repo's `
 
 - Aflah requested four entries under How we can help, revealing the rest only after View more.
   First four remain Anxiety, Depression, Stress and Relationship; the other five expand in place.
-  View less collapses again. Accessible button exposes aria-expanded/aria-controls and a 44px target.
+  View less collapses again and returns the section heading into view. Accessible button exposes aria-expanded/aria-controls and a 44px target.
 - Progressive enhancement: all service links remain available without JavaScript. No service URLs changed.
 - Mobile browser checks: initial four, tap expands nine, collapse restores four, Enter works both ways.
   Screenshot saved in this chat's visualisations folder; temporary viewport reset. Syntax/public build pass.
-- CSS v166 and index JS v43 updated across loading pages; generated pages rebuilt normally. Publishing now.
+- CSS v166 and index JS v44 updated across loading pages; generated pages rebuilt normally. Initial deployment
+  06ae5ed passed; live checks confirmed four then nine options and correct cached assets. Publishing the collapse-position refinement.
 
 ## 2026-10-28 - Codex - Self-check opens correctly and fits the screen
 

@@ -1178,5 +1178,6 @@ document.addEventListener('DOMContentLoaded', () => {
         extra.forEach(item => { item.hidden = !expanded; });
         toggle.setAttribute('aria-expanded', String(expanded));
         toggle.textContent = expanded ? 'View less' : 'View more';
+        if (!expanded) list.closest('section').scrollIntoView({ block: 'start', behavior: 'instant' });
     });
 });
