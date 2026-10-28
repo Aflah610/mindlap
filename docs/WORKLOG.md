@@ -17,7 +17,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
 - No live booking/payment/OTP/message or client write. Removed local preview script/server, rebuilt dist and
   confirmed production API retained with no fixture code. JS syntax, unique HTML IDs, public build, diff and
   all 13 existing payment/OTP regressions pass. CSS v23 / JS v46 bumped on all nine loading pages.
-- Publishing; live verification follows. Previously deferred booking logic issues remain open.
+- Deployment 77120cf passed; live details markup, JS v46 and CSS v23 verified with no fixture code.
+  Previously deferred booking logic issues remain open.
 
 ## 2026-10-28 - Codex - Collapse date picker after choosing a day
 
