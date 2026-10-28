@@ -3,6 +3,21 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - All nine booking checkup bugs fixed in booking-app
+
+- Aflah authorised FIX THE 9 BUGS. Booking-app PRs #11, #12 and #13 passed CI and merged; functional
+  revision 50535d4, with handoff documentation on main 50279f2. Website/Worker code unchanged.
+- Full positive payment balance, atomic receipt/settlement/retry, Unix-second dates; reschedule payment
+  deadlines/receipts/original signed join links; attendance-refund correction; failed-checkout clinical-note
+  exclusion; transactional buffers and staff/service daily limits, including actual concurrent requests.
+- Local real PostgreSQL: 529 tests in 48 files passed. Final repair GitHub CI passed Postgres 16 tests,
+  lint, types, build, dependency audit and Docker. Test setting leakage was fixed; focused API/clinical rerun
+  28/28 passed. No migration, live client/clinical data change, real charge or provider message.
+- Normal main deployment is CI-gated and automatic. Public app health returned ok, unauthenticated booking
+  API returned 401. SSH still times out, so exact live server revision has not been directly verified.
+  OTP migration remains deferred; existing OTP WhatsApp number is the single sender. Other workflow/configuration
+  gaps are outside these nine bug fixes. See booking-app WORKLOG for details.
+
 ## 2026-10-28 - Codex - Account/logout control only on home page
 
 - Aflah wants the account/logout control only on the first (home) page, with Log In there when signed out.
