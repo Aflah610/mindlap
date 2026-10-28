@@ -23,8 +23,9 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   sample Alex data only and are outside the repo; no real charges, messages or live client-data writes.
 - Book JS v49/CSS v26 updated across loading pages. Exact fractional credit_balance is added without
   changing the existing whole-session booking-route field; failed balance lookups return 503, not false zeros. AGENTS.md records paid-only client booking policy.
-  Initial Worker 88d62ed5 and website c0502ae deployed. Publishing the final precise-balance/copy refinement;
-  final live asset/deployment verification follows.
+  Final Worker dfa41503 and website 5c40cf5 deployed successfully; GitHub deploy/Worker checks passed.
+  Live /account HTML and Book JS49/CSS26 contain the new dashboard, paid-only guard and precise balance field.
+  Final screenshots are sample-data previews; temporary browser viewport reset. No production session history read.
 
 ## 2026-10-28 - Codex - Home services show four options with View more
 
