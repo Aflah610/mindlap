@@ -50,6 +50,9 @@ test('cached failed sessions cannot create an account, valid credits can, and ou
     sessions = { upcoming: [], past: [] };
     credits = { has_credits: true, credits: 3, wallet_credit: 0 };
     assert.equal((await functions.loadAccount('synthetic')).hasAccount, true);
+    credits = { has_credits: false, credits: 0, credit_balance: 0.5 };
+    assert.equal((await functions.loadAccount('synthetic')).credits, 0.5);
+    assert.equal((await functions.loadAccount('synthetic')).hasAccount, true);
     unavailable = true;
     assert.equal((await functions.loadAccount('synthetic')).known, false);
     assert.equal(functions.confirmedAccountSession({ booking_status: 'Payment failed', payment_status: 'paid' }), false);
@@ -60,4 +63,20 @@ test('cached failed sessions cannot create an account, valid credits can, and ou
     assert.equal(balanceOutage.hasAccount, true);
     assert.equal(balanceOutage.creditsKnown, false);
     assert.equal(balanceOutage.known, false);
+});
+
+
+test('credit balance preserves fractional credits and never reports an outage as zero', async () => {
+    const previous = globalThis.fetch;
+    const url = new URL('https://example.invalid/api/credits/check');
+    try {
+        globalThis.fetch = async () => Response.json({ data: { packages: [{ creditsLeft: 1.5 }, { creditsLeft: 0.75 }], walletPaise: 25000 } });
+        const response = await handleWaky(new Request(url, { method: 'POST', body: '{}' }), env, url, {}, helpers);
+        const data = await response.json();
+        assert.equal(data.credit_balance, 2.25);
+        assert.equal(data.credits, 2);
+        assert.equal(data.wallet_credit, 250);
+        globalThis.fetch = async () => Response.json({ error: 'unavailable' }, { status: 503 });
+        assert.equal((await handleWaky(new Request(url, { method: 'POST', body: '{}' }), env, url, {}, helpers)).status, 503);
+    } finally { globalThis.fetch = previous; }
 });

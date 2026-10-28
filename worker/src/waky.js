@@ -399,9 +399,11 @@ export async function handleWaky(request, env, url, headers, h) {
     const { s } = await session();
     if (!s) return reverify();
     const r = await waky(env, 'GET', '/credits?phone=' + encodeURIComponent(s.phone));
-    if (!r.ok) return json({ has_credits: false, credits: 0, wallet_credit: 0 });
-    const credits = Math.floor((r.data.packages || []).reduce((n, p) => n + (Number(p.creditsLeft) || 0), 0));
-    return json({ has_credits: credits > 0, credits, wallet_credit: (Number(r.data.walletPaise) || 0) / 100 });
+    if (!r.ok) return json({ error: 'Could not load your balance. Please try again shortly.' }, 503);
+    const balance = (r.data.packages || []).reduce((n, p) => n + Math.round((Number(p.creditsLeft) || 0) * 1000), 0) / 1000;
+    // Preserve the existing whole-session routing field; the account displays the exact credit balance.
+    const credits = Math.floor(balance);
+    return json({ has_credits: credits > 0, credits, credit_balance: balance, wallet_credit: (Number(r.data.walletPaise) || 0) / 100 });
   }
 
   // -- Booking with nothing to pay (free session or fully covered by credit) ----

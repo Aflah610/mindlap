@@ -114,7 +114,7 @@
             upcoming: (Array.isArray(rawData.upcoming) ? rawData.upcoming : []).filter(confirmedAccountSession),
             past: (Array.isArray(rawData.past) ? rawData.past : []).filter(confirmedAccountSession)
         }) : null;
-        const creditCount = credits && credits.res.ok && credits.data.has_credits ? Number(credits.data.credits) || 0 : 0;
+        const creditCount = credits && credits.res.ok ? Number(credits.data.credit_balance ?? (credits.data.has_credits ? credits.data.credits : 0)) || 0 : 0;
         const wallet = credits && credits.res.ok ? Number(credits.data.wallet_credit) || 0 : 0;
         const booked = data ? (data.upcoming || []).length + (data.past || []).length : 0;
         return {
@@ -1890,7 +1890,7 @@
             const box = $('account-credits');
             box.hidden = false;
             box.querySelector('[data-credits]').textContent = account.credits;
-            box.querySelector('[data-credits-label]').textContent = account.credits === 1 ? 'prepaid session available' : 'prepaid sessions available';
+            box.querySelector('[data-credits-label]').textContent = account.credits === 1 ? 'prepaid credit available' : 'prepaid credits available';
             $('account-use-credits').hidden = !(account.credits > 0);
         } else {
             $('account-balance-error').hidden = false;

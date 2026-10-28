@@ -16,13 +16,15 @@ This repo is the website; booking app work is logged in the booking-app repo's `
 - API failures return 503 instead of false empty history. Browser keeps retry/error states and does not interpret
   unavailable history/balance as a new client or display an unknown balance as zero. Credit balance shows even at
   zero when successfully loaded; a positive balance links through the existing verified prepaid flow.
-- All 15 account/payment/OTP regressions pass; account tests exercise the actual Worker handler and browser
+- All 16 account/payment/OTP regressions pass; account tests exercise the actual Worker handler and browser
   eligibility functions with synthetic responses. Syntax, public build and Wrangler 4 dry-run pass.
   Browser: failed-only redirect, API retry, paid history counts, keyboard tabs, credit-only/empty states and
   Use credits navigation checked. 320px phone and laptop checked without horizontal overflow. Screenshots use
   sample Alex data only and are outside the repo; no real charges, messages or live client-data writes.
-- Book JS v48/CSS v26 updated across loading pages. AGENTS.md records paid-only client booking policy.
-  Publishing Worker and website now; live asset/deployment verification follows.
+- Book JS v49/CSS v26 updated across loading pages. Exact fractional credit_balance is added without
+  changing the existing whole-session booking-route field; failed balance lookups return 503, not false zeros. AGENTS.md records paid-only client booking policy.
+  Initial Worker 88d62ed5 and website c0502ae deployed. Publishing the final precise-balance/copy refinement;
+  final live asset/deployment verification follows.
 
 ## 2026-10-28 - Codex - Home services show four options with View more
 
