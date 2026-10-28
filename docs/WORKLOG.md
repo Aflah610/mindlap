@@ -3,6 +3,27 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - Date-first schedule screen from Aflah's reference
+
+- Schedule now uses the light single-column layout: therapist/service summary with Change, five visible date
+  chips with the remaining 30-day range horizontally accessible, selected month/year, grouped Morning/Afternoon/
+  Evening buttons, IST label and a Continue bar below the time list. Smaller screens scroll only the time area.
+- Fresh visits do not auto-select today or fetch/show availability until the user chooses a date. Valid saved
+  dates still restore with times visible. Changing dates clears the previous time and retains existing hold
+  release, request ordering, real availability, prepaid and paid rebooking behaviour. Real prices stay dynamic;
+  packages show their total for N sessions rather than incorrectly labelling the total as per-session.
+- Date radios support arrows/Home/End with roving focus. Time buttons expose selected state. A slot conflict
+  message now survives refreshing availability instead of being immediately cleared. Continue remains disabled
+  until a server-confirmed hold; successful selection carries the chosen time to Details.
+- Synthetic local checks: initially hidden times, date selection, grouped slots, no-open-times/next-day recovery,
+  successful hold, date change clears selection, conflict leaves Continue disabled with visible error, keyboard
+  date selection, saved-date restore, prepaid and paid-rebooking labels, Details handoff. 390x844 and 320x568
+  fit with Continue visible; compact prepaid also fits 320x568. Screenshot saved and viewport override restored.
+- JS syntax, unique HTML IDs, public build, diff checks and all 13 existing payment/OTP regressions pass.
+  No live hold, booking, payment, OTP or client write. Removed preview script/server and rebuilt dist, checking
+  production API retained and no fixture code. CSS v20 and JS v43 bumped on all nine loading pages.
+- Publishing; live verification follows. Previously deferred booking logic issues remain open.
+
 ## 2026-10-28 - Codex - Redesigned booking screens fit one mobile viewport
 
 - Aflah reported scrolling and a hidden final package on his phone. Removed oversized fixed bottom spacing

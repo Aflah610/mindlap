@@ -1085,13 +1085,15 @@
             note.innerHTML = '<p>Your earlier time is no longer available. Pick a new date and time - your session and details are saved.</p>';
             $('date-block').parentNode.insertBefore(note, $('date-block'));
         }
-        $('schedule-with').innerHTML = '<strong>' + escapeHtml(state.serviceName) + '</strong> with <strong>' + escapeHtml(state.staffName) + '</strong> · ' +
-            (state.creditMode ? 'prepaid' : escapeHtml(money(state.price, state.currency))) +
-            ' · online. <a href="' + PATHS.plan + '">Change plan</a>';
+        const sessionIcon = '<span class="schedule-session-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg></span>';
+        const count = packageSessions(state.serviceName);
+        const priceDescription = state.creditMode ? 'Prepaid session' : escapeHtml(money(state.price, state.currency)) + (count ? ' for ' + count + ' sessions' : ' per session');
+        $('schedule-with').innerHTML = sessionIcon + '<span class="schedule-session-main"><strong>' + escapeHtml(state.serviceName) + ' with ' + escapeHtml(state.staffName) + '</strong>' +
+            '<span>Online · ' + priceDescription + '</span></span><a href="' + PATHS.plan + '">Change</a>';
         if (rebook) {
             $('schedule-back').href = PATHS.confirmation + '?booking=waiting';
-            $('schedule-with').innerHTML = 'Already paid: <strong>' + escapeHtml(state.serviceName) + '</strong> with <strong>' +
-                escapeHtml(state.staffName) + '</strong>. Pick a new date and time - no payment needed.';
+            $('schedule-with').innerHTML = sessionIcon + '<span class="schedule-session-main"><strong>' + escapeHtml(state.serviceName) + ' with ' + escapeHtml(state.staffName) +
+                '</strong><span>Already paid. Choose a new time, no payment needed.</span></span>';
             $('schedule-next').textContent = 'Confirm new time';
         }
         if (state.creditMode) {
@@ -1191,17 +1193,39 @@
                     '</button>');
             }
             dateStrip.innerHTML = chips.join('');
-            dateStrip.querySelectorAll('.date-chip').forEach((chip) => {
+            dateStrip.querySelectorAll('.date-chip').forEach((chip, index) => {
+                chip.tabIndex = index === 0 ? 0 : -1;
                 chip.addEventListener('click', () => chooseDate(chip.dataset.value));
             });
             const valid = pick.date && dateStrip.querySelector('[data-value="' + pick.date + '"]');
-            chooseDate(valid ? pick.date : localIso(today), true);
+            if (valid) {
+                chooseDate(pick.date, true);
+            } else {
+                pick.date = null;
+                pick.time = null;
+                $('date-month').textContent = today.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+                $('time-block').hidden = true;
+                refresh();
+            }
         }
+
+        dateStrip.addEventListener('keydown', event => {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            const dates = Array.from(dateStrip.querySelectorAll('.date-chip'));
+            const index = dates.indexOf(event.target);
+            if (index < 0) return;
+            event.preventDefault();
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? dates.length - 1
+                : Math.max(0, Math.min(dates.length - 1, index + (event.key === 'ArrowRight' ? 1 : -1)));
+            dates[next].focus();
+            dates[next].click();
+        });
 
         async function chooseDate(iso, restoring) {
             if (!restoring && pick.date !== iso) pick.time = null;
             pick.date = iso;
             dateStrip.querySelectorAll('[role="radio"]').forEach((el) => el.setAttribute('aria-checked', String(el.dataset.value === iso)));
+            dateStrip.querySelectorAll('[role="radio"]').forEach(el => { el.tabIndex = el.dataset.value === iso ? 0 : -1; });
             const chip = dateStrip.querySelector('[data-value="' + iso + '"]');
             if (chip) {
                 // Slide only the strip; scrollIntoView would also scroll the page.
@@ -1209,7 +1233,7 @@
                 if (left < dateStrip.scrollLeft || left + chip.offsetWidth > dateStrip.scrollLeft + dateStrip.clientWidth) {
                     dateStrip.scrollLeft = left - 8;
                 }
-                $('date-month').textContent = longDate(iso);
+                $('date-month').textContent = parseIsoDate(iso).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
             }
             releaseIfStale();
             setStatus(statusEl, '');
@@ -1263,7 +1287,7 @@
                 return '<div class="slot-group">' +
                     '<p class="slot-group-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + icon + '</svg>' + label + '</p>' +
                     '<div class="booking-slots">' + inGroup.map((m) =>
-                        '<button type="button" class="booking-slot' + (m === current ? ' selected' : '') + '" data-value="' + m + '">' + escapeHtml(niceTime(slotLabel(m))) + '</button>'
+                        '<button type="button" class="booking-slot' + (m === current ? ' selected' : '') + '" aria-pressed="' + String(m === current) + '" data-value="' + m + '">' + escapeHtml(niceTime(slotLabel(m))) + '</button>'
                     ).join('') + '</div></div>';
             }).join('');
             slotsWrap.querySelectorAll('.booking-slot').forEach((btn) => {
@@ -1300,8 +1324,12 @@
             if (!service) return;
 
             holding = true;
-            slotsWrap.querySelectorAll('.booking-slot').forEach((el) => el.classList.remove('selected'));
+            slotsWrap.querySelectorAll('.booking-slot').forEach((el) => {
+                el.classList.remove('selected');
+                el.setAttribute('aria-pressed', 'false');
+            });
             btn.classList.add('selected', 'holding');
+            btn.setAttribute('aria-pressed', 'true');
             pick.time = time;
             setStatus(statusEl, '');
             footerSummary.textContent = 'Holding ' + niceTime(time) + ' for you…';
@@ -1311,13 +1339,14 @@
                 if (!result) return;
                 if (result.error) {
                     pick.time = null;
+                    await chooseDate(pick.date, true);
                     setStatus(statusEl, result.error, 'error');
-                    chooseDate(pick.date, true);
                     return;
                 }
             } catch (err) {
                 pick.time = null;
                 btn.classList.remove('selected');
+                btn.setAttribute('aria-pressed', 'false');
                 setStatus(statusEl, 'Network error, please tap the time again.', 'error');
             } finally {
                 btn.classList.remove('holding');

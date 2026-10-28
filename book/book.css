@@ -2182,3 +2182,60 @@ body.verify-page { min-height: 100dvh; }
 
 /* Keep mobile number entry from triggering browser auto-zoom. */
 @media (max-width: 600px) { .verify-page .verify-phone input { font-size: 16px; } }
+
+/* Date first, then live times, with the same quiet booking layout. */
+body.schedule-choice-page { height: 100dvh; }
+.schedule-choice-page .schedule-choice-main { min-height: 0; }
+.schedule-choice-page .schedule-content { min-height: 0; }
+.schedule-choice-page .book-title { font-size: clamp(24px, 3.7dvh, 32px); margin-bottom: 18px; }
+.schedule-session { display: flex; align-items: center; gap: 14px; padding: 14px; margin-bottom: 18px; border: 1px solid #e8e8ed; border-radius: 14px; }
+.schedule-session-icon { flex: 0 0 44px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: #edf6fd; color: #376582; }
+.schedule-session-icon svg { width: 25px; height: 25px; }
+.schedule-session-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.35; }
+.schedule-session-main strong { font-family: 'Outfit', sans-serif; color: #151923; font-size: 16px; font-weight: 500; }
+.schedule-session-main > span { color: #8a8c96; }
+.schedule-session > a { flex-shrink: 0; color: #436277; font-size: 14px; text-decoration: none; }
+.schedule-choice-page .pick-block { flex-shrink: 0; padding: 0; border: 0; margin-bottom: 18px; }
+.schedule-choice-page .pick-label { gap: 10px; margin-bottom: 12px; font-size: 18px; }
+.schedule-choice-page .pick-num { width: 27px; height: 27px; background: #eff4f8; color: #42627a; font-size: 15px; }
+.schedule-choice-page .pick-label small { color: #8b8e98; font-size: 13px; font-weight: 400; }
+.schedule-choice-page .date-strip { gap: 9px; padding: 2px 1px 6px; scrollbar-width: thin; }
+.schedule-choice-page .date-chip { flex: 0 0 calc((100% - 36px) / 5); min-width: 48px; padding: 10px 0; gap: 3px; border: 1px solid #e8e8ec; border-radius: 12px; }
+.schedule-choice-page .date-chip .dow { text-transform: none; letter-spacing: 0; font-size: 12px; color: #858b96; font-weight: 400; }
+.schedule-choice-page .date-chip .dom { font-size: 24px; color: #151923; }
+.schedule-choice-page .date-chip .mon { font-size: 12px; color: #858b96; font-weight: 400; }
+.schedule-choice-page .date-chip[aria-checked="true"] { background: #edf4fe; border-color: #dceafa; }
+.schedule-choice-page .date-chip:focus-visible, .schedule-choice-page .booking-slot:focus-visible { outline: 2px solid var(--accent-color); outline-offset: -2px; }
+.schedule-choice-page #time-block { flex: 1 1 auto; min-height: 90px; overflow-y: auto; overscroll-behavior: contain; margin-bottom: 0; padding-bottom: 10px; }
+.schedule-choice-page #time-block[hidden] { display: none; }
+.schedule-choice-page .slot-group-label { text-transform: none; letter-spacing: 0; color: #8b8e98; font-size: 14px; font-weight: 400; margin-bottom: 9px; }
+.schedule-choice-page .slot-group-label svg { width: 19px; height: 19px; color: #6d889b; }
+.schedule-choice-page .slot-group + .slot-group { margin-top: 14px; }
+.schedule-choice-page .booking-slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.schedule-choice-page .booking-slot { min-width: 0; min-height: 44px; padding: 8px 3px; border: 1px solid #e7e7ed; border-radius: 10px; color: #191d26; font-size: 14px; background: #fff; }
+.schedule-choice-page .booking-slot.selected { background: #edf4fe; border-color: #9bb9df; color: #244b70; }
+.schedule-choice-page .step-footer { margin-top: auto; }
+.schedule-choice-page .step-footer-summary { font-size: 13px; }
+.schedule-choice-page .step-footer-summary strong { font-size: 14px; }
+.schedule-choice-page .hold-inline { display: block; font-size: 12px; }
+@media (max-width: 600px) {
+    .schedule-choice-page .book-title { font-size: 25px; }
+    .schedule-session { gap: 10px; padding: 10px; margin-bottom: 16px; }
+    .schedule-session-main { font-size: 12px; }
+    .schedule-session-main strong { font-size: 14px; }
+    .schedule-session-icon { flex-basis: 38px; width: 38px; height: 38px; }
+    .schedule-session > a { font-size: 12px; }
+}
+@media (max-height: 650px) {
+    .schedule-choice-page .book-title { font-size: 23px; margin-bottom: 12px; }
+    .schedule-choice-page .pick-block { margin-bottom: 12px; }
+    .schedule-choice-page .pick-label { font-size: 16px; margin-bottom: 8px; }
+    .schedule-choice-page .date-chip { padding: 6px 0; }
+    .schedule-choice-page .date-chip .dom { font-size: 21px; }
+    .schedule-session { margin-bottom: 12px; }
+}
+
+.schedule-choice-page .modal-cta-box { flex-shrink: 0; padding: 10px 12px; margin: 0 0 12px; }
+.schedule-choice-page .modal-cta-box p { margin: 0; font-size: 12px; line-height: 1.4; }
+
+@media (max-height: 650px) { .schedule-choice-page #time-block { min-height: 64px; } }
