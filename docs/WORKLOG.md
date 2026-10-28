@@ -3,6 +3,22 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - Prepaid screen matches the booking journey
+
+- Replaced the credits page's old purple progress sidebar/boxed layout with the shared light header/account
+  badge, Welcome back / Your prepaid sessions heading, violet balance card, and icon/chevron choice cards.
+  Matches session choice, plan, schedule and details design. Decorative waves reused. Laptop choices sit side
+  by side; mobile stacks them. Credit count and both existing button IDs/handlers retained; no credit logic changed.
+- Copy no longer promises that every credit covers every service or that the new-plan route necessarily preserves
+  credits: choices say choose therapist/date/time or browse plans/payment options. The existing combined integer
+  credit count, fractional-balance/eligibility display limitations and backend rules are unchanged.
+- Synthetic local browser checked Use prepaid -> session type -> prepaid single plan, and Pay new -> session type
+  -> priced single plan. 320x568, 390x736 and 1366x768 fit without page overflow. Screenshot saved; viewport reset.
+  No live hold/booking/payment/message or client write. User's in-app preview refreshed with seven sample credits.
+- Kept the sample preview in a separate visualization artifact folder served only on localhost:8768; source and
+  rebuilt dist have no test state/endpoint. Public build, HTML unique IDs and diff checks pass. CSS-only/markup
+  change, CSS v25 on all nine loading pages. Publishing; live verification follows. Deferred bugs remain open.
+
 ## 2026-10-28 - Codex - Laptop checkout layout
 
 - Aflah reported that checkout still looked like a narrow phone screen on his laptop. At widths 900px and above,
