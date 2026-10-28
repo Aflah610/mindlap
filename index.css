@@ -5544,3 +5544,16 @@ body.quiz-active .self-check-section { padding: 12px 0; min-height: calc(100svh 
     .assessment-cheer { padding: 8px 12px; margin-bottom: 12px; }
     .assessment-back { margin-top: 12px; }
 }
+
+.help-toggle {
+    background: none;
+    border: 0;
+    border-bottom: 1px solid currentColor;
+    padding: 0 0 4px;
+    min-height: 44px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.help-toggle[hidden], #help-service-list > li[hidden] { display: none; }
+.help-toggle:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 4px; }

@@ -42,7 +42,7 @@
         rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index.css?v=165">
+    <link rel="stylesheet" href="index.css?v=166">
     <!-- Fix avatar blend mode -->
     <style>
         .tc-avatar-img { mix-blend-mode: normal !important; opacity: 1 !important; filter: none !important; background: none !important; }
@@ -615,7 +615,7 @@
                 <h2 class="section-title">How we can <span class="text-gradient">help</span></h2>
                 <p>Online sessions in Malayalam, from wherever you are. Not sure where you fit? <a href="/services/online-psychological-consultation-malayalam/">Start with a consultation.</a></p>
             </div>
-            <ul class="help-list">
+            <ul class="help-list" id="help-service-list">
                 <li><a href="/services/anxiety-counselling-malayalam/">Anxiety &amp; overthinking</a></li>
                 <li><a href="/services/depression-therapy-malayalam/">Depression &amp; low mood</a></li>
                 <li><a href="/services/stress-counselling-malayalam/">Stress &amp; pressure</a></li>
@@ -626,7 +626,7 @@
                 <li><a href="/services/panic-attack-counselling-malayalam/">Panic attacks</a></li>
                 <li><a href="/services/emotional-support-malayalam/">Emotional well-being</a></li>
             </ul>
-            <a class="help-all" href="/services/">See all services</a>
+            <button class="help-all help-toggle" id="help-more" type="button" aria-expanded="false" aria-controls="help-service-list" hidden>View more</button>
         </div>
     </section>
 
@@ -857,7 +857,7 @@
     </div>
 
     <!-- Custom JS Script -->
-    <script src="index.js?v=42"></script>
+    <script src="index.js?v=43"></script>
 </body>
 
 </html>

@@ -1162,3 +1162,21 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (/\.html$/.test(path) && !/^\/(book|account)\//.test(path)) clean = path.replace(/\.html$/, '');
     if (clean !== null) history.replaceState(null, '', clean + window.location.search + window.location.hash);
 })();
+
+
+// Keep the home service list short, with all links available when JavaScript is unavailable.
+document.addEventListener('DOMContentLoaded', () => {
+    const list = document.getElementById('help-service-list');
+    const toggle = document.getElementById('help-more');
+    if (!list || !toggle) return;
+    const extra = Array.from(list.children).slice(4);
+    if (!extra.length) return;
+    extra.forEach(item => { item.hidden = true; });
+    toggle.hidden = false;
+    toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') !== 'true';
+        extra.forEach(item => { item.hidden = !expanded; });
+        toggle.setAttribute('aria-expanded', String(expanded));
+        toggle.textContent = expanded ? 'View less' : 'View more';
+    });
+});
