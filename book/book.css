@@ -2395,3 +2395,32 @@ body.checkout-choice-page { height: 100dvh; }
 .details-choice-page .details-choice-main { padding-bottom: 10px; }
 .details-choice-page .booking-field label { line-height: 1.4; }
 .details-extra > label { display: block; margin-top: 12px; }
+
+/* Laptop checkout uses the available width, with payment beside the booking review. */
+@media (min-width: 900px) {
+    body.checkout-choice-page { height: auto; min-height: 100dvh; }
+    .checkout-choice-page .checkout-choice-main { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr); align-content: start; align-items: start; column-gap: 28px; row-gap: 14px; max-width: 1120px; padding: 16px 28px 28px; }
+    .checkout-choice-page .book-back { position: static; grid-column: 1 / -1; margin: 0; justify-self: start; }
+    .checkout-choice-page .book-title { grid-column: 1 / -1; margin: 0; padding: 0; font-size: 32px; line-height: 1.2; }
+    .checkout-choice-page .checkout-lead { grid-column: 1 / -1; margin: -7px 0 6px; font-size: 16px; }
+    .checkout-choice-page .checkout-content { display: contents; }
+    .checkout-choice-page .checkout-review { grid-column: 1; grid-row: 4 / span 3; padding: 22px; }
+    .checkout-choice-page .checkout-therapist { gap: 16px; padding-bottom: 18px; }
+    .checkout-choice-page .checkout-therapist img, .checkout-choice-page .checkout-photo-fallback { width: 56px; height: 56px; flex-basis: 56px; }
+    .checkout-choice-page .checkout-therapist-main strong { font-size: 20px; }
+    .checkout-choice-page .checkout-service { padding-block: 18px; }
+    .checkout-choice-page .checkout-service strong { font-size: 20px; }
+    .checkout-choice-page .checkout-mode { padding-block: 16px; }
+    .checkout-choice-page .checkout-datetime { padding-top: 18px; gap: 14px; }
+    .checkout-choice-page .checkout-datetime strong { font-size: 13px; }
+    .checkout-choice-page .checkout-bill { grid-column: 2; grid-row: 4; padding: 20px; }
+    .checkout-choice-page .checkout-bill h2 { margin-bottom: 18px; }
+    .checkout-choice-page .checkout-bill .pay-total { margin-top: 18px; padding-top: 16px; }
+    .checkout-choice-page .checkout-bill .pay-total strong { font-size: 24px; }
+    .checkout-choice-page .pay-consent { grid-column: 2; grid-row: 5; padding: 16px; font-size: 13px; }
+    .checkout-choice-page .checkout-footer { grid-column: 2; grid-row: 6; width: 100%; margin: 0; padding: 0; border: 0; }
+    .checkout-choice-page #pay-btn { flex: 1; max-width: none; min-width: 0; min-height: 50px; }
+    .checkout-choice-page .checkout-client { grid-column: 1; grid-row: 7; padding: 0 4px; }
+    .checkout-choice-page .checkout-payment-info { grid-column: 2; grid-row: 7; padding: 0; }
+    .checkout-choice-page #pay-status { grid-column: 2; grid-row: 8; margin: 0; }
+}
