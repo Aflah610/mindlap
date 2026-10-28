@@ -17,7 +17,9 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   No horizontal overflow in the phone checks. Screenshot saved in this chat's visualisations folder.
 - JS syntax, public build and all 13 existing payment/OTP regressions pass. No scoring, therapist matching,
   booking, provider or live client-data change. CSS v165 and index JS v42 updated across loading pages;
-  generated pages rebuilt from the normal templates. Publishing now; live verification follows.
+  generated pages rebuilt from the normal templates. Deployment 7d47ac3 passed. Live JS42/CSS165 verified;
+  live synthetic 375x667 result spans y100-524 below the y89 header, with both actions visible, no contact overlay
+  and no horizontal overflow. Temporary browser viewport reset.
 
 ## 2026-10-28 - Codex - All nine booking checkup bugs fixed in booking-app
 
