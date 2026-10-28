@@ -20,7 +20,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   within viewport. No live OTP, booking, payment or client write. Screenshot saved; viewport override restored.
 - CSS-only change. All nine loading pages use CSS v19 (final readable card-height adjustment). Build and diff
   checks pass; removed preview server/script
-  and rebuilt dist, verifying production API and no fixture code. Publishing; live verification follows.
+  and rebuilt dist, verifying production API and no fixture code. Deployment 52329e4 passed; live plan HTML
+  loads CSS v19 and the final height-aware sizing rules are verified on the live asset.
   Deferred booking logic issues remain open.
 
 ## 2026-10-28 - Codex - Plan selection redesigned from Aflah's reference
