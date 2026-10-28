@@ -12,7 +12,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
 - Mobile browser checks: initial four, tap expands nine, collapse restores four, Enter works both ways.
   Screenshot saved in this chat's visualisations folder; temporary viewport reset. Syntax/public build pass.
 - CSS v166 and index JS v44 updated across loading pages; generated pages rebuilt normally. Initial deployment
-  06ae5ed passed; live checks confirmed four then nine options and correct cached assets. Publishing the collapse-position refinement.
+  06ae5ed and final refinement 60a6140 passed. Live checks confirmed four then nine options and correct cached
+  JS44/CSS166. Collapse returns all four entries and View more into view on 375x812; screenshot saved and viewport reset.
 
 ## 2026-10-28 - Codex - Self-check opens correctly and fits the screen
 
