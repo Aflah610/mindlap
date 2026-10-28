@@ -6,7 +6,7 @@ import os
 import re
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-SLUGS = ['rashin', 'anasooya', 'theresa', 'christine', 'jasmin', 'fathima']
+SLUGS = ['rashin', 'theresa', 'christine', 'jasmin', 'fathima']
 
 
 def text(fragment):

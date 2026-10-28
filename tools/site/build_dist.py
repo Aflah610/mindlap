@@ -40,6 +40,8 @@ HEADERS = """/*
 WAKY_ADMIN = 'https://book.mindlap.in'
 
 REDIRECTS = f"""/index.html  /  301
+/anasooya  /#therapists  301
+/anasooya.html  /#therapists  301
 /adminpanelofmindlap  {WAKY_ADMIN}/  302
 /adminpanelofmindlap/*  {WAKY_ADMIN}/:splat  302
 """

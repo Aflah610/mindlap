@@ -46,4 +46,4 @@ project for the same owner, Aflah. Keep it true: when something here changes, up
 ## People and accounts
 
 - Owner: Aflah (GitHub `Aflah610`). Admin email `nasheel@mindlaptherapy.com`.
-- Psychologists on the site: Anasooya, Rashin, Theresa, Christine, Jasmin, Fathima, Ansha.
+- Psychologists on the site: Rashin, Theresa, Christine, Jasmin, Fathima, Ansha.

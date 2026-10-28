@@ -711,7 +711,6 @@
         rashin: { zohoStaff: 'rishin', profile: '/rashin.html', photo: '/assets/rashin.webp' },
         christine: { zohoStaff: 'christine', profile: '/christine.html', photo: '/assets/christine.webp' },
         jasmin: { zohoStaff: 'jasmin', profile: '/jasmin.html', photo: '/assets/jasmin.webp' },
-        anasooya: { zohoStaff: 'anasooya', profile: '/anasooya.html', photo: '/assets/anasooya.webp' },
         theresa: { zohoStaff: 'theresa', profile: '/theresa.html', photo: '/assets/theresa.webp' },
         fathima: { zohoStaff: 'fathima', profile: '/fathima.html', photo: '/assets/fathima.webp' }
     };

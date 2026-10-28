@@ -3,6 +3,15 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 · Claude Code · Anasooya removed from mindlap.in
+
+- Aflah: Anasooya no longer works with Mindlap. Removed from therapists.json (about page, profile "others" lists,
+  build.py reviewer list), the home page card, the quiz matches (anxiety now Fathima, depression low Fathima,
+  stress low Jasmin, loneliness Christine), book.js ONLINE_THERAPISTS, sitemap and helper scripts.
+  anasooya.html deleted; /anasooya and /anasooya.html 301 to /#therapists (build_dist.py _redirects).
+- index.js?v=40, book.js?v=38 everywhere. Her photos stay in assets/ unused.
+- Booking app staff record is separate (book.mindlap.in): handled there.
+
 ## 2026-10-27 · Claude Code · MCH closed to everyone (reversible)
 
 - mchoperationmanager.site now sends no page at all (nginx 444: browser shows a bare connection error), on http and https.

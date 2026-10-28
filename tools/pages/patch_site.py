@@ -26,7 +26,7 @@ FOOTER_COMPANY = '''<h4>Company</h4>
                 </ul>'''
 
 PROFILES = {
-    'Rashin PK': '/rashin', 'Anasooya Pramod': '/anasooya', 'Theresa P Thomas': '/theresa',
+    'Rashin PK': '/rashin', 'Theresa P Thomas': '/theresa',
     'Christine': '/christine', 'Jasmin': '/jasmin', 'Fathima Sidhyc': '/fathima',
 }
 

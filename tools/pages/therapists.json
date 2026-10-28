@@ -53,54 +53,6 @@
     "fee": "₹1,000"
   },
   {
-    "slug": "anasooya",
-    "name": "Anasooya Pramod",
-    "role": "Consultant Psychologist",
-    "education": "MSc in Applied Psychology from Pondicherry Central University, Puducherry",
-    "methods": [
-      "CBT",
-      "ACT",
-      "SFBT",
-      "DBT"
-    ],
-    "photo": "assets/anasooya.webp",
-    "focus": [
-      [
-        "Stress & Anxiety Support",
-        "Helping manage daily stress and emotional challenges"
-      ],
-      [
-        "Trauma-Informed Care",
-        "Providing gentle support for trauma recovery"
-      ],
-      [
-        "Mindfulness & Self-Awareness",
-        "Encouraging calm, clarity, and self-understanding"
-      ]
-    ],
-    "approach": [
-      [
-        "Compassionate & Supportive",
-        "Creates a warm, trusting environment where clients feel comfortable opening up."
-      ],
-      [
-        "Personalized Care",
-        "Each session is tailored to the client's emotional needs and life goals."
-      ],
-      [
-        "Integrative Approach",
-        "Blends evidence-based techniques with mindfulness and client-centered practices."
-      ]
-    ],
-    "qualifications": [
-      "Completed MSc in Applied Psychology from Pondicherry Central University, Puducherry."
-    ],
-    "languages": [
-      "Malayalam"
-    ],
-    "fee": "₹1,000"
-  },
-  {
     "slug": "theresa",
     "name": "Theresa P Thomas",
     "role": "Consultant Psychologist",

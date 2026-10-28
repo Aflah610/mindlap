@@ -461,7 +461,7 @@ def build_about():
 def build_sitemap(paths):
     today = UPDATED_ON
     urls = ['/', '/privacy', '/terms'] + ['/' + p.replace('index.html', '') for p in paths]
-    urls += [f'/{n}' for n in ('rashin', 'anasooya', 'theresa', 'christine', 'jasmin', 'fathima', 'ansha')]
+    urls += [f'/{n}' for n in ('rashin', 'theresa', 'christine', 'jasmin', 'fathima', 'ansha')]
     rows = ''.join(
         f'''  <url>
     <loc>{SITE}{u}</loc>
