@@ -15,7 +15,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
 - Local browser checked flags, alphabetical list, +971 search/selection, Canada sharing +1, keyboard Enter,
   Escape, no-results state and 390/320 px layouts without horizontal overflow. No OTP sent or booking created.
   JS syntax and all 13 Worker regressions pass. CSS v16 and JS v41 bumped on all nine loading pages.
-- Publishing this website change to main; live verification follows. Nine booking logic issues stay deferred.
+- Deployment 18f8679 passed. Live HTML, JS v41, CSS v16 and mobile dropdown verified; visible flags loaded,
+  no horizontal overflow. Screenshot saved; temporary viewport reset. Nine booking logic issues stay deferred.
 
 ## 2026-10-28 - Codex - Six-box OTP entry and individual/couple cards from new references
 
