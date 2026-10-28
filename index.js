@@ -413,12 +413,14 @@ document.addEventListener('DOMContentLoaded', () => {
             Object.keys(screens).forEach(function (key) {
                 screens[key].classList.toggle('active', key === name);
             });
-            progressWrap.hidden = (name === 'category');
+            progressWrap.hidden = (name !== 'question');
             // The picker presents its cards straight on the section background;
             // only the question and result screens sit inside a panel.
             cardEl.classList.toggle('is-picking', name === 'category');
-            // On phones the Call / Chat bar would cover the answers; it steps aside while questions are on screen.
+            // Keep floating contact controls clear of both the answers and the result actions.
+            document.body.classList.toggle('quiz-active', name !== 'category');
             document.body.classList.toggle('quiz-answering', name === 'question');
+            document.body.classList.toggle('quiz-result', name === 'result');
         }
 
         // Scrolled away mid-quiz, the bar comes back.
@@ -428,13 +430,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }).observe(cardEl);
         }
 
-        // Screens differ a lot in height, so the top of the card can end up above
-        // the fold after a switch. Only scroll when it actually has.
+        // Replacing the tall area picker can leave the new screen above the viewport.
+        // Align every step below the actual fixed header, including after browser toolbar changes.
         function keepCardInView() {
-            if (cardEl.getBoundingClientRect().top < 0) {
-                cardEl.scrollIntoView({ block: 'start' });
-            }
+            requestAnimationFrame(function () {
+                const header = document.querySelector('.navbar-header');
+                const headerHeight = header ? header.getBoundingClientRect().height : 0;
+                document.documentElement.style.setProperty('--assessment-header-height', headerHeight + 'px');
+                window.scrollTo({ top: Math.max(0, window.scrollY + cardEl.getBoundingClientRect().top - headerHeight - 12), behavior: 'instant' });
+            });
         }
+
+        let resizeTimer;
+        window.addEventListener('resize', function () {
+            const wasInView = document.body.classList.contains('quiz-in-view');
+            clearTimeout(resizeTimer);
+            // Let responsive header and page transitions settle before measuring the new position.
+            resizeTimer = setTimeout(function () {
+                if (wasInView && document.body.classList.contains('quiz-active')) keepCardInView();
+            }, 350);
+        });
 
         function buildCategories() {
             categoryGrid.innerHTML = CATEGORIES.map(function (cat) {
@@ -525,6 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
             backBtn.insertAdjacentHTML('afterbegin',
                 icon('<line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>', '') +
                 (index === 0 ? 'Choose a different area' : 'Previous question'));
+            keepCardInView();
         }
 
         // Ten questions is a lot; a word of encouragement after the third and the seventh keeps people going.
@@ -543,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!cheer) { cheerEl.innerHTML = ''; return; }
             cheerEl.innerHTML = '<span class="assessment-cheer-icon" aria-hidden="true">' +
                 icon('<path d="M12 2l2.9 6.9 7.1.6-5.4 4.7 1.6 7L12 17.5 5.8 21.2l1.6-7L2 9.5l7.1-.6z"></path>', '') + '</span>' +
-                '<span><strong>' + cheer.title + '</strong> ' + cheer.text + '</span>';
+                '<span><strong>' + cheer.title + '</strong><span class="assessment-cheer-copy"> ' + cheer.text + '</span></span>';
             void cheerEl.offsetWidth;
             cheerEl.classList.add('is-shown');
         }
@@ -552,6 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (index === 0) {
                 current = null;
                 showScreen('category');
+                keepCardInView();
             } else {
                 index--;
                 renderQuestion();
@@ -624,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 '</div>' +
                 '<div class="result-actions">' +
                     '<button type="button" class="btn btn-outline" id="assessment-restart">Start over</button>' +
-                    '<a href="https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(waText) + '" target="_blank" class="btn btn-primary">Book therapy session</a>' +
+                    '<a href="https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(waText) + '" target="_blank" class="btn btn-primary">Book a session</a>' +
                 '</div>';
 
             screens.result.querySelector('#assessment-restart').addEventListener('click', reset);

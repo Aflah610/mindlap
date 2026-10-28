@@ -3,6 +3,22 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - Self-check opens correctly and fits the screen
+
+- Fixed the question screen retaining the tall category picker's old scroll position. Every question, Back,
+  result and restart now align below the measured fixed header. Resize alignment waits for responsive transitions.
+- Added the missing category/count/progress layout and removed the stale last-question progress from results.
+  Floating Call/Chat controls stay clear while either questions or results are in view, returning elsewhere.
+- Compact responsive results keep the score, full description, specialist and both actions together. Short-phone
+  controls sit in one row; specialist stays horizontal. Short questions keep 44px answer targets; encouragement
+  uses its short title when space is limited. Long support messages and enlarged text can still flow naturally.
+- Browser checks with synthetic answers: all ten stress questions, including encouragement, fit 320x568; anxiety
+  and relationship also fit. High-stress result fits that size. Checked 375x667 result and 1366x768 questions/result.
+  No horizontal overflow in the phone checks. Screenshot saved in this chat's visualisations folder.
+- JS syntax, public build and all 13 existing payment/OTP regressions pass. No scoring, therapist matching,
+  booking, provider or live client-data change. CSS v165 and index JS v42 updated across loading pages;
+  generated pages rebuilt from the normal templates. Publishing now; live verification follows.
+
 ## 2026-10-28 - Codex - All nine booking checkup bugs fixed in booking-app
 
 - Aflah authorised FIX THE 9 BUGS. Booking-app PRs #11, #12 and #13 passed CI and merged; functional

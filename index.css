@@ -5459,3 +5459,88 @@ footer[id] {
         display: none;
     }
 }
+
+
+/* Self-check: each step begins below the fixed header and fits a phone screen. */
+.assessment-progress-wrap { margin-bottom: 18px; }
+.assessment-progress-meta { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; font-size: .8rem; }
+.assessment-chip { color: var(--primary-color); font-weight: 700; }
+.assessment-count { color: var(--text-muted); }
+.assessment-progress-bar { height: 5px; background: var(--bg-lavender); border-radius: 5px; overflow: hidden; }
+.assessment-progress { height: 100%; background: var(--accent-color); transition: width .2s ease; }
+body.quiz-active .self-check-section { padding: 12px 0; min-height: calc(100svh - var(--assessment-header-height, 84px)); }
+.assessment-card { scroll-margin-top: 100px; }
+
+@media (max-width: 768px) {
+    body.quiz-active.quiz-in-view .sticky-contact-bar { display: none; }
+    body.quiz-active .assessment-card { padding: 18px; border-radius: 22px; }
+    .assessment-progress-wrap { margin-bottom: 14px; }
+    .assessment-question { font-size: 1.05rem; line-height: 1.4; margin-bottom: 14px; }
+    .scale-list { gap: 7px; }
+    .scale-option { min-height: 46px; padding: 8px 12px; gap: 12px; font-size: .9rem; }
+    .scale-value { width: 28px; height: 28px; font-size: .8rem; }
+    .assessment-cheer { padding: 8px 10px; margin-bottom: 12px; gap: 8px; font-size: .78rem; }
+    .assessment-cheer-icon { width: 22px; height: 22px; }
+    .assessment-back { margin-top: 8px; font-size: .8rem; }
+    .result-head { flex-direction: row; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .result-ring { width: 68px; height: 68px; margin-top: 2px; }
+    .result-ring-inner { width: 54px; height: 54px; }
+    .result-score { font-size: 1.4rem; }
+    .result-total { font-size: .75rem; }
+    .result-summary { flex: 1; min-width: 0; }
+    .result-band { padding: 4px 8px; font-size: .75rem; margin-bottom: 8px; }
+    .result-title { font-size: 1.1rem; line-height: 1.25; margin-bottom: 8px; }
+    .result-description { font-size: .85rem; line-height: 1.5; margin-bottom: 0; }
+    .result-rec { padding: 12px; margin-bottom: 14px; }
+    .result-rec-header { font-size: .75rem; line-height: 1.4; letter-spacing: .035em; margin-bottom: 10px; }
+    .result-rec-body { flex-direction: row; align-items: center; gap: 12px; }
+    .result-rec-avatar { width: 56px; height: 56px; }
+    .result-rec-details { min-width: 0; }
+    .result-rec-details h4 { font-size: 1rem; }
+    .result-rec-role { font-size: .75rem; margin-bottom: 4px; }
+    .result-rec-focus { font-size: .75rem; line-height: 1.4; }
+    .result-actions { gap: 8px; flex-direction: column-reverse; }
+    .result-actions .btn { min-height: 44px; padding: 10px 14px; font-size: .85rem; }
+    .result-crisis { padding: 12px; margin-bottom: 14px; }
+    .result-crisis p { font-size: .8rem; line-height: 1.4; }
+}
+
+@media (max-width: 380px) {
+    .result-head { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 10px 12px; }
+    .result-ring { width: 56px; height: 56px; grid-row: 1 / 3; margin-top: 0; }
+    .result-ring-inner { width: 44px; height: 44px; }
+    .result-score { font-size: 1.2rem; }
+    .result-summary { display: contents; }
+    .result-band { grid-column: 2; margin: 0; justify-self: start; align-self: start; }
+    .result-title { grid-column: 2; font-size: 1rem; margin: 0; }
+    .result-description { grid-column: 1 / -1; }
+}
+
+/* Keep touch targets usable on short screens; encouragement must not push answers out. */
+@media (max-width: 768px) and (max-height: 650px) {
+    body.quiz-answering .assessment-card, body.quiz-result .assessment-card { padding: 14px; }
+    .assessment-progress-wrap { margin-bottom: 10px; }
+    .assessment-question { font-size: 1rem; line-height: 1.3; margin-bottom: 10px; }
+    .scale-list { gap: 5px; }
+    .scale-option { min-height: 44px; padding: 7px 12px; }
+    .assessment-back { margin-top: 4px; }
+    .assessment-cheer { padding: 6px 8px; margin-bottom: 8px; align-items: center; }
+    .assessment-cheer-copy { display: none; }
+    .result-head { margin-bottom: 12px; gap: 8px 10px; }
+    .result-rec { padding: 10px; margin-bottom: 10px; }
+    .result-actions { gap: 6px; }
+}
+
+@media (max-width: 768px) and (max-height: 650px) {
+    .result-actions { flex-direction: row; }
+    .result-actions .btn { padding: 10px; }
+    .result-actions .btn-outline { flex: 0 0 auto; }
+}
+
+@media (min-width: 769px) and (max-height: 800px) {
+    body.quiz-active .assessment-card { padding: 24px; }
+    .assessment-question { margin-bottom: 16px; }
+    .scale-option { padding: 10px 18px; }
+    .assessment-cheer { padding: 8px 12px; margin-bottom: 12px; }
+    .assessment-back { margin-top: 12px; }
+}
