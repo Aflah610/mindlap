@@ -17,7 +17,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   No live hold/booking/payment/message or client write. User's in-app preview refreshed with seven sample credits.
 - Kept the sample preview in a separate visualization artifact folder served only on localhost:8768; source and
   rebuilt dist have no test state/endpoint. Public build, HTML unique IDs and diff checks pass. CSS-only/markup
-  change, CSS v25 on all nine loading pages. Publishing; live verification follows. Deferred bugs remain open.
+  change, CSS v25 on all nine loading pages. Deployment 1245536 passed; live prepaid markup and CSS v25
+  verified. Deferred bugs remain open.
 
 ## 2026-10-28 - Codex - Laptop checkout layout
 
