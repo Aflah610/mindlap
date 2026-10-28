@@ -17,7 +17,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   rebuilt and verified to use the real production endpoint. Temporary preview servers stopped; viewport reset.
 - Node syntax, HTML IDs/DOM contract, public dist build and all 13 existing Worker/OTP/payment regressions pass.
   Cache references bumped everywhere: book.css v14, book.js v39. No personal untracked assets included.
-- Published with normal main deployment; live asset verification follows. Nine booking logic bugs stay deferred.
+- Main deployment 06b498a passed. Live HTML, book.css?v=14 and book.js?v=39 verified to contain the new UI and
+  original production endpoint, with no mock route. Published page checked in Chrome. Nine booking logic bugs stay deferred.
 
 ## 2026-10-28 · Claude Code · Anasooya removed from mindlap.in
 
