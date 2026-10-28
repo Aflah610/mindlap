@@ -18,7 +18,9 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   account/payment/OTP tests pass. Mobile browser self-check -> recommended Jasmin -> /book/?therapist=Jasmin
   reaches verification; no OTP sent or real booking created. Mobile shortcut/calendar checked.
 - CSS167, index JS45 and book JS50 bumped across consumers, generated pages rebuilt. AGENTS.md records the
-  permanent booking-only navigation policy. Publishing now; live asset/link verification follows.
+  permanent booking-only navigation policy. Deployment ee80bc3 passed. Live audit of all 33 public HTML
+  pages found zero WhatsApp redirects; JS45/CSS167/BookJS50 verified. Live mobile hero and calendar shortcut
+  both point to /book/. Screenshot saved outside the repo, temporary viewport reset. No Worker/server changes.
 
 ## 2026-10-28 - Codex - Your bookings dashboard, paid sessions only
 
