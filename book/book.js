@@ -1963,55 +1963,13 @@
         account: initAccount
     };
 
-    /**
-     * Logged in: the profile badge (same look as the home page) goes in the top bar, and Log out lives in its menu.
-     * Log out appears nowhere else on the site.
-     */
-    function renderProfileBadge() {
-        const auth = loadAuth();
-        const links = document.querySelector('.book-topbar-links');
-        if (!auth.token || !links) return;
-        const name = String(auth.name || '').trim();
-        const initials = name ? name.split(/\s+/).slice(0, 2).map((w) => w.charAt(0)).join('').toUpperCase() : '';
-        const avatar = initials ||
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>';
-        const wrap = document.createElement('div');
-        wrap.className = 'account-menu';
-        wrap.innerHTML =
-            '<button type="button" class="account-avatar" aria-haspopup="true" aria-expanded="false" aria-label="Your account">' + avatar + '</button>' +
-            '<div class="account-panel" hidden>' +
-                '<div class="account-panel-avatar">' + avatar + '</div>' +
-                (name ? '<p class="account-panel-name">' + escapeHtml(name) + '</p>' : '') +
-                '<p class="account-panel-phone">' + escapeHtml(String(auth.phone || '').replace(/[^+\d]/g, '')) + '</p>' +
-                (auth.account === true ? '<a class="account-panel-link" href="' + PATHS.account + '">View bookings<span aria-hidden="true">&rsaquo;</span></a>' : '') +
-                '<button type="button" class="account-panel-logout">Log out</button>' +
-            '</div>';
-        links.appendChild(wrap);
-        const toggle = wrap.querySelector('.account-avatar');
-        const panel = wrap.querySelector('.account-panel');
-        const setOpen = (open) => {
-            panel.hidden = !open;
-            toggle.setAttribute('aria-expanded', String(open));
-        };
-        toggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            setOpen(panel.hidden);
-        });
-        document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) setOpen(false); });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
-        wrap.querySelector('.account-panel-logout').addEventListener('click', () => {
-            signOut();
-            clearDraft();
-            window.location.href = '/';
-        });
-    }
+    // Account and Log out controls belong to the home page, not the booking steps.
 
     // Set to true to pause online booking (everyone books on WhatsApp).
     const ONLINE_BOOKING_PAUSED = false;
 
     document.addEventListener('DOMContentLoaded', () => {
         const page = document.body.getAttribute('data-page');
-        renderProfileBadge();
         const finishingPaidSession = page === 'schedule' && load().rebookOrderId;
         if (ONLINE_BOOKING_PAUSED && page !== 'confirmation' && !finishingPaidSession) {
             window.location.replace('/');

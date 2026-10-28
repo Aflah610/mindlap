@@ -3,6 +3,23 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - Account/logout control only on home page
+
+- Aflah wants the account/logout control only on the first (home) page, with Log In there when signed out.
+  Removed booking JS's profile-menu renderer across /book and /account. Those headers retain Back to site.
+- Home navbar auth rendering now runs only on / or /index.html. Replaced the old global login-off CSS block
+  with non-home-only hiding and enabled the home body class. Home shows Log In signed out, avatar/menu signed
+  in. Removed the separate mobile-nav Log out link; the mobile header badge already exposes that menu.
+  View bookings remains in the menu for existing accounts. AGENTS.md updated with the requested rule.
+- Synthetic local checks: signed-out home Log In visible, signed-in account menu/Log out visible, mobile header
+  menu reachable with no standalone logout link, privacy page has no account menu, signed-in credits page has
+  no avatar and retains Back to site. Screenshot saved, viewport reset; sample preview refreshed. No live login,
+  OTP, booking, payment or client write. Auth/session/credit/payment logic unchanged.
+- JS syntax, public build, diff and all 13 payment/OTP regressions pass. Production dist has no fixture code.
+  Global CSS v164, index JS v41 and book JS v47 updated on every loading page; generated pages rebuilt from
+  their normal templates. Isolated localhost preview stays separate. Publishing; live verification follows.
+  Previously deferred bugs remain open.
+
 ## 2026-10-28 - Codex - Prepaid screen matches the booking journey
 
 - Replaced the credits page's old purple progress sidebar/boxed layout with the shared light header/account

@@ -723,6 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // "Log In" in the menu turns into "My account" while the customer is logged in
 // (the booking pages keep the verified login in localStorage for 24 hours).
 document.addEventListener('DOMContentLoaded', () => {
+    if (!['/', '/index.html'].includes(window.location.pathname)) return;
     let auth = {};
     let loggedIn = false;
     try {
@@ -778,21 +779,14 @@ document.addEventListener('DOMContentLoaded', () => {
             wrap.querySelector('.account-panel-logout').addEventListener('click', logOut);
         });
 
-        // Phones: the menu shows View bookings / Log out instead of Log In.
+        // The header badge is also visible on phones. Keep Log out inside that menu only.
         document.querySelectorAll('.nav-link.nav-login-mobile').forEach((link) => {
-            const menu = link.parentNode;
             if (hasAccount) {
                 link.textContent = 'View bookings';
                 link.href = '/account/';
             } else {
                 link.remove();
             }
-            const out = document.createElement('a');
-            out.href = '#';
-            out.className = 'nav-link nav-login nav-login-mobile';
-            out.textContent = 'Log out';
-            out.addEventListener('click', (e) => { e.preventDefault(); logOut(); });
-            menu.appendChild(out);
         });
     }
 

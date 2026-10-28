@@ -5169,10 +5169,10 @@ select.phone-input-prefix {
     }
 }
 
-/* Log In switched off for now (online accounts paused). Delete this block to bring it back. */
-html .navbar-header .nav-actions .btn-login,
-html .navbar-header .nav-actions .account-menu,
-html .nav-link.nav-login-mobile {
+/* Login/account controls are reserved for the home page. */
+html body:not(.home-account-enabled) .navbar-header .nav-actions .btn-login,
+html body:not(.home-account-enabled) .navbar-header .nav-actions .account-menu,
+html body:not(.home-account-enabled) .nav-link.nav-login-mobile {
     display: none !important;
 }
 
