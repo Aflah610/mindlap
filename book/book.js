@@ -436,8 +436,25 @@
         const changeBtn = $('otp-change-btn');
         const statusEl = $('otp-status');
         const sentTo = $('otp-sent-to');
+        const title = document.querySelector('.book-title');
+        const lead = document.querySelector('.book-lead');
+        const phoneTitle = title.textContent;
+        const codeBanner = $('otp-code-banner');
+        const digitBoxes = document.querySelectorAll('.otp-digit');
         let resendTimer = null;
         let verifying = false;
+
+        // One real input keeps paste, keyboard editing and SMS/WhatsApp autofill together.
+        function syncCodeDigits() {
+            const digits = codeInput.value.replace(/\D/g, '').slice(0, 6);
+            codeInput.value = digits;
+            const active = Math.min(codeInput.selectionStart ?? digits.length, 5);
+            digitBoxes.forEach((box, i) => {
+                box.textContent = digits[i] || '';
+                box.classList.toggle('is-active', i === active && digits.length < 6);
+            });
+            verifyBtn.disabled = verifying || digits.length !== 6;
+        }
 
         // Verification needs only a number; the details step collects the client's name.
         $('otp-name-field').hidden = true;
@@ -478,7 +495,7 @@
         function cooldown(seconds) {
             let left = seconds;
             resendBtn.disabled = true;
-            resendBtn.textContent = 'Resend code (' + left + 's)';
+            resendBtn.textContent = 'Resend in ' + left + 's';
             clearInterval(resendTimer);
             resendTimer = setInterval(() => {
                 left -= 1;
@@ -487,16 +504,22 @@
                     resendBtn.disabled = false;
                     resendBtn.textContent = 'Resend code';
                 } else {
-                    resendBtn.textContent = 'Resend code (' + left + 's)';
+                    resendBtn.textContent = 'Resend in ' + left + 's';
                 }
             }, 1000);
         }
 
-        function showCodeStep() {
+        function showCodeStep(delivered = true) {
             phoneStep.hidden = true;
             codeStep.hidden = false;
-            sentTo.textContent = fullPhone();
+            document.body.classList.add('otp-code-mode');
+            title.textContent = 'Verify your code';
+            lead.hidden = true;
+            if (codeBanner) codeBanner.hidden = !delivered;
+            const digits = localDigits();
+            sentTo.textContent = countrySelect.value + ' ' + (countrySelect.value === '+91' ? digits.slice(0, 5) + ' ' + digits.slice(5) : digits);
             codeInput.value = '';
+            syncCodeDigits();
             codeInput.focus();
             cooldown(60);
         }
@@ -512,7 +535,7 @@
                 const { res, data } = await post('/api/otp/send', { phone: fullPhone() });
                 if (!res.ok || !data.success) {
                     if (data.delivery_failed) {
-                        showCodeStep();
+                        showCodeStep(false);
                         setStatus(statusEl, (data.error || "We couldn't deliver the code on WhatsApp.") +
                             ' If you already have a code, enter it below, or tap Resend in a minute.', 'error');
                     } else {
@@ -521,7 +544,7 @@
                     return;
                 }
                 showCodeStep();
-                setStatus(statusEl, 'Code sent on WhatsApp.', 'success');
+                setStatus(statusEl, codeBanner ? '' : 'Code sent on WhatsApp.', 'success');
             } catch (err) {
                 setStatus(statusEl, 'Network error, please try again.', 'error');
             } finally {
@@ -560,7 +583,7 @@
                 setStatus(statusEl, 'Network error, please try again.', 'error');
             } finally {
                 verifying = false;
-                verifyBtn.disabled = false;
+                syncCodeDigits();
             }
         }
 
@@ -575,12 +598,20 @@
         verifyBtn.addEventListener('click', verify);
         codeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') verify(); });
         codeInput.addEventListener('input', () => {
+            syncCodeDigits();
             if (codeInput.value.replace(/\D/g, '').length === 6) verify();
         });
+        codeInput.addEventListener('focus', syncCodeDigits);
+        codeInput.addEventListener('click', syncCodeDigits);
+        codeInput.addEventListener('keyup', syncCodeDigits);
         changeBtn.addEventListener('click', () => {
             clearInterval(resendTimer);
             codeStep.hidden = true;
             phoneStep.hidden = false;
+            document.body.classList.remove('otp-code-mode');
+            title.textContent = phoneTitle;
+            lead.hidden = false;
+            if (codeBanner) codeBanner.hidden = true;
             setStatus(statusEl, '');
             phoneInput.focus();
         });
@@ -803,6 +834,7 @@
                     card.disabled = true;
                     card.classList.add('unavailable');
                     card.querySelector('.session-type-desc').textContent = 'Not offered online by ' + state.staffName + '.';
+                    card.querySelector('.session-type-desc').hidden = false;
                 }
             });
         } catch (err) { /* leave both enabled; the next step explains if nothing is bookable */ }

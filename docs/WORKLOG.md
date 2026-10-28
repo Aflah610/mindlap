@@ -3,6 +3,25 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - Six-box OTP entry and individual/couple cards from new references
+
+- Aflah supplied separate reference images for the code step and session choice. OTP code step now has a green
+  WhatsApp delivery banner, Verify your code title, formatted actual destination and inline Change, six digit
+  boxes, Resend in Ns timer and a disabled-until-complete verify button. Existing auto-verification on six digits
+  remains. One labelled one-time-code input drives the boxes, preserving keyboard editing, paste and autofill.
+- Delivery failure never displays the success banner. Change restores number entry and its original heading;
+  resend cooldown, errors, phone/provider/session/account/therapist routing stay in place. No backend changes.
+- Session choice is a light single-column page with Back, the requested heading, person/couple icon cards and
+  chevrons, and matching violet waves. Therapist context and plan routing retained. Unavailable choices still
+  disable with an explanatory message. Other booking page layouts not restyled.
+- Local fake-endpoint checks: non-digit cleaning, incomplete/complete code button states, invalid-code retry,
+  failed delivery without false success, Change and resend; both cards navigated to the correct synthetic plan.
+  Mobile 390/320 px no horizontal overflow. Preview uses synthetic data only; no WhatsApp/session/booking created.
+- All 13 existing Worker regressions, JS syntax, HTML unique IDs, public build and diff checks pass. Removed fake
+  server/script and test-only endpoint/session fixture, rebuilt dist and verified production API unchanged.
+  Temporary viewport reset. book.css v15 and book.js v40 bumped on every loading page.
+- Publishing through normal main deployment; live assets to be checked. Nine booking logic issues remain deferred.
+
 ## 2026-10-28 - Codex - OTP screen redesigned from Aflah's reference
 
 - Replaced /book/ verification's sidebar/card layout with the supplied single-column design: WhatsApp illustration,
