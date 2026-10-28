@@ -3,6 +3,20 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - Searchable country picker for OTP number entry
+
+- Replaced the 18-country native select with a searchable dropdown matching Aflah's reference: flags,
+  country names, right-aligned calling codes and a scrollable alphabetical list. Uses the booking app's
+  existing 243-country/territory ISO and calling-code dataset; shared codes retain the selected country's
+  identity. India remains default. Search supports names, ISO, calling codes and UAE/UK/USA aliases.
+- Flags are local flag-icons SVGs with MIT licence retained in assets/flags; no third-party flag requests.
+  Keyboard arrows, Enter selection, Escape, outside click and focus dismissal supported. Empty results explain
+  how to retry. Existing phone normalisation, OTP sending/verification and provider remain unchanged.
+- Local browser checked flags, alphabetical list, +971 search/selection, Canada sharing +1, keyboard Enter,
+  Escape, no-results state and 390/320 px layouts without horizontal overflow. No OTP sent or booking created.
+  JS syntax and all 13 Worker regressions pass. CSS v16 and JS v41 bumped on all nine loading pages.
+- Publishing this website change to main; live verification follows. Nine booking logic issues stay deferred.
+
 ## 2026-10-28 - Codex - Six-box OTP entry and individual/couple cards from new references
 
 - Aflah supplied separate reference images for the code step and session choice. OTP code step now has a green

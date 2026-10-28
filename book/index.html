@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/index.css?v=129">
-    <link rel="stylesheet" href="/book/book.css?v=15">
+    <link rel="stylesheet" href="/book/book.css?v=16">
     <script>
         // Already logged in: hide the number form before it paints; book.js moves on to the next step.
         try {
@@ -58,28 +58,21 @@
                 <div class="verify-phone">
                     <label class="verify-sr-only" for="otp-phone">WhatsApp number</label>
                     <div class="verify-country">
-                        <svg id="otp-india-flag" class="verify-flag" viewBox="0 0 30 20" aria-hidden="true"><path fill="#FF9933" d="M0 0h30v7H0z"/><path fill="#fff" d="M0 7h30v6H0z"/><path fill="#138808" d="M0 13h30v7H0z"/><circle cx="15" cy="10" r="2.5" fill="none" stroke="#000080" stroke-width=".7"/><path d="M15 7.5v5m-2.5-2.5h5m-4.3-1.8 3.6 3.6m-3.6 0 3.6-3.6" stroke="#000080" stroke-width=".45"/></svg><span id="otp-country-display" aria-hidden="true">+91</span>
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
-                        <select id="otp-country" class="phone-input-prefix" aria-label="Country code">
-                                <option value="+91" selected>&#127470;&#127475; +91 India</option>
-                                <option value="+971">&#127462;&#127466; +971 UAE</option>
-                                <option value="+966">&#127480;&#127462; +966 Saudi Arabia</option>
-                                <option value="+974">&#127478;&#127462; +974 Qatar</option>
-                                <option value="+968">&#127476;&#127474; +968 Oman</option>
-                                <option value="+965">&#127472;&#127484; +965 Kuwait</option>
-                                <option value="+973">&#127463;&#127469; +973 Bahrain</option>
-                                <option value="+1">&#127482;&#127480; +1 USA / Canada</option>
-                                <option value="+44">&#127468;&#127463; +44 UK</option>
-                                <option value="+61">&#127462;&#127482; +61 Australia</option>
-                                <option value="+64">&#127475;&#127487; +64 New Zealand</option>
-                                <option value="+65">&#127480;&#127468; +65 Singapore</option>
-                                <option value="+60">&#127474;&#127486; +60 Malaysia</option>
-                                <option value="+49">&#127465;&#127466; +49 Germany</option>
-                                <option value="+353">&#127470;&#127466; +353 Ireland</option>
-                                <option value="+94">&#127473;&#127472; +94 Sri Lanka</option>
-                                <option value="+977">&#127475;&#127477; +977 Nepal</option>
-                                <option value="+880">&#127463;&#127465; +880 Bangladesh</option>
-                            </select>
+                        <input type="hidden" id="otp-country" value="+91">
+                        <button type="button" id="otp-country-toggle" class="country-toggle" aria-haspopup="dialog" aria-expanded="false" aria-controls="otp-country-picker" aria-label="Country: India +91. Change country">
+                            <img id="otp-country-flag" class="verify-flag" src="/assets/flags/in.svg" alt="" width="25" height="18">
+                            <span id="otp-country-display">+91</span>
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+                        </button>
+                    </div>
+                    <div id="otp-country-picker" class="country-picker" role="dialog" aria-label="Choose country" hidden>
+                        <label class="country-search">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7"/><path d="m16 16 5 5"/></svg>
+                            <span class="verify-sr-only">Search country or code</span>
+                            <input id="otp-country-search" type="search" placeholder="Search country or code" autocomplete="off" aria-controls="otp-country-results">
+                        </label>
+                        <div id="otp-country-results" class="country-results" aria-label="Countries"></div>
+                        <p id="otp-country-empty" class="country-empty" role="status" hidden>No countries found. Try a name or calling code.</p>
                     </div>
                     <input type="tel" id="otp-phone" inputmode="tel" maxlength="14" placeholder="Enter your WhatsApp number" autocomplete="tel-national" aria-describedby="otp-status">
                 </div>
@@ -111,7 +104,7 @@
         <path d="M495 320C631 261 700 144 800 76" stroke="#B8B5D8" stroke-width="2"/>
 
     </svg>
-    <script src="/book/book.js?v=40"></script>
+    <script src="/book/book.js?v=41"></script>
 </body>
 
 </html>

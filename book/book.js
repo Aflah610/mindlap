@@ -461,12 +461,92 @@
         nameInput.value = state.name || '';
         const typedName = () => nameInput.value.trim().replace(/\s+/g, ' ');
         const countryDisplay = $('otp-country-display');
+        const countryToggle = $('otp-country-toggle');
+        const countryPicker = $('otp-country-picker');
+        const countrySearch = $('otp-country-search');
+        const countryResults = $('otp-country-results');
+        // Shared ISO/calling-code data from the booking app. ISO stays distinct for shared codes.
+        const countryCodes = 'AF93 AX358 AL355 DZ213 AS1 AD376 AO244 AI1 AG1 AR54 AM374 AW297 AU61 AT43 AZ994 BS1 BH973 BD880 BB1 BY375 BE32 BZ501 BJ229 BM1 BT975 BO591 BQ599 BA387 BW267 BR55 IO246 VG1 BN673 BG359 BF226 BI257 KH855 CM237 CA1 CV238 KY1 CF236 TD235 CL56 CN86 CX61 CC61 CO57 KM269 CG242 CD243 CK682 CR506 CI225 HR385 CU53 CW599 CY357 CZ420 DK45 DJ253 DM1 DO1 EC593 EG20 SV503 GQ240 ER291 EE372 SZ268 ET251 FK500 FO298 FJ679 FI358 FR33 GF594 PF689 GA241 GM220 GE995 DE49 GH233 GI350 GR30 GL299 GD1 GP590 GU1 GT502 GG44 GN224 GW245 GY592 HT509 HN504 HK852 HU36 IS354 IN91 ID62 IR98 IQ964 IE353 IM44 IL972 IT39 JM1 JP81 JE44 JO962 KZ7 KE254 KI686 XK383 KW965 KG996 LA856 LV371 LB961 LS266 LR231 LY218 LI423 LT370 LU352 MO853 MG261 MW265 MY60 MV960 ML223 MT356 MH692 MQ596 MR222 MU230 YT262 MX52 FM691 MD373 MC377 MN976 ME382 MS1 MA212 MZ258 MM95 NA264 NR674 NP977 NL31 NC687 NZ64 NI505 NE227 NG234 NU683 NF672 KP850 MK389 MP1 NO47 OM968 PK92 PW680 PS970 PA507 PG675 PY595 PE51 PH63 PL48 PT351 PR1 QA974 RE262 RO40 RU7 RW250 BL590 SH290 KN1 LC1 MF590 PM508 VC1 WS685 SM378 ST239 SA966 SN221 RS381 SC248 SL232 SG65 SX1 SK421 SI386 SB677 SO252 ZA27 KR82 SS211 ES34 LK94 SD249 SR597 SJ47 SE46 CH41 SY963 TW886 TJ992 TZ255 TH66 TL670 TG228 TK690 TO676 TT1 TN216 TR90 TM993 TC1 TV688 UG256 UA380 AE971 GB44 US1 UY598 VI1 UZ998 VU678 VA39 VE58 VN84 WF681 EH212 YE967 ZM260 ZW263';
+        const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+        const countries = countryCodes.split(' ').map(value => ({
+            iso: value.slice(0, 2), dial: '+' + value.slice(2),
+            name: regionNames.of(value.slice(0, 2))
+        })).sort((a, b) => a.name.localeCompare(b.name, 'en'));
+        let selectedCountry = countries.find(country => country.iso === 'IN');
         function syncCountryDisplay() {
-            const indiaFlag = $('otp-india-flag');
-            const india = countrySelect.value === '+91';
-            if (indiaFlag) indiaFlag.toggleAttribute('hidden', !india);
-            if (countryDisplay) countryDisplay.textContent = (india ? '' : countrySelect.selectedOptions[0].textContent.trim().split(/\s+/)[0] + ' ') + countrySelect.value;
+            countryDisplay.textContent = selectedCountry.dial;
+            $('otp-country-flag').src = '/assets/flags/' + selectedCountry.iso.toLowerCase() + '.svg';
+            countryToggle.setAttribute('aria-label', 'Country: ' + selectedCountry.name + ' ' + selectedCountry.dial + '. Change country');
         }
+        function closeCountryPicker(restoreFocus = false) {
+            countryPicker.hidden = true;
+            countryToggle.setAttribute('aria-expanded', 'false');
+            if (restoreFocus) countryToggle.focus();
+        }
+        const searchAliases = { AE: 'uae emirates', GB: 'uk britain', US: 'usa america' };
+        const searchText = value => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        function renderCountries() {
+            const query = searchText(countrySearch.value.trim()).replace(/^\+/, '');
+            const matches = countries.filter(country => !query || searchText(country.name).includes(query)
+                || country.dial.slice(1).startsWith(query) || country.iso.toLowerCase() === query
+                || (searchAliases[country.iso] || '').includes(query));
+            countryResults.replaceChildren();
+            for (const country of matches) {
+                const row = document.createElement('button');
+                row.type = 'button';
+                row.className = 'country-option';
+                row.setAttribute('aria-pressed', String(country.iso === selectedCountry.iso));
+                const image = document.createElement('img');
+                image.src = '/assets/flags/' + country.iso.toLowerCase() + '.svg';
+                image.alt = '';
+                image.loading = 'lazy';
+                image.width = 26; image.height = 20;
+                const name = document.createElement('span');
+                name.textContent = country.name;
+                const dial = document.createElement('span');
+                dial.className = 'country-dial'; dial.textContent = country.dial;
+                row.append(image, name, dial);
+                row.addEventListener('click', () => {
+                    selectedCountry = country;
+                    countrySelect.value = country.dial;
+                    countrySelect.dispatchEvent(new Event('change'));
+                    closeCountryPicker();
+                    phoneInput.focus();
+                });
+                countryResults.append(row);
+            }
+            $('otp-country-empty').hidden = matches.length !== 0;
+        }
+        countryToggle.addEventListener('click', () => {
+            if (!countryPicker.hidden) return closeCountryPicker(true);
+            countrySearch.value = '';
+            renderCountries();
+            countryPicker.hidden = false;
+            countryToggle.setAttribute('aria-expanded', 'true');
+            countrySearch.focus();
+        });
+        countrySearch.addEventListener('input', renderCountries);
+        countryPicker.addEventListener('keydown', event => {
+            if (event.key === 'Escape') { event.preventDefault(); closeCountryPicker(true); }
+            const rows = Array.from(countryResults.querySelectorAll('button'));
+            const index = rows.indexOf(document.activeElement);
+            if (event.key === 'ArrowDown' && rows.length) {
+                event.preventDefault(); rows[Math.min(index + 1, rows.length - 1)].focus();
+            }
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (index <= 0) countrySearch.focus(); else rows[index - 1].focus();
+            }
+            if (event.key === 'Enter' && event.target === countrySearch && rows.length) {
+                event.preventDefault(); rows[0].click();
+            }
+        });
+        document.addEventListener('pointerdown', event => {
+            if (!countryPicker.hidden && !countryPicker.contains(event.target) && !countryToggle.contains(event.target)) closeCountryPicker();
+        });
+        document.addEventListener('focusin', event => {
+            if (!countryPicker.hidden && !countryPicker.contains(event.target) && !countryToggle.contains(event.target)) closeCountryPicker();
+        });
         syncCountryDisplay();
 
         if (new URLSearchParams(window.location.search).get('expired')) {
