@@ -977,7 +977,7 @@
 
         function card(s, inner) {
             return '<button type="button" class="option-card plan-row" role="radio" aria-checked="' +
-                String(!!picked && picked.id === s.id) + '" data-value="' + escapeHtml(s.id) + '">' + inner + '</button>';
+                String(!!picked && picked.id === s.id) + '" data-value="' + escapeHtml(s.id) + '">' + inner + '<span class="plan-radio" aria-hidden="true"></span></button>';
         }
 
         function singleCard(s) {
@@ -992,11 +992,13 @@
                     escapeHtml(state.creditMode ? 'Prepaid' : (price ? money(price, s.currency) : 'Free')) + '</span></span>');
         }
 
-        function packageCard(s) {
+        const packageIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg>';
+        function packageCard(s, index) {
             const n = packageSessions(s.name);
             const price = Number(s.price) || 0;
             const full = n && singlePrice ? n * singlePrice : 0;
             return card(s,
+                '<span class="plan-icon plan-package-icon plan-tone-' + (index % 3) + '">' + packageIcon + '</span>' +
                 '<span class="plan-row-main"><span class="plan-row-title">' + escapeHtml(n ? n + ' sessions' : s.name) + '</span>' +
                     (n ? '<span class="plan-row-sub">' + escapeHtml(money(Math.round(price / n), s.currency)) + ' per session</span>' : '') + '</span>' +
                 '<span class="plan-row-price"><span class="plan-row-amount">' + escapeHtml(money(price, s.currency)) + '</span>' +
@@ -1008,17 +1010,19 @@
                 (packages.length
                     ? '<div class="plan-packages"><span class="plan-packages-label">Packages</span>' + packages.map(packageCard).join('') + '</div>'
                     : '');
-            list.querySelectorAll('.plan-row').forEach((row) => {
+            list.querySelectorAll('.plan-row').forEach((row, index) => {
+                row.tabIndex = picked ? (row.dataset.value === String(picked.id) ? 0 : -1) : (index === 0 ? 0 : -1);
                 row.addEventListener('click', () => {
                     picked = services.find((s) => s.id === row.dataset.value);
                     render();
+                    list.querySelector('[aria-checked="true"]').focus();
                 });
             });
             nextBtn.disabled = !picked;
             footerSummary.innerHTML = picked
                 ? '<strong>' + escapeHtml(isPackage(picked.name) && packageSessions(picked.name) ? packageSessions(picked.name) + ' sessions' : '1 session') + '</strong> ' +
                     (state.creditMode ? 'prepaid' : escapeHtml(money(picked.price, picked.currency)))
-                : 'Choose a plan.';
+                : 'Choose a plan';
             renderSummary(Object.assign({}, state, {
                 serviceName: picked && picked.name,
                 price: picked ? Number(picked.price) || 0 : undefined,
@@ -1027,6 +1031,17 @@
                 time: null
             }));
         }
+
+        list.addEventListener('keydown', event => {
+            if (!['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+            const rows = Array.from(list.querySelectorAll('.plan-row'));
+            const index = rows.indexOf(event.target);
+            if (index < 0) return;
+            event.preventDefault();
+            const next = event.key === 'Home' ? 0 : event.key === 'End' ? rows.length - 1
+                : (index + (['ArrowDown', 'ArrowRight'].includes(event.key) ? 1 : -1) + rows.length) % rows.length;
+            rows[next].click();
+        });
 
         nextBtn.addEventListener('click', () => {
             if (!picked) {
