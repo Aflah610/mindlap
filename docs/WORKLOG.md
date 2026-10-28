@@ -3,6 +3,22 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-28 - Codex - OTP screen redesigned from Aflah's reference
+
+- Replaced /book/ verification's sidebar/card layout with the supplied single-column design: WhatsApp illustration,
+  heading, compact flag/country selector and phone field, rounded slate button, back link and soft violet waves.
+  Scoped CSS to verify-page so the remaining booking/account layouts retain their existing styles.
+- Number-first entry: removed the name requirement from OTP send; name is still required at booking Details and
+  now also updates the profile badge there. Existing OTP provider, phone validation, sessions, resend cooldown,
+  verification errors and account/therapist routing retained. OTP migration remains paused; no backend changes.
+- Checked desktop, 390px and 320px layouts (no horizontal overflow), India/UAE selector, invalid phone, code-entry,
+  60-second resend cooldown, incorrect-code error and Change number using a loopback-only fake OTP endpoint.
+  No live message, session or booking created. Fake endpoint and preview-only API replacement removed; final dist
+  rebuilt and verified to use the real production endpoint. Temporary preview servers stopped; viewport reset.
+- Node syntax, HTML IDs/DOM contract, public dist build and all 13 existing Worker/OTP/payment regressions pass.
+  Cache references bumped everywhere: book.css v14, book.js v39. No personal untracked assets included.
+- Published with normal main deployment; live asset verification follows. Nine booking logic bugs stay deferred.
+
 ## 2026-10-28 · Claude Code · Anasooya removed from mindlap.in
 
 - Aflah: Anasooya no longer works with Mindlap. Removed from therapists.json (about page, profile "others" lists,

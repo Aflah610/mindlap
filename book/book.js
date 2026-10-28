@@ -59,7 +59,7 @@
             const auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {};
             if (!auth.token) return;
             auth.account = !!hasAccount;
-            // Keep the name typed at WhatsApp verification; Creator's name only fills a gap.
+            // Keep the name entered during booking; the account name only fills a gap.
             if (name && !auth.name) auth.name = String(name).slice(0, 60);
             localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
         } catch (err) { /* menu just shows "Log In" */ }
@@ -86,7 +86,7 @@
         try { localStorage.removeItem(DRAFT_KEY); } catch (err) { /* ignore */ }
     }
 
-    /** Name typed at verification - shows as initials on the profile badge. */
+    /** Name entered during booking - shows as initials on the profile badge. */
     function saveAuthName(name) {
         try {
             const auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {};
@@ -439,10 +439,18 @@
         let resendTimer = null;
         let verifying = false;
 
-        // Name is asked when booking; logging in to see bookings needs only the number.
-        if (forAccount) $('otp-name-field').hidden = true;
-        else nameInput.value = state.name || '';
+        // Verification needs only a number; the details step collects the client's name.
+        $('otp-name-field').hidden = true;
+        nameInput.value = state.name || '';
         const typedName = () => nameInput.value.trim().replace(/\s+/g, ' ');
+        const countryDisplay = $('otp-country-display');
+        function syncCountryDisplay() {
+            const indiaFlag = $('otp-india-flag');
+            const india = countrySelect.value === '+91';
+            if (indiaFlag) indiaFlag.toggleAttribute('hidden', !india);
+            if (countryDisplay) countryDisplay.textContent = (india ? '' : countrySelect.selectedOptions[0].textContent.trim().split(/\s+/)[0] + ' ') + countrySelect.value;
+        }
+        syncCountryDisplay();
 
         if (new URLSearchParams(window.location.search).get('expired')) {
             setStatus(statusEl, 'Your verification expired. Please verify your number again.', 'error');
@@ -494,11 +502,6 @@
         }
 
         async function send(isResend) {
-            if (!forAccount && typedName().length < 2) {
-                setStatus(statusEl, 'Please enter your name.', 'error');
-                nameInput.focus();
-                return;
-            }
             if (!validNumber()) {
                 setStatus(statusEl, countrySelect.value === '+91' ? 'Please enter a valid 10-digit phone number.' : 'Please enter a valid phone number.', 'error');
                 return;
@@ -562,6 +565,7 @@
         }
 
         countrySelect.addEventListener('change', () => {
+            syncCountryDisplay();
             phoneInput.maxLength = countrySelect.value === '+91' ? 14 : 20;
         });
         sendBtn.addEventListener('click', () => send(false));
@@ -1310,6 +1314,7 @@
                 return;
             }
             const next = save({ name, email, notes: $('details-notes').value.trim(), hp: $('details-hp').value });
+            saveAuthName(name);
             if (!next.rebookOrderId) saveDraft(next);
             go(PATHS.checkout);
         });
