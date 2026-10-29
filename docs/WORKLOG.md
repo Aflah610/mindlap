@@ -15,7 +15,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   All 16 booking/OTP/payment tests pass; public build and all-page head/cache audit pass.
 - Mobile browser: no horizontal overflow; pointer outline suppressed, keyboard focus remains visible;
   computed transition and root touch-action verified. A real-phone pinch gesture was not simulated.
-  Preview screenshot saved outside the repo. Publishing now; live verification remains pending.
+  Deployment aa67e25 passed. Live CSS168 and all 33 public page heads verified (404.html redirects to /404).
+  Live mobile head, stylesheet and touch-action verified; screenshot saved outside the repo. Viewport reset.
 
 ## 2026-10-29 - Codex - All website bookings use our booking flow
 
