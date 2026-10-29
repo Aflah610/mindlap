@@ -443,6 +443,35 @@ export async function handleWaky(request, env, url, headers, h) {
     return json({ success: true, booking_id: r.data.booking.id, reference: r.data.booking.reference });
   }
 
+  // CCD-created bookings: a payment-only capability replaces OTP, never an account session.
+  if (path === '/api/payment/ccd-order' && request.method === 'POST') {
+    if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET || !env.SLOT_HOLDS || !h.holdsCall) return json({ error: 'Online payment is temporarily unavailable.' }, 503);
+    const body = await request.clone().json().catch(() => ({}));
+    if (!UUID.test(String(body.booking_id || '')) || typeof body.collection_token !== 'string' || body.collection_token.length > 100) return json({ error: 'Invalid payment link.' }, 400);
+    const r = await waky(env, 'POST', '/bookings/' + body.booking_id + '/collection', { body: { token: body.collection_token } });
+    if (!r.ok) return json({ error: 'This payment link is unavailable. Ask your coordinator for a new link.' }, 400);
+    const b = r.data;
+    if (b.status === 'paid') return json({ booked: true });
+    if (b.status !== 'pending' || !Number.isSafeInteger(b.amountPaise) || b.amountPaise <= 0) return json({ error: 'No payment is due.' }, 409);
+    const key = b.id + ':' + b.amountPaise;
+    const claimed = await h.holdsCall(env, 'collection-order', { key });
+    if (!claimed.orderId && !claimed.lease) return json({ error: 'Payment is being prepared. Please try again in a moment.' }, 409);
+    let order;
+    if (claimed.orderId) order = await razorpayRequest(env, 'GET', 'orders/' + claimed.orderId);
+    else {
+      order = await razorpayRequest(env, 'POST', 'orders', {
+        amount: b.amountPaise, currency: 'INR', receipt: ('ccd-' + b.id).slice(0, 40),
+        notes: { engine: 'waky', kind: 'booking', ccd_collection: '1', waky_booking_id: b.id, phone: b.phone }
+      });
+      // Do not expose an order until it is persisted: retries then reuse it rather than charging twice.
+      const saved = await h.holdsCall(env, 'collection-order', { key, lease: claimed.lease, orderId: order.id });
+      if (!saved.ok) return json({ error: 'Payment is being prepared. Please try again shortly.' }, 503);
+    }
+    if (Number(order.amount) !== b.amountPaise || order.notes?.waky_booking_id !== b.id || order.notes?.ccd_collection !== '1') return json({ error: 'Payment order does not match this booking.' }, 409);
+    if (order.status === 'paid') return json({ error: 'Payment received and being confirmed. Refresh shortly; do not pay again.' }, 409);
+    return json({ order_id: order.id, amount: order.amount, currency: order.currency, key_id: env.RAZORPAY_KEY_ID });
+  }
+
   // -- Paid booking: create (or resume) in Waky, then a Razorpay order ----------
   if (path === '/api/payment/create-order' && request.method === 'POST') {
     if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
@@ -518,7 +547,7 @@ export async function handleWaky(request, env, url, headers, h) {
     return orderReply(order, label);
   }
 
-  if (path === '/api/payment/verify' && request.method === 'POST') {
+  if (['/api/payment/verify', '/api/payment/ccd-verify'].includes(path) && request.method === 'POST') {
     const body = await request.clone().json().catch(() => ({}));
     const orderId = String(body.razorpay_order_id || '').trim();
     const paymentId = String(body.razorpay_payment_id || '').trim();
@@ -533,6 +562,12 @@ export async function handleWaky(request, env, url, headers, h) {
       razorpayRequest(env, 'GET', 'payments/' + paymentId)
     ]);
     if (!order.notes || order.notes.engine !== 'waky') return null; // an older Zoho-engine order
+    if (path === '/api/payment/ccd-verify') {
+      if (!UUID.test(String(body.booking_id || '')) || typeof body.collection_token !== 'string' || order.notes.waky_booking_id !== body.booking_id || order.notes.ccd_collection !== '1') return json({ error: 'Payment does not match this booking.' }, 400);
+      const permitted = await waky(env, 'POST', '/bookings/' + body.booking_id + '/collection', { body: { token: body.collection_token } });
+      if (!permitted.ok) return json({ error: 'This payment link is no longer valid. Your coordinator can check the payment.' }, 400);
+    }
+
     let result;
     try {
       result = await finalizeWakyPayment(env, h, order, payment);

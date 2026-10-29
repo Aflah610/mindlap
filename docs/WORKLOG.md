@@ -3,6 +3,18 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-29 - Codex - CCD booking-specific payment QR Worker support
+
+- Aflah approved booking-specific payment QR links for CCD bookings without client OTP. Booking-app
+  issues a payment-only capability bound to visit/balance/expiry. Worker ccd-order and ccd-verify routes
+  validate it with booking-app, use the server balance, and grant no login/session.
+- SlotHolds persists one Razorpay order per booking/balance and allocates orders atomically across tabs.
+  No order is returned before persistence. Captured payments retain signature/provider verification,
+  booking ledger and webhook retries. No credentials moved or exposed; no live payments/messages created.
+- All 22 Worker/security tests and syntax checks pass. Worker deployment started. Initial log/commit
+  command used worker/ instead of the repo root; corrected here with the exact tested source unchanged.
+- Matching booking-app feature/migration/UI on codex/ccd-payment-qr in its separate repo; not yet live.
+
 ## 2026-10-29 - Codex - Smooth tap feedback and owner-requested zoom limits
 
 - Aflah reported a blue square when tapping buttons and explicitly chose to block zoom, including pinch.

@@ -766,6 +766,26 @@ export class SlotHolds {
     let holds = await this.load();
     const reply = (data) => new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
 
+    // Payment order allocation is atomic across tabs/retries. Only IDs and leases are stored here.
+    if (op === 'collection-order') {
+      if (!/^[0-9a-f-]{36}:\d+$/.test(String(body.key || ''))) return reply({ ok: false });
+      const result = await this.state.storage.transaction(async (tx) => {
+        const key = 'collection-order:' + body.key;
+        const current = await tx.get(key);
+        if (body.orderId) {
+          if (!current || current.lease !== body.lease || !/^order_[A-Za-z0-9]+$/.test(body.orderId)) return { ok: false };
+          await tx.put(key, { orderId: body.orderId });
+          return { ok: true };
+        }
+        if (current?.orderId) return { orderId: current.orderId };
+        if (current?.until > Date.now()) return { ok: false };
+        const lease = crypto.randomUUID();
+        await tx.put(key, { lease, until: Date.now() + 600000 });
+        return { lease };
+      });
+      return reply(result);
+    }
+
     if (op === 'hold') {
       const { phone, staffId, date, start, end, ttlMs } = body;
       const taken = holds.some((h) => h.phone !== phone && h.staffId === staffId && h.date === date && h.start < end && start < h.end);
@@ -1222,7 +1242,7 @@ export default {
       if (env.BOOKING_ENGINE === 'waky') {
         const aliases = await staffAliases(env).catch(() => []);
         const wakyReply = await handleWaky(await aliasRequest(request, url, aliases), env, url, headers, {
-          jsonResponse, verifySessionToken, razorpayRequest, hmacSha256Hex, constantTimeEqual, errorText
+          jsonResponse, verifySessionToken, razorpayRequest, hmacSha256Hex, constantTimeEqual, errorText, holdsCall
         });
         if (wakyReply) return aliasResponse(wakyReply, aliases);
       }

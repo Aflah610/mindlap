@@ -27,6 +27,10 @@ project for the same owner, Aflah. Keep it true: when something here changes, up
   It connects the booking pages to **Waky**, the booking app at `https://book.mindlap.in` (separate repo
   `github.com/Aflah610/booking-app`). Deploy it with `npx wrangler@4 deploy` from `worker/`.
 - `book/`: the booking flow pages (`book.js`, `book.css`). Plans and packages come from Waky.
+- CCD payment QR pages live in booking-app at `/pay/<booking-id>`. The Worker validates their payment-only
+  capability with booking-app before creating/reusing a Razorpay order. It never grants an OTP/account
+  session. Captured payments use existing verified reporting/webhooks. Collection order IDs and allocation
+  leases are persisted in SlotHolds for refresh/concurrent checkout reuse.
 
 ## Rules
 
