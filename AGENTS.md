@@ -47,6 +47,9 @@ project for the same owner, Aflah. Keep it true: when something here changes, up
 - **Booking navigation:** all booking buttons use `/book/`, retaining `?therapist=Name` when a therapist is chosen.
   No WhatsApp navigation links anywhere, including self-check results, service/profile pages and floating/mobile
   shortcuts. WhatsApp remains the delivery channel for OTPs and reminders; support can use email or phone.
+- Touch interactions: suppress the browser's blue tap highlight, retain keyboard focus-visible and respect
+  reduced motion. Aflah requested page zoom disabled: keep the viewport scale limits in source heads and
+  generated page templates, with touch-action pan-x pan-y for scrolling. Browsers may override zoom limits.
 - Brand colour is violet (`--primary-color #4A2E80`, `--accent-color #8E66DE`).
 - Copy is in plain English (British spelling) and without long dashes.
 - Never put the WhatsApp number or other contact details in a URL query except the existing `wa.me` links.

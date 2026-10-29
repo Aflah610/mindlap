@@ -3,6 +3,20 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-10-29 - Codex - Smooth tap feedback and owner-requested zoom limits
+
+- Aflah reported a blue square when tapping buttons and explicitly chose to block zoom, including pinch.
+  Shared CSS suppresses native tap highlights and pointer-only outlines, adds short colour/shadow/press
+  transitions, and preserves keyboard focus-visible and reduced-motion behaviour.
+- Source heads and generated templates request scale 1 with user-scalable=no. Root touch-action permits
+  horizontal/vertical scrolling without pinch gestures. Browser/accessibility overrides can still allow zoom;
+  no gesture-blocking JavaScript, Ctrl-wheel interceptors or scroll-preventing listeners added.
+- CSS cache bumped to 168 across all 33 public pages. Generated pages rebuilt through their generators.
+  All 16 booking/OTP/payment tests pass; public build and all-page head/cache audit pass.
+- Mobile browser: no horizontal overflow; pointer outline suppressed, keyboard focus remains visible;
+  computed transition and root touch-action verified. A real-phone pinch gesture was not simulated.
+  Preview screenshot saved outside the repo. Publishing now; live verification remains pending.
+
 ## 2026-10-29 - Codex - All website bookings use our booking flow
 
 - Aflah removed WhatsApp redirects everywhere: home/header/hero/CTA, all six therapist cards/profiles,

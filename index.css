@@ -49,6 +49,7 @@
 html {
     scroll-behavior: smooth;
     scroll-padding-top: 80px;
+    touch-action: pan-x pan-y;
 }
 
 body {
@@ -5557,3 +5558,20 @@ body.quiz-active .self-check-section { padding: 12px 0; min-height: calc(100svh 
 }
 .help-toggle[hidden], #help-service-list > li[hidden] { display: none; }
 .help-toggle:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 4px; }
+
+/* Touch feedback shared by the website and booking journey. Keep keyboard focus visible. */
+a, button, summary, label, [role="button"], [tabindex], input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+a:focus:not(:focus-visible), button:focus:not(:focus-visible), summary:focus:not(:focus-visible), [role="button"]:focus:not(:focus-visible) {
+    outline: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+    .btn, .book-btn, button, [role="button"], summary {
+        transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease,
+            box-shadow 180ms ease, opacity 180ms ease, transform 180ms ease, scale 130ms ease;
+    }
+    .btn:active:not(:disabled), .book-btn:active:not(:disabled), button:active:not(:disabled) {
+        scale: .985;
+    }
+}
