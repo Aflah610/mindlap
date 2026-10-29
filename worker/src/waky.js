@@ -468,7 +468,17 @@ export async function handleWaky(request, env, url, headers, h) {
       if (!saved.ok) return json({ error: 'Payment is being prepared. Please try again shortly.' }, 503);
     }
     if (Number(order.amount) !== b.amountPaise || order.notes?.waky_booking_id !== b.id || order.notes?.ccd_collection !== '1') return json({ error: 'Payment order does not match this booking.' }, 409);
-    if (order.status === 'paid') return json({ error: 'Payment received and being confirmed. Refresh shortly; do not pay again.' }, 409);
+    if (['attempted', 'paid'].includes(order.status)) {
+      // Check existing authorisations too: a capture retry must not offer a second payment attempt.
+      const attempts = await razorpayRequest(env, 'GET', 'orders/' + order.id + '/payments');
+      const existingPayment = (attempts.items || []).find(p => ['authorized', 'captured'].includes(p.status));
+      if (existingPayment) {
+        const result = await finalizeWakyPayment(env, h, order, existingPayment);
+        if (result.status === 'booked') return json({ booked: true });
+        return json({ error: 'Payment is being confirmed. Refresh shortly; do not pay again.' }, 409);
+      }
+      if (order.status === 'paid') return json({ error: 'Payment received and being confirmed. Refresh shortly; do not pay again.' }, 409);
+    }
     return json({ order_id: order.id, amount: order.amount, currency: order.currency, key_id: env.RAZORPAY_KEY_ID });
   }
 

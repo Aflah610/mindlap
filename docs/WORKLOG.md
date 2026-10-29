@@ -11,7 +11,8 @@ This repo is the website; booking app work is logged in the booking-app repo's `
 - SlotHolds persists one Razorpay order per booking/balance and allocates orders atomically across tabs.
   No order is returned before persistence. Captured payments retain signature/provider verification,
   booking ledger and webhook retries. No credentials moved or exposed; no live payments/messages created.
-- All 22 Worker/security tests and syntax checks pass. Worker deployment started. Initial log/commit
+- All 23 Worker/security tests and syntax checks pass, including authorised capture-pending reopen.
+  Initial deployment eecb1f6c succeeded; invalid-link live probe returns 400 without provider calls. Initial log/commit
   command used worker/ instead of the repo root; corrected here with the exact tested source unchanged.
 - Matching booking-app feature/migration/UI on codex/ccd-payment-qr in its separate repo; not yet live.
 
