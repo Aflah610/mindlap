@@ -3,6 +3,18 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-02 · Claude Code · Razorpay moved to the company account (Mindlap Private Limited)
+
+- Live keys of the company Razorpay account (mindlap.in approved there) are now in Worker mindlap-booking-api secrets
+  RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET / RAZORPAY_WEBHOOK_SECRET (Aflah pasted them; version 13b31793 promoted to 100%).
+  Company Razorpay webhook: https://mindlap-booking-api.nasheel.workers.dev/api/payment/webhook, events
+  payment.captured, payment.authorized, payment.failed, alert email admin@mindlap.in.
+- Verified: ₹1 test (booking-app BK-00023, "Test session (₹1)" with Rashin) paid by UPI, captured in the company
+  account, booking marked Paid and got a Meet link; then cancelled and the test service set back to not bookable.
+- CCD payment link/QR (booking-app /pay/<id>) uses the same Worker, so it now collects into the company account too.
+- Old account: past payments, refunds and settlements stay there. Open: the key secret was shared in a chat once;
+  regenerate it in Razorpay and paste the new one into the Worker when convenient.
+
 ## 2026-10-29 - Codex - CCD booking-specific payment QR Worker support
 
 - Aflah approved booking-specific payment QR links for CCD bookings without client OTP. Booking-app
