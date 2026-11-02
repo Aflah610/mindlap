@@ -220,6 +220,8 @@ async function manageTokenFor(env, phone, bookingId) {
 }
 
 function conflict(r) {
+  // Too many unpaid checkouts is not a taken time: its own message is shown instead.
+  if (r.error && r.error.details && r.error.details.reason === 'too_many_unpaid') return false;
   return r.status === 409 || (r.error && r.error.code === 'conflict');
 }
 

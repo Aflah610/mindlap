@@ -3,6 +3,12 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-02 · Claude Code · Worker: "too many unpaid checkouts" shown as its own message
+
+- Booking app now refuses a 3rd unpaid website checkout per phone (reason too_many_unpaid; see booking-app log).
+  worker/src/waky.js conflict() no longer treats that as "time just taken", so the client sees the real message.
+  Deployed (version e232105e). Live.
+
 ## 2026-11-02 · Claude Code · Razorpay moved to the company account (Mindlap Private Limited)
 
 - Live keys of the company Razorpay account (mindlap.in approved there) are now in Worker mindlap-booking-api secrets
