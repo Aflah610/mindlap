@@ -11,7 +11,7 @@ This repo is the website; booking app work is logged in the booking-app repo's `
   qualifications (therapists.json, profiles rebuilt); booking phone placeholder cut off → "WhatsApp number";
   44 px tap areas on phones for breadcrumbs, profile "Call" link, profile specialty links, Kerala service links
   (pages.css, negative margins so nothing moves) and "Back to site"/logo on booking pages (book.css).
-- Cache: pages.css v7 (build.py + pages), book.css v27.
+- Cache: pages.css v8 (v7 got cached with the old file because it was requested before the deploy), book.css v27.
 
 ## 2026-11-02 · Claude Code · Worker: "too many unpaid checkouts" shown as its own message
 
