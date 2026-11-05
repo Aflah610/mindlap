@@ -3,6 +3,16 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-05 · Claude Code · Mobile review of mindlap.in: small fixes
+
+- Ran every page at 390 px (headless Chrome, touch) plus the menu, FAQ, footer accordions, Self Check to result and
+  the therapist slider. No sideways scroll, JS errors or broken images anywhere.
+- Fixed: FAQ "Is my session details" → "Are my session details" (home, incl. JSON-LD); long dashes in Rashin's
+  qualifications (therapists.json, profiles rebuilt); booking phone placeholder cut off → "WhatsApp number";
+  44 px tap areas on phones for breadcrumbs, profile "Call" link, profile specialty links, Kerala service links
+  (pages.css, negative margins so nothing moves) and "Back to site"/logo on booking pages (book.css).
+- Cache: pages.css v7 (build.py + pages), book.css v27.
+
 ## 2026-11-02 · Claude Code · Worker: "too many unpaid checkouts" shown as its own message
 
 - Booking app now refuses a 3rd unpaid website checkout per phone (reason too_many_unpaid; see booking-app log).

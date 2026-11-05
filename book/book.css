@@ -2559,3 +2559,9 @@ body.checkout-choice-page { height: 100dvh; }
     .account-sessions { grid-column: 2; grid-row: 3; }
     .account-help { grid-column: 2; margin: 0; }
 }
+
+/* Phones: 44px tap areas for the top bar links, without moving them. */
+@media (max-width: 768px) {
+    .verify-back { padding: 12px 4px; margin: -12px -4px; }
+    .book-topbar-logo { display: inline-block; padding: 7px 0; margin: -7px 0; }
+}
