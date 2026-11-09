@@ -1707,6 +1707,12 @@
                 description: data.service_name || state.serviceName,
                 image: window.location.origin + '/assets/icon-192.png',
                 prefill: data.prefill,
+                // UPI and net banking need an Indian bank, so anyone with a foreign number sees cards first.
+                ...(/^\+(?!91)/.test((data.prefill && data.prefill.contact) || '') ? { config: { display: {
+                    blocks: { cards: { name: 'Pay by card', instruments: [{ method: 'card' }] } },
+                    sequence: ['block.cards'],
+                    preferences: { show_default_blocks: true }
+                } } } : {}),
                 theme: { color: '#4A2E80' },
                 handler: confirmPayment,
                 modal: {

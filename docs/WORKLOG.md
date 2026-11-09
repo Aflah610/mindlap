@@ -3,6 +3,13 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-09 · Claude Code · Razorpay Checkout shows cards first for foreign numbers
+
+- book.js: when the verified phone is not +91, Checkout gets config.display with a "Pay by card" block first; the other
+  methods stay. book.js v51. Website checkout only; the CCD QR page (booking-app CollectPayment) is unchanged.
+- Not tested with a real foreign card. Amex request and a Razorpay support ticket are with Aflah. Non 3D Secure stays off
+  until a client's error confirms it. Foreign-card failure still unproven; see the entry below.
+
 ## 2026-11-09 · Claude Code · International payments checked (no code change)
 
 - Aflah: international clients can't pay. Razorpay company account: International Cards ENABLED (gateway active, limit
