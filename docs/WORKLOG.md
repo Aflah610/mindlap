@@ -3,6 +3,15 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-09 · Claude Code · International payments checked (no code change)
+
+- Aflah: international clients can't pay. Razorpay company account: International Cards ENABLED (gateway active, limit
+  Rs 5,00,000, T+7). Not active: Non 3D Secure cards, Amex and Diners (all still "Request"; Aflah decides).
+- Last 25 Razorpay payments: no card attempt from a foreign phone number at all. Foreign numbers paid fine by UPI
+  (+974, +44); two +44 netbanking attempts failed with an issuer technical error, as did three +91 netbanking attempts
+  the same afternoon (7 Nov). Code has no restriction: INR orders, no method filter, foreign numbers accepted.
+- Open: need a client's exact error and card type; a card refused inside Checkout may leave no payment record.
+
 ## 2026-11-05 · Claude Code · Mobile review of mindlap.in: small fixes
 
 - Ran every page at 390 px (headless Chrome, touch) plus the menu, FAQ, footer accordions, Self Check to result and
