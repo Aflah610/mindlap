@@ -1569,13 +1569,23 @@
         const prepaid = Boolean(state.creditMode);
         const free = !prepaid && !(Number(state.price) > 0);
 
-        $('pay-fee').textContent = prepaid ? 'Prepaid' : money(state.price, state.currency);
+        const sessionPrice = Number(state.price) || 0;
+        $('pay-fee').textContent = prepaid && !(sessionPrice > 0) ? 'Prepaid' : money(sessionPrice, state.currency);
         $('pay-total').textContent = prepaid || free ? money(0, state.currency) : money(state.price, state.currency);
 
         if (prepaid) {
             $('pay-heading').textContent = 'Paid from your wallet';
             $('pay-credit-line').hidden = false;
             $('pay-credit-left').textContent = state.balance > 0 ? money(state.balance, 'INR') : state.credits;
+            // What this session takes from the wallet, and what stays there.
+            if (sessionPrice > 0) {
+                $('pay-wallet-use-line').hidden = false;
+                $('pay-wallet-use').textContent = '− ' + money(sessionPrice, 'INR');
+                if (state.balance > 0) {
+                    $('pay-wallet-after-line').hidden = false;
+                    $('pay-wallet-after').textContent = money(Math.max(0, state.balance - sessionPrice), 'INR');
+                }
+            }
             $('pay-online-info').hidden = true;
             payBtn.textContent = 'Confirm booking';
         } else if (free) {

@@ -49,6 +49,8 @@
                 <h2 id="pay-heading">Bill summary</h2>
                 <div class="pay-line"><span id="pay-session-count">Session fee</span><span class="checkout-bill-prices"><s id="pay-original" hidden></s><strong id="pay-fee"></strong></span></div>
                 <div class="pay-line" id="pay-credit-line" hidden><span>Wallet balance</span><span id="pay-credit-left"></span></div>
+                <div class="pay-line" id="pay-wallet-use-line" hidden><span>Taken from your wallet</span><span id="pay-wallet-use"></span></div>
+                <div class="pay-line" id="pay-wallet-after-line" hidden><span>Left in your wallet after</span><span id="pay-wallet-after"></span></div>
                 <div class="pay-total"><span>Total</span><strong id="pay-total"></strong></div>
             </section>
             <details class="checkout-client"><summary>Your details</summary><a href="/book/details/">Edit your details</a><dl class="review-list"><div><dt>Name</dt><dd id="review-name"></dd></div><div><dt>Email</dt><dd id="review-email"></dd></div><div><dt>WhatsApp</dt><dd id="review-phone"></dd></div><div id="review-notes-row" hidden><dt>Notes</dt><dd id="review-notes"></dd></div></dl></details>
@@ -59,6 +61,6 @@
         <footer class="step-footer checkout-footer"><a class="checkout-back-button" href="/book/details/" aria-label="Back to your details"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 12H4m7-7-7 7 7 7"/></svg></a><button type="button" id="pay-btn" class="btn btn-primary btn-lg">Agree &amp; Pay</button></footer>
     </main>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="/book/book.js?v=53"></script>
+    <script src="/book/book.js?v=54"></script>
 </body>
 </html>

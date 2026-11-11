@@ -3,6 +3,11 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-11 · Claude Code · Checkout shows what a wallet booking takes
+
+- Wallet (prepaid) checkout: Session fee shows the session price (was "Prepaid"), plus "Taken from your wallet − ₹X"
+  and "Left in your wallet after ₹Y" (balance minus price). Total stays ₹0. book.js v54.
+
 ## 2026-11-11 · Claude Code · View bookings for every signed-in client; Join link on upcoming sessions
 
 - Home profile badge menu (and the mobile login link) always shows "View bookings" -> /account/ (was only when the
