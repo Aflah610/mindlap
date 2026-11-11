@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             theresa: {
                 name: 'Theresa P Thomas',
                 role: 'Consultant Psychologist',
-                focus: 'Stress & Anxiety Management, Positive Behavioural Change, Anger Regulation',
+                focus: 'Stress & Anxiety Management, Emotional Regulation, Relationship Concerns',
                 img: 'assets/theresa_bg.jpeg'
             },
             christine: {
