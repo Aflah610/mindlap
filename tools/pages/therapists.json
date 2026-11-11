@@ -65,16 +65,16 @@
     "photo": "assets/theresa.webp",
     "focus": [
       [
-        "Child & Adolescent Psychotherapy",
-        "Helping children and teenagers with emotional, behavioural and school difficulties, including bullying."
-      ],
-      [
-        "Counselling for Older Adults",
-        "Supporting older adults through loneliness, loss, health worries and the changes that come with age."
-      ],
-      [
         "Stress & Anxiety Management",
         "Helping individuals effectively manage stress, anxiety, and improve emotional well-being."
+      ],
+      [
+        "Emotional Regulation",
+        "Building healthy ways to understand, manage and respond to strong emotions such as anger and sadness."
+      ],
+      [
+        "Relationship Concerns",
+        "Supporting people through difficulties with partners, family and friends, and building healthier connections."
       ]
     ],
     "approach": [
@@ -93,7 +93,6 @@
     ],
     "qualifications": [
       "MA Applied Psychology in Clinical and Counselling Practice from TATA Institute of Social Science (TISS), Mumbai.",
-      "Specialisations: Child and Adolescent Psychotherapy; Counselling for Older Adults.",
       "Master's research: School climate and bullying among adolescents in private schools, Kozhikode, Kerala."
     ],
     "languages": [

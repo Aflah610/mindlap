@@ -5,10 +5,10 @@ This repo is the website; booking app work is logged in the booking-app repo's `
 
 ## 2026-11-11 · Claude Code · Theresa's profile details
 
-- From Theresa: course MA Applied Psychology in Clinical and Counselling Practice (TISS), specialisations Child and
-  Adolescent Psychotherapy and Counselling for Older Adults, master's research on school climate and bullying in
-  Kozhikode. Updated tools/pages/therapists.json (education, focus, qualifications) and regenerated theresa.html.
-  Her voice notes were not transcribed; anything said only there is not on the page.
+- From Theresa: course MA Applied Psychology in Clinical and Counselling Practice (TISS) and master's research on
+  school climate and bullying in Kozhikode. Focus areas set by Aflah: Stress & Anxiety Management, Emotional
+  Regulation, Relationship Concerns. Updated tools/pages/therapists.json and regenerated theresa.html.
+  Her voice notes were not transcribed.
 
 ## 2026-11-11 · Claude Code · Details step filled in for returning clients
 
