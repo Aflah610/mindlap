@@ -3,6 +3,15 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-11 · Claude Code · New Terms & Conditions and a Minor Client Policy page
+
+- Aflah's new 18-section Terms & Conditions replace the old terms.html body (dated 11 November 2026). Placeholders
+  filled with mindlap.in, support@mindlap.in and +91 75940 00774. "Cancellation, Rescheduling and Refund Policy" is
+  named but has no page yet (plain text until Aflah sends it).
+- New /minor-client-policy (minor-client-policy.html, same layout as terms): age 15+, guardian registration for 15 to 17.
+  Footer Support column links it on every page (source pages + tools/pages generators); sitemap and clean_urls updated.
+- Open: the booking flow does not ask age or guardian consent yet; the policy says MindLap verifies before confirming.
+
 ## 2026-11-11 · Claude Code · Theresa's profile details
 
 - From Theresa: course MA Applied Psychology in Clinical and Counselling Practice (TISS) and master's research on
