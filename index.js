@@ -773,7 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     '<div class="account-panel-avatar">' + avatarInner + '</div>' +
                     (name ? '<p class="account-panel-name">' + esc(name) + '</p>' : '') +
                     '<p class="account-panel-phone">' + esc(phone) + '</p>' +
-                    (hasAccount ? '<a class="account-panel-link" href="/account/">View bookings<span aria-hidden="true">&rsaquo;</span></a>' : '') +
+                    '<a class="account-panel-link" href="/account/">View bookings<span aria-hidden="true">&rsaquo;</span></a>' +
                     '<button type="button" class="account-panel-logout">Log out</button>' +
                 '</div>';
             btn.replaceWith(wrap);
@@ -794,12 +794,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // The header badge is also visible on phones. Keep Log out inside that menu only.
         document.querySelectorAll('.nav-link.nav-login-mobile').forEach((link) => {
-            if (hasAccount) {
-                link.textContent = 'View bookings';
-                link.href = '/account/';
-            } else {
-                link.remove();
-            }
+            link.textContent = 'View bookings';
+            link.href = '/account/';
         });
     }
 

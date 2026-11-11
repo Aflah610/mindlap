@@ -710,7 +710,8 @@ export async function handleWaky(request, env, url, headers, h) {
     // Payment attempts belong to recovery, not a client's confirmed session history.
     const confirmed = (b) => b.payment && b.payment.status === 'paid' && b.payment.action !== 'choose_new_time';
     const [upcoming, past] = lists.map(items => items.filter(confirmed));
-    const map = (b) => {
+    const base = String(env.WAKY_API_URL || 'https://book.mindlap.in').replace(/\/$/, '');
+    const map = (b, upcomingSession) => {
       const t = isoToIst(b.start);
       const end = isoToIst(b.end);
       return {
@@ -724,10 +725,12 @@ export async function handleWaky(request, env, url, headers, h) {
         session_mode: 'Video',
         booking_status: bookingLabel(b),
         payment_status: b.payment ? b.payment.status : null,
-        amount: ((b.payment && Number(b.payment.amountPaise)) || 0) / 100
+        amount: ((b.payment && Number(b.payment.amountPaise)) || 0) / 100,
+        // The same signed link the reminders send; the page waits until the Meet link exists.
+        join_url: upcomingSession && b.manageToken ? base + '/join/' + b.id + '?t=' + encodeURIComponent(b.manageToken) : null
       };
     };
-    return json({ customer: upcoming.length || past.length ? { name: null, phone: s.phone } : null, upcoming: upcoming.map(map), past: past.map(map) });
+    return json({ customer: upcoming.length || past.length ? { name: null, phone: s.phone } : null, upcoming: upcoming.map((b) => map(b, true)), past: past.map((b) => map(b, false)) });
   }
 
   if (path === '/api/booking/resume' && request.method === 'POST') {

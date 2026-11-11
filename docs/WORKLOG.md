@@ -3,6 +3,14 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-11 · Claude Code · View bookings for every signed-in client; Join link on upcoming sessions
+
+- Home profile badge menu (and the mobile login link) always shows "View bookings" -> /account/ (was only when the
+  client had bookings or balance). Log out still only in the badge menu.
+- Worker /api/sessions adds join_url to upcoming sessions: WAKY_API_URL/join/{id}?t={manageToken}, the same signed
+  link the reminders send (page waits until the Meet link exists). Deployed.
+- /account/ upcoming cards show a "Join session" button (book.css .account-join). index.js v46, book.js v53, book.css v28.
+
 ## 2026-11-11 · Claude Code · Clients see one wallet in rupees instead of prepaid credits
 
 - Aflah: credits should show as a wallet with an amount. Worker /api/credits/check also returns balance =

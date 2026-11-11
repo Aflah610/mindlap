@@ -1940,6 +1940,7 @@
                     '<span class="account-service">' + escapeHtml(sess.service_name || 'Therapy session') + '</span>' +
                     '<span class="account-meta">' + meta + ' <span class="account-timezone">IST</span></span>' +
                     '<span class="account-amount">' + escapeHtml(paymentText) + '</span>' +
+                    (/^https:\/\//.test(sess.join_url || '') ? '<a class="account-join" href="' + escapeHtml(sess.join_url) + '" target="_blank" rel="noopener">Join session<span aria-hidden="true"> &rarr;</span></a>' : '') +
                 '</div>' +
             '</li>';
         };

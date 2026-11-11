@@ -2565,3 +2565,21 @@ body.checkout-choice-page { height: 100dvh; }
     .verify-back { padding: 12px 4px; margin: -12px -4px; }
     .book-topbar-logo { display: inline-block; padding: 7px 0; margin: -7px 0; }
 }
+
+/* Account: join button on an upcoming session */
+.account-join {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: #4A2E80;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+}
+.account-join:hover { background: #3b2468; }
+.account-join:focus-visible { outline: 3px solid #8E66DE; outline-offset: 2px; }
