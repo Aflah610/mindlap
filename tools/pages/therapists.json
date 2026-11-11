@@ -56,7 +56,7 @@
     "slug": "theresa",
     "name": "Theresa P Thomas",
     "role": "Consultant Psychologist",
-    "education": "MA Applied Psychology from TATA Institute of Social Science (TISS), Mumbai",
+    "education": "MA Applied Psychology in Clinical and Counselling Practice from TATA Institute of Social Science (TISS), Mumbai",
     "methods": [
       "CBT",
       "DBT",
@@ -65,16 +65,16 @@
     "photo": "assets/theresa.webp",
     "focus": [
       [
+        "Child & Adolescent Psychotherapy",
+        "Helping children and teenagers with emotional, behavioural and school difficulties, including bullying."
+      ],
+      [
+        "Counselling for Older Adults",
+        "Supporting older adults through loneliness, loss, health worries and the changes that come with age."
+      ],
+      [
         "Stress & Anxiety Management",
         "Helping individuals effectively manage stress, anxiety, and improve emotional well-being."
-      ],
-      [
-        "Behavioral Change",
-        "Supporting lasting positive behavior change through evidence-based psychological interventions."
-      ],
-      [
-        "Anger & Emotional Regulation",
-        "Developing healthy emotional regulation skills to manage anger and respond effectively to challenges."
       ]
     ],
     "approach": [
@@ -92,7 +92,9 @@
       ]
     ],
     "qualifications": [
-      "MA Applied Psychology from TATA Institute of Social Science (TISS), Mumbai."
+      "MA Applied Psychology in Clinical and Counselling Practice from TATA Institute of Social Science (TISS), Mumbai.",
+      "Specialisations: Child and Adolescent Psychotherapy; Counselling for Older Adults.",
+      "Master's research: School climate and bullying among adolescents in private schools, Kozhikode, Kerala."
     ],
     "languages": [
       "Malayalam"

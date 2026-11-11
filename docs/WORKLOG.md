@@ -3,6 +3,13 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-11 · Claude Code · Theresa's profile details
+
+- From Theresa: course MA Applied Psychology in Clinical and Counselling Practice (TISS), specialisations Child and
+  Adolescent Psychotherapy and Counselling for Older Adults, master's research on school climate and bullying in
+  Kozhikode. Updated tools/pages/therapists.json (education, focus, qualifications) and regenerated theresa.html.
+  Her voice notes were not transcribed; anything said only there is not on the page.
+
 ## 2026-11-11 · Claude Code · Details step filled in for returning clients
 
 - Worker /api/credits/check also returns name and email (from Waky GET /credits client). book.js saves them into the
