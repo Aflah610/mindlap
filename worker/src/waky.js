@@ -405,7 +405,9 @@ export async function handleWaky(request, env, url, headers, h) {
     const balance = (r.data.packages || []).reduce((n, p) => n + Math.round((Number(p.creditsLeft) || 0) * 1000), 0) / 1000;
     // Preserve the existing whole-session routing field; the account displays the exact credit balance.
     const credits = Math.floor(balance);
-    return json({ has_credits: credits > 0, credits, credit_balance: balance, wallet_credit: (Number(r.data.walletPaise) || 0) / 100 });
+    // Clients see one wallet in rupees: the unused value of their packages plus any top-up money.
+    const money = (Number(r.data.totalPaise) || ((Number(r.data.packageValuePaise) || 0) + (Number(r.data.walletPaise) || 0))) / 100;
+    return json({ has_credits: credits > 0, credits, credit_balance: balance, wallet_credit: (Number(r.data.walletPaise) || 0) / 100, balance: money });
   }
 
   // -- Booking with nothing to pay (free session or fully covered by credit) ----

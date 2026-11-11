@@ -3,6 +3,15 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-11 · Claude Code · Clients see one wallet in rupees instead of prepaid credits
+
+- Aflah: credits should show as a wallet with an amount. Worker /api/credits/check also returns balance =
+  Waky totalPaise / 100 (unused package value + top-ups). Deployed.
+- Site (book.js v52): account page shows one "Wallet balance" (packages included) with "Use wallet"; the separate
+  "prepaid credits" box is gone. Booking: credits page "In your wallet ₹X" / "Pay from my wallet"; plan and schedule
+  banners "Paying from your wallet (₹X available)"; checkout "Paid from your wallet", "Wallet balance". Routing still
+  uses has_credits/credits (whole sessions). Booking-app staff screens unchanged.
+
 ## 2026-11-09 · Claude Code · Razorpay Checkout shows cards first for foreign numbers
 
 - book.js: when the verified phone is not +91, Checkout gets config.display with a "Pay by card" block first; the other

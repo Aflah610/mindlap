@@ -71,7 +71,7 @@
      * which have nothing in Creator until they are confirmed.
      */
     const DRAFT_KEY = 'mindlapDraft';
-    const DRAFT_FIELDS = ['staffId', 'staffName', 'staffPhoto', 'staffProfile', 'sessionType', 'creditMode', 'credits',
+    const DRAFT_FIELDS = ['staffId', 'staffName', 'staffPhoto', 'staffProfile', 'sessionType', 'creditMode', 'credits', 'balance',
         'serviceId', 'serviceName', 'price', 'currency', 'duration', 'date', 'time', 'name', 'email', 'notes'];
 
     function saveDraft(state) {
@@ -116,6 +116,8 @@
         }) : null;
         const creditCount = credits && credits.res.ok ? Number(credits.data.credit_balance ?? (credits.data.has_credits ? credits.data.credits : 0)) || 0 : 0;
         const wallet = credits && credits.res.ok ? Number(credits.data.wallet_credit) || 0 : 0;
+        // One wallet in rupees: package value left plus top-up money (older Worker: top-ups only).
+        const balance = credits && credits.res.ok ? Number(credits.data.balance ?? wallet) || 0 : 0;
         const booked = data ? (data.upcoming || []).length + (data.past || []).length : 0;
         return {
             data,
@@ -123,8 +125,9 @@
             credits: creditCount,
             creditsKnown: !!(credits && credits.res.ok),
             wallet,
+            balance,
             known: !!data && !!(credits && credits.res.ok),
-            hasAccount: creditCount > 0 || wallet > 0 || booked > 0
+            hasAccount: creditCount > 0 || balance > 0 || booked > 0
         };
     }
 
@@ -751,7 +754,7 @@
             const { res, data } = credits;
             if (res.ok && data.has_credits && data.credits > 0) {
                 const firstTime = load().creditMode === undefined;
-                save({ credits: data.credits });
+                save({ credits: data.credits, balance: Number(data.balance) || 0 });
                 if (firstTime) {
                     go(PATHS.credits);
                     return;
@@ -760,7 +763,7 @@
                 return;
             }
         } catch (err) { /* fall through */ }
-        save({ credits: 0, creditMode: false });
+        save({ credits: 0, balance: 0, creditMode: false });
         await continueWithTherapist();
     }
 
@@ -779,7 +782,7 @@
         showVerifiedChip(state);
 
         const n = state.credits;
-        $('credits-count').textContent = n + ' prepaid session' + (n === 1 ? '' : 's');
+        $('credits-count').textContent = state.balance > 0 ? money(state.balance, 'INR') : n + ' prepaid session' + (n === 1 ? '' : 's');
 
         $('use-credits-btn').addEventListener('click', () => {
             save({ creditMode: true });
@@ -949,12 +952,12 @@
 
         $('plan-back').href = PATHS.type;
         $('plan-with').innerHTML = 'With <strong>' + escapeHtml(state.staffName) + '</strong> · ' +
-            (state.sessionType === 'couple' ? 'couple therapy' : 'individual therapy') + (state.creditMode ? ' (prepaid)' : '') +
+            (state.sessionType === 'couple' ? 'couple therapy' : 'individual therapy') + (state.creditMode ? ' (from your wallet)' : '') +
             ' · online. <a href="' + PATHS.therapist + '">Change therapist</a>';
         if (state.creditMode) {
             const banner = $('credit-banner');
             banner.hidden = false;
-            banner.querySelector('[data-credits]').textContent = state.credits;
+            banner.querySelector('[data-credits]').textContent = state.balance > 0 ? money(state.balance, 'INR') : state.credits;
         }
 
         const list = $('plan-list');
@@ -1110,7 +1113,7 @@
         if (state.creditMode) {
             const banner = $('credit-banner');
             banner.hidden = false;
-            banner.querySelector('[data-credits]').textContent = state.credits;
+            banner.querySelector('[data-credits]').textContent = state.balance > 0 ? money(state.balance, 'INR') : state.credits;
         }
 
         const dateStrip = $('date-strip');
@@ -1165,7 +1168,7 @@
             const ready = !datePickerOpen && pick.date && pick.time && pick.service && holdMatchesPick();
             nextBtn.disabled = !ready || holding;
             if (ready) {
-                const line = escapeHtml(pick.service.name) + (rebook ? ' · already paid' : state.creditMode ? ' · prepaid' : ' · ' + money(pick.service.price, pick.service.currency));
+                const line = escapeHtml(pick.service.name) + (rebook ? ' · already paid' : state.creditMode ? ' · from your wallet' : ' · ' + money(pick.service.price, pick.service.currency));
                 runHoldCountdown(hold.until, (left) => {
                     footerSummary.innerHTML = '<strong>' + escapeHtml(shortDate(pick.date) + ', ' + niceTime(pick.time)) + '</strong>' +
                         '<span class="hold-inline">Held for you · ' + clock(left) + '</span> ' + line;
@@ -1542,7 +1545,7 @@
         }
         $('review-service').textContent = state.sessionType === 'couple' ? 'Couple therapy' : 'Individual therapy';
         $('review-sessions').textContent = sessionCount + (sessionCount === 1 ? ' session' : ' sessions');
-        $('review-price').textContent = state.creditMode ? 'Prepaid' : money(state.price, state.currency);
+        $('review-price').textContent = state.creditMode ? 'From your wallet' : money(state.price, state.currency);
         $('review-date').textContent = date ? date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : state.date;
         const timeParts = String(state.time).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
         let timeDescription = String(state.time).replace(/^0/, '');
@@ -1570,9 +1573,9 @@
         $('pay-total').textContent = prepaid || free ? money(0, state.currency) : money(state.price, state.currency);
 
         if (prepaid) {
-            $('pay-heading').textContent = 'Covered by your package';
+            $('pay-heading').textContent = 'Paid from your wallet';
             $('pay-credit-line').hidden = false;
-            $('pay-credit-left').textContent = state.credits;
+            $('pay-credit-left').textContent = state.balance > 0 ? money(state.balance, 'INR') : state.credits;
             $('pay-online-info').hidden = true;
             payBtn.textContent = 'Confirm booking';
         } else if (free) {
@@ -1886,17 +1889,11 @@
         const name = loadAuth().name || (data && data.customer && data.customer.name);
         $('account-greeting').textContent = name ? 'Welcome back, ' + name : 'Welcome back';
 
-        if (account.wallet > 0) {
+        // One wallet in rupees, packages included; the separate credits count is no longer shown.
+        if (account.creditsKnown) {
             const box = $('account-wallet');
             box.hidden = false;
-            box.querySelector('[data-wallet]').textContent = money(account.wallet, 'INR');
-        }
-
-        if (account.creditsKnown) {
-            const box = $('account-credits');
-            box.hidden = false;
-            box.querySelector('[data-credits]').textContent = account.credits;
-            box.querySelector('[data-credits-label]').textContent = account.credits === 1 ? 'prepaid credit available' : 'prepaid credits available';
+            box.querySelector('[data-wallet]').textContent = money(account.balance, 'INR');
             $('account-use-credits').hidden = !(account.credits > 0);
         } else {
             $('account-balance-error').hidden = false;
