@@ -749,6 +749,14 @@
             return;
         }
         save({ routeCheckedAt: Date.now() });
+        // A returning client: fill in the saved name and email (anything already typed stays).
+        if (credits && credits.res.ok && credits.data) {
+            const known = load();
+            const patch = {};
+            if (!known.name && credits.data.name) patch.name = credits.data.name;
+            if (!known.email && credits.data.email) patch.email = credits.data.email;
+            if (Object.keys(patch).length) save(patch);
+        }
         try {
             if (!credits) throw new Error('credit check failed');
             const { res, data } = credits;

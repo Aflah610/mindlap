@@ -3,6 +3,11 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-11 · Claude Code · Details step filled in for returning clients
+
+- Worker /api/credits/check also returns name and email (from Waky GET /credits client). book.js saves them into the
+  booking draft when empty, so the details page is filled in (prepaid and returning clients). book.js v55. Worker deployed.
+
 ## 2026-11-11 · Claude Code · Checkout shows what a wallet booking takes
 
 - Wallet (prepaid) checkout: Session fee shows the session price (was "Prepaid"), plus "Taken from your wallet − ₹X"

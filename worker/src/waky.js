@@ -407,7 +407,9 @@ export async function handleWaky(request, env, url, headers, h) {
     const credits = Math.floor(balance);
     // Clients see one wallet in rupees: the unused value of their packages plus any top-up money.
     const money = (Number(r.data.totalPaise) || ((Number(r.data.packageValuePaise) || 0) + (Number(r.data.walletPaise) || 0))) / 100;
-    return json({ has_credits: credits > 0, credits, credit_balance: balance, wallet_credit: (Number(r.data.walletPaise) || 0) / 100, balance: money });
+    return json({ has_credits: credits > 0, credits, credit_balance: balance, wallet_credit: (Number(r.data.walletPaise) || 0) / 100, balance: money,
+      // A returning client's saved details, to fill in the details step.
+      name: (r.data.client && r.data.client.name) || null, email: (r.data.client && r.data.client.email) || null });
   }
 
   // -- Booking with nothing to pay (free session or fully covered by credit) ----
