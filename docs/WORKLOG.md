@@ -3,6 +3,13 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-15 · Claude Code · Fix: home-page psychologist cards nested inside each other
+
+- The Dilna/Elizabeth/Ashlin card copies were cut one closing </div> short (a "                </div>" search also
+  matched deeper-indented closes), so each new card sat inside the previous one: an empty white card on mobile and
+  the rest stacked in one column. Added the three missing closes; div depth of the grid now matches the last good
+  version (all 7 tc-card at the same level). When copying a card, cut from its comment to the next card's comment.
+
 ## 2026-11-15 · Claude Code · New psychologist: Ashlin (/ashlin)
 
 - Profile from Aflah's text (MSc Clinical Psychology, Christ University Delhi NCR; CBT; 6 focus areas; two research
