@@ -108,12 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 focus: 'Mood Disorders, Couples Therapy, Emotional Impulsiveness',
                 img: 'assets/rashin_bg.jpeg'
             },
-            theresa: {
-                name: 'Theresa P Thomas',
-                role: 'Consultant Psychologist',
-                focus: 'Stress & Anxiety Management, Emotional Regulation, Relationship Concerns',
-                img: 'assets/theresa_bg.jpeg'
-            },
             christine: {
                 name: 'Christine',
                 role: 'Consultant Psychologist',
@@ -125,12 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 role: 'Consultant Psychologist',
                 focus: 'Behavioral Change, Stress & Anxiety, Emotional Regulation',
                 img: 'assets/jasmin_bg.jpeg'
-            },
-            fathima: {
-                name: 'Fathima Sidhyc',
-                role: 'Consultant Psychologist',
-                focus: 'Anxiety, Depression, OCD, ADHD, Trauma & PTSD',
-                img: 'assets/fathima_bg.jpeg'
             }
         };
 
@@ -232,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'anxiety',
                 image: 'assets/check-anxiety.webp',
                 icon: '<path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path><polyline points="13 11 9 17 15 17 11 23"></polyline>',
-                match: { higher: 'fathima', lower: 'theresa' },
+                match: { higher: 'christine', lower: 'jasmin' },
                 questions: [
                     'Do you feel worried often?',
                     'Do you feel tense or restless?',
@@ -253,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'low mood',
                 image: 'assets/check-depression.webp',
                 icon: '<line x1="16" y1="13" x2="16" y2="21"></line><line x1="8" y1="13" x2="8" y2="21"></line><line x1="12" y1="15" x2="12" y2="23"></line><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path>',
-                match: { higher: 'rashin', lower: 'fathima' },
+                match: { higher: 'rashin', lower: 'jasmin' },
                 crisisIndex: 9,
                 questions: [
                     'Do you feel sad often?',
@@ -298,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'stress',
                 image: 'assets/check-stress.webp',
                 icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>',
-                match: { higher: 'theresa', lower: 'jasmin' },
+                match: { higher: 'jasmin', lower: 'christine' },
                 questions: [
                     'Do you feel overwhelmed easily?',
                     'Do you feel under pressure?',
@@ -319,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'loneliness',
                 image: 'assets/check-loneliness.webp',
                 icon: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
-                match: { higher: 'christine', lower: 'theresa' },
+                match: { higher: 'christine', lower: 'jasmin' },
                 questions: [
                     'Do you feel lonely often?',
                     'Do you feel alone even with others?',
@@ -340,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'what you described',
                 image: 'assets/check-other.webp',
                 icon: '<circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line>',
-                match: { higher: 'rashin', lower: 'theresa' },
+                match: { higher: 'rashin', lower: 'jasmin' },
                 questions: [
                     'Do you feel low in confidence?',
                     'Do you doubt yourself often?',

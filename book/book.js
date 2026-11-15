@@ -847,9 +847,7 @@
     const ONLINE_THERAPISTS = {
         rashin: { zohoStaff: 'rishin', profile: '/rashin.html', photo: '/assets/rashin.webp' },
         christine: { zohoStaff: 'christine', profile: '/christine.html', photo: '/assets/christine.webp' },
-        jasmin: { zohoStaff: 'jasmin', profile: '/jasmin.html', photo: '/assets/jasmin.webp' },
-        theresa: { zohoStaff: 'theresa', profile: '/theresa.html', photo: '/assets/theresa.webp' },
-        fathima: { zohoStaff: 'fathima', profile: '/fathima.html', photo: '/assets/fathima.webp' }
+        jasmin: { zohoStaff: 'jasmin', profile: '/jasmin.html', photo: '/assets/jasmin.webp' }
     };
 
     function firstName(name) {
@@ -1539,7 +1537,7 @@
 
         const date = parseIsoDate(state.date);
         const sessionCount = packageSessions(state.serviceName) || 1;
-        const checkoutProfiles = [{"slug":"rashin","name":"Rashin PK","role":"Consultant Psychologist","photo":"assets/rashin.webp"},{"slug":"theresa","name":"Theresa P Thomas","role":"Consultant Psychologist","photo":"assets/theresa.webp"},{"slug":"christine","name":"Christine","role":"Consultant Psychologist","photo":"assets/christine.webp"},{"slug":"jasmin","name":"Jasmin","role":"Consultant Psychologist","photo":"assets/jasmin.webp"},{"slug":"fathima","name":"Fathima Sidhyc","role":"Consultant Psychologist","photo":"assets/fathima.webp"},{"slug":"ansha","name":"Ansha","role":"Psychologist","photo":"assets/ansha.webp"}];
+        const checkoutProfiles = [{"slug":"rashin","name":"Rashin PK","role":"Consultant Psychologist","photo":"assets/rashin.webp"},{"slug":"christine","name":"Christine","role":"Consultant Psychologist","photo":"assets/christine.webp"},{"slug":"jasmin","name":"Jasmin","role":"Consultant Psychologist","photo":"assets/jasmin.webp"},{"slug":"ansha","name":"Ansha","role":"Psychologist","photo":"assets/ansha.webp"}];
         const profileSlug = String(state.staffProfile || '').replace(/^\//, '').replace(/\.html$/, '') || firstName(state.staffName);
         const profile = checkoutProfiles.find(item => item.slug === profileSlug || (profileSlug === 'rishin' && item.slug === 'rashin'));
         $('review-therapist').textContent = profile ? profile.name : state.staffName;

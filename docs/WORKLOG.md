@@ -3,6 +3,15 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-15 · Claude Code · Theresa and Fathima removed from the website
+
+- Aflah: Theresa and Fathima have left. Removed from tools/pages/therapists.json (profiles' "other psychologists",
+  about page), home-page cards, index.js THERAPISTS, book/book.js profile maps; theresa.html and fathima.html deleted;
+  build_dist.py redirects /theresa, /fathima (and .html) to /#therapists (301). Sitemap and clean_urls updated.
+- Self-check matches now: anxiety Christine/Jasmin, depression Rashin/Jasmin, stress Jasmin/Christine, loneliness
+  Christine/Jasmin, something else Rashin/Jasmin (relationship unchanged).
+- index.js v48, book.js v56. Booking app: both set to Past staff the same day (see booking-app log).
+
 ## 2026-11-11 · Claude Code · New Terms & Conditions and a Minor Client Policy page
 
 - Aflah's new 18-section Terms & Conditions replace the old terms.html body (dated 11 November 2026). Placeholders

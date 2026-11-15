@@ -53,55 +53,6 @@
     "fee": "₹1,000"
   },
   {
-    "slug": "theresa",
-    "name": "Theresa P Thomas",
-    "role": "Consultant Psychologist",
-    "education": "MA Applied Psychology in Clinical and Counselling Practice from TATA Institute of Social Science (TISS), Mumbai",
-    "methods": [
-      "CBT",
-      "DBT",
-      "ACT"
-    ],
-    "photo": "assets/theresa.webp",
-    "focus": [
-      [
-        "Stress & Anxiety Management",
-        "Helping individuals effectively manage stress, anxiety, and improve emotional well-being."
-      ],
-      [
-        "Emotional Regulation",
-        "Building healthy ways to understand, manage and respond to strong emotions such as anger and sadness."
-      ],
-      [
-        "Relationship Concerns",
-        "Supporting people through difficulties with partners, family and friends, and building healthier connections."
-      ]
-    ],
-    "approach": [
-      [
-        "Empathetic & Compassionate",
-        "Providing a safe, non-judgmental space where clients feel heard, understood, and supported."
-      ],
-      [
-        "Evidence-Based",
-        "Using scientifically supported therapeutic approaches tailored to individual needs."
-      ],
-      [
-        "Person-Centered",
-        "Respecting each person's unique experiences and empowering them to lead their own growth and healing."
-      ]
-    ],
-    "qualifications": [
-      "MA Applied Psychology in Clinical and Counselling Practice from TATA Institute of Social Science (TISS), Mumbai.",
-      "Specialisations: Child and Adolescent Psychotherapy; Counselling for Older Adults.",
-      "Master's research: School climate and bullying among adolescents in private schools, Kozhikode, Kerala."
-    ],
-    "languages": [
-      "Malayalam"
-    ],
-    "fee": "₹1,000"
-  },
-  {
     "slug": "christine",
     "name": "Christine",
     "role": "Consultant Psychologist",
@@ -206,70 +157,6 @@
       "MSc Applied Psychology, Pondicherry University.",
       "Specialisation: Counselling for Older Adults.",
       "Research: Dark Personality Traits and Perpetration of Cyber Dating Violence Among Young Adults in India: Mediating Role of Emotional Dependence."
-    ],
-    "languages": [
-      "Malayalam"
-    ],
-    "fee": "₹1,000"
-  },
-  {
-    "slug": "fathima",
-    "name": "Fathima Sidhyc",
-    "role": "Consultant Psychologist",
-    "education": "MA Applied Psychology (Clinical & Counselling Practice), Tata Institute of Social Sciences (TISS), Mumbai",
-    "methods": [
-      "CBT",
-      "Narrative Therapy"
-    ],
-    "photo": "assets/fathima.webp",
-    "focus": [
-      [
-        "Anxiety",
-        "Support for anxiety management and emotional well-being."
-      ],
-      [
-        "Depression",
-        "Helping you navigate low mood and build a more meaningful life."
-      ],
-      [
-        "OCD",
-        "Guidance and evidence-based strategies for managing OCD."
-      ],
-      [
-        "ADHD",
-        "Support for attention, focus and daily functioning."
-      ],
-      [
-        "Relationship Concerns",
-        "Improving communication and building healthier, supportive relationships."
-      ],
-      [
-        "Trauma & PTSD",
-        "Promoting healing, safety and emotional stability after traumatic experiences."
-      ],
-      [
-        "Career Guidance",
-        "Helping you make informed career choices and build confidence for the future."
-      ]
-    ],
-    "approach": [
-      [
-        "Client-Centred and Empathetic Care",
-        "Providing a safe, non-judgmental space where you can be heard and supported."
-      ],
-      [
-        "Evidence-Based Practice",
-        "Using scientifically supported approaches tailored to your unique needs."
-      ],
-      [
-        "Strengths-Based Approach",
-        "Helping you recognise your strengths and build practical strategies for positive change."
-      ]
-    ],
-    "qualifications": [
-      "MA Applied Psychology (Clinical & Counselling Practice), Tata Institute of Social Sciences (TISS), Mumbai.",
-      "Specialisations: Child & Adolescent Psychotherapy; Counselling for Older Adults.",
-      "Research: Daydreaming Styles, Mind Wandering & Social Media Usage Among Adolescents."
     ],
     "languages": [
       "Malayalam"
