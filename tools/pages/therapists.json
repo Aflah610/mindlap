@@ -222,5 +222,87 @@
     ],
     "fee": "₹1,000",
     "book_online": true
+  },
+  {
+    "slug": "dilna",
+    "name": "Emtesan Dilna",
+    "role": "Consultant Psychologist",
+    "education": "MSc Psychology",
+    "methods": [
+      "CBT",
+      "EMDR",
+      "JPMR",
+      "ERP"
+    ],
+    "photo": "assets/dilna.webp",
+    "about": [
+      "Emtesan Dilna is a Consultant Psychologist at Mindlap, offering online counselling and psychological support in Malayalam. She works with individuals experiencing mood disorders, anxiety, ADHD, relationship concerns, child behavioural concerns, OCD, grief and emotional difficulties, and focus and learning difficulties.",
+      "Her approach focuses on understanding individual needs and experiences through evidence-informed psychological practices. She aims to create a safe, empathetic, and non-judgmental space where individuals feel comfortable exploring their concerns and working towards positive change."
+    ],
+    "focus": [
+      [
+        "Mood Disorders",
+        "Supporting individuals in managing mood changes and emotional difficulties."
+      ],
+      [
+        "Anxiety Disorders",
+        "Helping individuals understand and manage excessive worry, fear, and anxiety."
+      ],
+      [
+        "ADHD",
+        "Supporting individuals with attention, impulsivity, and hyperactivity-related challenges."
+      ],
+      [
+        "Relationship Concerns",
+        "Helping individuals navigate relationship difficulties and improve communication."
+      ],
+      [
+        "Child Behavioural Concerns",
+        "Supporting children in managing behavioural, emotional, and developmental challenges."
+      ],
+      [
+        "OCD",
+        "Helping individuals manage obsessive thoughts and repetitive behaviours."
+      ],
+      [
+        "Grief & Emotional Difficulties",
+        "Helping individuals cope with loss, emotional pain, and difficult life experiences."
+      ],
+      [
+        "Focus & Learning Difficulties",
+        "Supporting individuals in improving concentration, learning skills, and managing academic challenges."
+      ]
+    ],
+    "approach": [
+      [
+        "Evidence-Informed Practice",
+        "Using scientifically supported psychological approaches to guide care."
+      ],
+      [
+        "Individual-Centred Care",
+        "Understanding each individual's unique needs, experiences, and concerns."
+      ],
+      [
+        "Empathetic & Collaborative Approach",
+        "Creating a safe, supportive, and non-judgmental space through empathy and collaboration."
+      ],
+      [
+        "Ethical & Confidential Practice",
+        "Maintaining privacy, trust, and professional ethics throughout the therapeutic process."
+      ]
+    ],
+    "qualifications": [
+      "Postgraduate Degree in Psychology (MSc Psychology).",
+      "Clinical Training: Lewis Mount Hospital.",
+      "Suicide Prevention Training: NIMHANS.",
+      "Professional Training in Assertiveness Skills.",
+      "Continuing Professional Development: Knowledge Round Sessions.",
+      "Research: Sense of Belonging, Perceived Gender Equality and Psychological Distress Among Working Women."
+    ],
+    "languages": [
+      "Malayalam"
+    ],
+    "fee": "₹1,000",
+    "book_online": true
   }
 ]

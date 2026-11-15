@@ -847,7 +847,8 @@
     const ONLINE_THERAPISTS = {
         rashin: { zohoStaff: 'rishin', profile: '/rashin.html', photo: '/assets/rashin.webp' },
         christine: { zohoStaff: 'christine', profile: '/christine.html', photo: '/assets/christine.webp' },
-        jasmin: { zohoStaff: 'jasmin', profile: '/jasmin.html', photo: '/assets/jasmin.webp' }
+        jasmin: { zohoStaff: 'jasmin', profile: '/jasmin.html', photo: '/assets/jasmin.webp' },
+        dilna: { zohoStaff: 'emtesan', profile: '/dilna', photo: '/assets/dilna.webp' }
     };
 
     function firstName(name) {
@@ -1537,9 +1538,9 @@
 
         const date = parseIsoDate(state.date);
         const sessionCount = packageSessions(state.serviceName) || 1;
-        const checkoutProfiles = [{"slug":"rashin","name":"Rashin PK","role":"Consultant Psychologist","photo":"assets/rashin.webp"},{"slug":"christine","name":"Christine","role":"Consultant Psychologist","photo":"assets/christine.webp"},{"slug":"jasmin","name":"Jasmin","role":"Consultant Psychologist","photo":"assets/jasmin.webp"},{"slug":"ansha","name":"Ansha","role":"Psychologist","photo":"assets/ansha.webp"}];
+        const checkoutProfiles = [{"slug":"rashin","name":"Rashin PK","role":"Consultant Psychologist","photo":"assets/rashin.webp"},{"slug":"christine","name":"Christine","role":"Consultant Psychologist","photo":"assets/christine.webp"},{"slug":"jasmin","name":"Jasmin","role":"Consultant Psychologist","photo":"assets/jasmin.webp"},{"slug":"ansha","name":"Ansha","role":"Psychologist","photo":"assets/ansha.webp"},{"slug":"dilna","name":"Emtesan Dilna","role":"Consultant Psychologist","photo":"assets/dilna.webp"}];
         const profileSlug = String(state.staffProfile || '').replace(/^\//, '').replace(/\.html$/, '') || firstName(state.staffName);
-        const profile = checkoutProfiles.find(item => item.slug === profileSlug || (profileSlug === 'rishin' && item.slug === 'rashin'));
+        const profile = checkoutProfiles.find(item => item.slug === profileSlug || (profileSlug === 'rishin' && item.slug === 'rashin') || (profileSlug === 'emtesan' && item.slug === 'dilna'));
         $('review-therapist').textContent = profile ? profile.name : state.staffName;
         $('review-role').textContent = profile ? profile.role : 'Your therapist';
         if (profile) {

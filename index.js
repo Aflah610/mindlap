@@ -119,6 +119,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 role: 'Consultant Psychologist',
                 focus: 'Behavioral Change, Stress & Anxiety, Emotional Regulation',
                 img: 'assets/jasmin_bg.jpeg'
+            },
+            dilna: {
+                name: 'Emtesan Dilna',
+                role: 'Consultant Psychologist',
+                focus: 'Mood & Anxiety, ADHD & OCD, Grief & Emotional Difficulties',
+                img: 'assets/dilna_bg.jpeg'
             }
         };
 
@@ -220,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'anxiety',
                 image: 'assets/check-anxiety.webp',
                 icon: '<path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path><polyline points="13 11 9 17 15 17 11 23"></polyline>',
-                match: { higher: 'christine', lower: 'jasmin' },
+                match: { higher: 'christine', lower: 'dilna' },
                 questions: [
                     'Do you feel worried often?',
                     'Do you feel tense or restless?',
@@ -241,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'low mood',
                 image: 'assets/check-depression.webp',
                 icon: '<line x1="16" y1="13" x2="16" y2="21"></line><line x1="8" y1="13" x2="8" y2="21"></line><line x1="12" y1="15" x2="12" y2="23"></line><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path>',
-                match: { higher: 'rashin', lower: 'jasmin' },
+                match: { higher: 'rashin', lower: 'dilna' },
                 crisisIndex: 9,
                 questions: [
                     'Do you feel sad often?',

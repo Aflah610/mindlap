@@ -53,6 +53,8 @@ def joined(items):
 
 
 def about(t):
+    if t.get('about'):
+        return t['about']
     first = first_name(t)
     areas = joined(a.lower() if a.lower() not in ('ocd', 'adhd', 'ptsd') else a for a, _ in t['focus'][:4])
     methods = joined(t['methods'])

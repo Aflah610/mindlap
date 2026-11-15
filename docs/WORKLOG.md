@@ -3,6 +3,18 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-15 · Claude Code · New psychologist: Emtesan Dilna (/dilna)
+
+- Profile from Aflah's text: tools/pages/therapists.json slug "dilna" (MSc Psychology; CBT, EMDR, JPMR, ERP; 8 focus
+  areas; Lewis Mount Hospital, NIMHANS training; research). profiles.py now uses a psychologist's own "about"
+  paragraphs when given. Photos dilna.webp, dilna-card.webp, dilna_bg.jpeg cropped from Aflah's upload (original
+  "assets/Emtesan dilna.jpeg" left untracked, like the other originals).
+- Home card 8 (Mood & Anxiety, ADHD & OCD, Grief), Book Now = /book/?therapist=Dilna. book.js maps dilna -> booking
+  app staff first name "emtesan" (so her Waky staff record must be named "Emtesan Dilna"). Self-check suggests her
+  for anxiety and low mood. index.js v49, book.js v57. Sitemap, clean_urls, AGENTS.md updated.
+- OPEN: she has no booking-app staff account yet, so Book Now returns to the psychologist list until one exists with
+  services and hours.
+
 ## 2026-11-15 · Claude Code · Theresa and Fathima removed from the website
 
 - Aflah: Theresa and Fathima have left. Removed from tools/pages/therapists.json (profiles' "other psychologists",

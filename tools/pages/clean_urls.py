@@ -8,7 +8,7 @@ import re
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 os.chdir(ROOT)
 
-PAGES = ['rashin', 'christine', 'jasmin', 'privacy', 'terms', 'minor-client-policy']
+PAGES = ['rashin', 'christine', 'jasmin', 'ansha', 'dilna', 'privacy', 'terms', 'minor-client-policy']
 NAMES = '|'.join(PAGES)
 
 files = [f for f in glob.glob('**/*.html', recursive=True) + glob.glob('**/*.xml', recursive=True)
