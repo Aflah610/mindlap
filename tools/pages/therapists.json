@@ -304,5 +304,87 @@
     ],
     "fee": "₹1,000",
     "book_online": true
+  },
+  {
+    "slug": "elizabeth",
+    "name": "Elizabeth Sara Joseph",
+    "role": "Consultant Psychologist",
+    "education": "MSc Psychology, Union Christian College, Aluva (Mahatma Gandhi University)",
+    "methods": [
+      "CBT",
+      "DBT",
+      "JPMR"
+    ],
+    "photo": "assets/elizabeth.webp",
+    "about": [
+      "Elizabeth Sara Joseph is a Consultant Psychologist at Mindlap, offering online counselling and psychological support in Malayalam. She provides person-centred and solution-focused psychological support for individuals, couples, and families.",
+      "Her areas of focus include anxiety, depression, stress, trauma, abuse, PTSD, relationship and family concerns, personal growth, self-esteem, life transitions, sleep and lifestyle concerns, grief, and burnout.",
+      "She aims to create a safe, compassionate, and non-judgmental space where individuals can explore their concerns, recognise their strengths, and work towards meaningful personal growth and emotional well-being."
+    ],
+    "focus": [
+      [
+        "Anxiety, Depression & Stress",
+        "Supporting individuals in managing anxiety, low mood, and stress while building emotional resilience."
+      ],
+      [
+        "Trauma, Abuse & PTSD",
+        "Helping individuals process traumatic experiences and work towards emotional recovery."
+      ],
+      [
+        "Relationships & Family Concerns",
+        "Supporting individuals and families in navigating relationship challenges, family dynamics, and improving communication."
+      ],
+      [
+        "Personal Growth & Self-Esteem",
+        "Helping individuals build self-awareness, confidence, and a positive sense of self."
+      ],
+      [
+        "Life Transitions & Adjustment",
+        "Supporting individuals through major life changes and adjustment-related difficulties."
+      ],
+      [
+        "Sleep & Lifestyle Concerns",
+        "Addressing sleep difficulties and lifestyle factors that affect mental well-being."
+      ],
+      [
+        "Grief & Emotional Difficulties",
+        "Helping individuals cope with loss, grief, and other emotional challenges."
+      ],
+      [
+        "Burnout & Stress Management",
+        "Supporting individuals in managing emotional exhaustion and developing healthy coping strategies."
+      ]
+    ],
+    "approach": [
+      [
+        "Person-Centred Approach",
+        "Providing a safe and non-judgmental space where individuals can express themselves freely and work towards personal growth."
+      ],
+      [
+        "Solution-Focused Approach",
+        "Building on individual strengths to identify practical solutions and encourage positive change."
+      ],
+      [
+        "Supportive & Compassionate Care",
+        "Offering a warm, respectful environment with empathy and understanding."
+      ],
+      [
+        "Mindfulness & Self-Awareness",
+        "Helping individuals stay present and develop greater self-awareness for a balanced life."
+      ]
+    ],
+    "qualifications": [
+      "MSc Psychology, Union Christian College, Aluva (Mahatma Gandhi University): 5th Rank.",
+      "BSc Psychology, Saintgits College of Applied Sciences, Kottayam (Mahatma Gandhi University): 7th Rank.",
+      "Qualified UGC-NET (PhD Eligibility), December 2025.",
+      "Research paper presentation: “Job Satisfaction and Quality of Work-life among IT Professionals”, presented at an International Conference.",
+      "Postgraduate dissertation: “Self-Control, Stress, Anxiety, Depression and Fatigue among College Students with Rapid Scrolling.”",
+      "Certifications and professional training: Exploring Depression Through Psychodynamic Lens (KESA); Healthy Expression of Anger (KESA); Behaviour Therapy in School Settings (IMHAPS); Pre-marital Counselling (The PSYK-LIFE); Dream Analysis (Healing Realm); Child Rehabilitation Psychology, Case Profiling & Psychological Assessments (RELICUS Group); Handling POCSO Cases, Legal Nest Counselling and Child Development (Crater); Trauma and Grief Therapy (PSYK-LIFE Group)."
+    ],
+    "languages": [
+      "Malayalam"
+    ],
+    "fee": "₹1,000",
+    "book_online": true
   }
 ]

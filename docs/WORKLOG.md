@@ -3,6 +3,16 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-15 · Claude Code · New psychologist: Elizabeth Sara Joseph (/elizabeth)
+
+- Profile from Aflah's text (MSc UCC Aluva, 5th rank; BSc Saintgits, 7th rank; UGC-NET Dec 2025; CBT, DBT, JPMR;
+  8 focus areas; research and certifications). "DPT" in the text read as DBT. Photos elizabeth.webp, -card.webp,
+  _bg.jpeg from Aflah's upload (original left untracked).
+- Home card 9 (Anxiety & Depression, Trauma & PTSD, Relationships & Family); Book Now /book/?therapist=Elizabeth,
+  matches a booking-app staff record whose first name is Elizabeth. Self-check suggests her for relationship and
+  stress. index.js v50, book.js v58.
+- OPEN: no booking-app staff account yet (same as Emtesan Dilna).
+
 ## 2026-11-15 · Claude Code · New psychologist: Emtesan Dilna (/dilna)
 
 - Profile from Aflah's text: tools/pages/therapists.json slug "dilna" (MSc Psychology; CBT, EMDR, JPMR, ERP; 8 focus
