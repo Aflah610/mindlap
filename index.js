@@ -131,6 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 role: 'Consultant Psychologist',
                 focus: 'Anxiety & Depression, Trauma & PTSD, Relationships & Family',
                 img: 'assets/elizabeth_bg.jpeg'
+            },
+            ashlin: {
+                name: 'Ashlin',
+                role: 'Consultant Psychologist',
+                focus: 'Self-Esteem, Stress & Burnout, Academic Concerns',
+                img: 'assets/ashlin_bg.jpeg'
             }
         };
 
@@ -340,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'what you described',
                 image: 'assets/check-other.webp',
                 icon: '<circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line>',
-                match: { higher: 'rashin', lower: 'jasmin' },
+                match: { higher: 'rashin', lower: 'ashlin' },
                 questions: [
                     'Do you feel low in confidence?',
                     'Do you doubt yourself often?',

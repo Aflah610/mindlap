@@ -386,5 +386,74 @@
     ],
     "fee": "₹1,000",
     "book_online": true
+  },
+  {
+    "slug": "ashlin",
+    "name": "Ashlin",
+    "role": "Consultant Psychologist",
+    "education": "MSc Clinical Psychology, Christ (Deemed to be University), Delhi NCR",
+    "methods": [
+      "CBT"
+    ],
+    "photo": "assets/ashlin.webp",
+    "about": [
+      "Ashlin is a Consultant Psychologist at Mindlap, offering online counselling and psychological support in Malayalam. She works with individuals experiencing self-esteem concerns, life transitions, burnout, stress and anxiety, depression, and academic difficulties.",
+      "Her approach focuses on providing evidence-based, person-centred psychological support tailored to each individual's unique needs and experiences. She aims to create a safe, empathetic, and supportive space where individuals feel heard, understood, and comfortable working towards personal growth and emotional well-being."
+    ],
+    "focus": [
+      [
+        "Self-Esteem & Personal Growth",
+        "Helping individuals build self-confidence, recognise their strengths, and develop a positive self-image."
+      ],
+      [
+        "Life Transitions & Adjustment",
+        "Supporting individuals in navigating life changes and adapting to new situations with confidence."
+      ],
+      [
+        "Burnout",
+        "Helping individuals manage chronic stress, emotional exhaustion, and restore personal well-being."
+      ],
+      [
+        "Stress & Anxiety",
+        "Helping individuals manage stress, reduce anxiety, and develop healthier coping strategies."
+      ],
+      [
+        "Depression",
+        "Supporting individuals in managing depressive symptoms and improving emotional well-being."
+      ],
+      [
+        "Academic Concerns",
+        "Supporting individuals in managing academic stress, improving focus, and overcoming learning challenges."
+      ]
+    ],
+    "approach": [
+      [
+        "Evidence-Based Approach",
+        "Using scientifically supported methods to provide effective and reliable psychological support."
+      ],
+      [
+        "Empathetic & Supportive Approach",
+        "Creating a safe, non-judgmental space where individuals feel heard, understood, and supported."
+      ],
+      [
+        "Person-Centred Approach",
+        "Tailoring psychological support to each individual's unique needs, experiences, and personal goals."
+      ],
+      [
+        "Cognitive Behavioural Therapy (CBT)",
+        "Helping individuals identify and change unhelpful thought patterns and behaviours to improve emotional well-being."
+      ]
+    ],
+    "qualifications": [
+      "MSc Clinical Psychology, Christ (Deemed to be University), Delhi NCR.",
+      "Specialisation: Clinical Psychology.",
+      "Research presentation: poster titled “Neuromarketing and Subliminal Strategies: Factors Influencing Consumer Behaviour” at IIT Mandi, Himachal Pradesh.",
+      "Research presentation: Second Best Paper Presentation Award for the group research project “Role of Generative AI Usage on Academic Dishonesty Among Indian Undergraduate and Postgraduate Students” at the ICSBS-IKS event organised by WE AVEC U Foundation."
+    ],
+    "languages": [
+      "Malayalam"
+    ],
+    "fee": "₹1,000",
+    "book_online": true
   }
 ]

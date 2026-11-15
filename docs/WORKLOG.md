@@ -3,6 +3,15 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-15 · Claude Code · New psychologist: Ashlin (/ashlin)
+
+- Profile from Aflah's text (MSc Clinical Psychology, Christ University Delhi NCR; CBT; 6 focus areas; two research
+  presentations). Photo uploaded as assets/ashlin.heic (left untracked): converted with Windows' WIC decoder, cropped
+  to ashlin.webp, -card.webp, _bg.jpeg.
+- Home card 10 (Self-Esteem, Stress & Burnout, Academic Concerns); Book Now /book/?therapist=Ashlin; self-check
+  "Something else" suggests her. index.js v51, book.js v59.
+- OPEN: no booking-app staff account yet (same as Emtesan Dilna and Elizabeth).
+
 ## 2026-11-15 · Claude Code · New psychologist: Elizabeth Sara Joseph (/elizabeth)
 
 - Profile from Aflah's text (MSc UCC Aluva, 5th rank; BSc Saintgits, 7th rank; UGC-NET Dec 2025; CBT, DBT, JPMR;
