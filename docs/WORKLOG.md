@@ -3,6 +3,14 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-16 · Claude Code · Elizabeth Sara Joseph removed from the website
+
+- Aflah: Elizabeth has left. Card, profile (elizabeth.html), photos, index.js entry and book.js maps removed;
+  /elizabeth and /elizabeth.html redirect to /#therapists. Self-check relationship and stress fall back to Christine.
+  Sitemap, clean_urls, AGENTS.md, README updated. index.js v52, book.js v60.
+- The removal was already in the working tree uncommitted when this session started (another session); checked it,
+  removed her photos and committed it. Booking app: her staff record deleted the same day (booking-app log).
+
 ## 2026-11-15 · Claude Code · Fix: home-page psychologist cards nested inside each other
 
 - The Dilna/Elizabeth/Ashlin card copies were cut one closing </div> short (a "                </div>" search also

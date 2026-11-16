@@ -126,12 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 focus: 'Mood & Anxiety, ADHD & OCD, Grief & Emotional Difficulties',
                 img: 'assets/dilna_bg.jpeg'
             },
-            elizabeth: {
-                name: 'Elizabeth Sara Joseph',
-                role: 'Consultant Psychologist',
-                focus: 'Anxiety & Depression, Trauma & PTSD, Relationships & Family',
-                img: 'assets/elizabeth_bg.jpeg'
-            },
             ashlin: {
                 name: 'Ashlin',
                 role: 'Consultant Psychologist',
@@ -281,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'relationship strain',
                 image: 'assets/check-relationship.webp',
                 icon: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',
-                match: { higher: 'rashin', lower: 'elizabeth' },
+                match: { higher: 'rashin', lower: 'christine' },
                 // These read positively, so a high answer means things are going well.
                 reverse: [0, 1, 2, 3, 4, 7, 9],
                 questions: [
@@ -304,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'stress',
                 image: 'assets/check-stress.webp',
                 icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>',
-                match: { higher: 'jasmin', lower: 'elizabeth' },
+                match: { higher: 'jasmin', lower: 'christine' },
                 questions: [
                     'Do you feel overwhelmed easily?',
                     'Do you feel under pressure?',
