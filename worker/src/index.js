@@ -72,7 +72,8 @@ function corsHeaders(request, env) {
 function jsonResponse(data, status, headers) {
   return new Response(JSON.stringify(data), {
     status: status || 200,
-    headers: { 'Content-Type': 'application/json', ...headers }
+    // Free times, holds and bookings change all the time: never let a browser or proxy reuse an old reply.
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...headers }
   });
 }
 

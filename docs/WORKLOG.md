@@ -3,6 +3,13 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-17 · Claude Code · Worker replies never cached
+
+- Aflah reported cancelled sessions' times not coming back. Main fix is in the booking app (copied Google busy times
+  of our own sessions; see booking-app log, migration 0049 also takes Fathima off the lists and puts Ashlin and
+  Emtesan Dilna on). Here: worker jsonResponse adds Cache-Control: no-store, so a browser or proxy never reuses an
+  old free-times reply. Worker deployed.
+
 ## 2026-11-16 · Claude Code · Elizabeth Sara Joseph removed from the website
 
 - Aflah: Elizabeth has left. Card, profile (elizabeth.html), photos, index.js entry and book.js maps removed;
