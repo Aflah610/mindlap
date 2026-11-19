@@ -120,6 +120,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 focus: 'Behavioral Change, Stress & Anxiety, Emotional Regulation',
                 img: 'assets/jasmin_bg.jpeg'
             },
+            ansha: {
+                name: 'Ansha',
+                role: 'Psychologist',
+                focus: 'OCD & Anxiety, Depression, Career Guidance',
+                img: 'assets/ansha.webp'
+            },
             dilna: {
                 name: 'Emtesan Dilna',
                 role: 'Consultant Psychologist',
@@ -218,6 +224,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 '<circle cx="330" cy="112" r="26" fill="#5EA87C"/>' +
                 '<circle cx="310" cy="124" r="17" fill="#6FB78C"/>' +
                 '<circle cx="350" cy="124" r="16" fill="#6FB78C"/>')
+            ,
+            // Drawn stand-ins until the illustrations for these three are ready (then set `image` on the category).
+            ocd: scene('ocd',
+                '<defs><linearGradient id="@" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#E6DDF7"/><stop offset="1" stop-color="#F6F2FC"/></linearGradient></defs>' +
+                '<rect width="400" height="200" fill="url(#@)"/>' +
+                '<rect x="40" y="46" width="150" height="8" rx="3" fill="#B7A4DE"/>' +
+                '<rect x="52" y="18" width="16" height="28" rx="2" fill="#8E66DE"/>' +
+                '<rect x="72" y="18" width="16" height="28" rx="2" fill="#A98BE6"/>' +
+                '<rect x="92" y="18" width="16" height="28" rx="2" fill="#8E66DE"/>' +
+                '<rect x="112" y="18" width="16" height="28" rx="2" fill="#A98BE6"/>' +
+                '<rect x="132" y="18" width="16" height="28" rx="2" fill="#8E66DE"/>' +
+                '<rect x="232" y="30" width="120" height="78" rx="6" fill="#FFFFFF" opacity=".9"/>' +
+                '<path d="M252 54 l8 8 l16 -16" stroke="#6FB78C" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+                '<rect x="286" y="50" width="50" height="7" rx="3" fill="#D9CFF0"/>' +
+                '<path d="M252 84 l8 8 l16 -16" stroke="#6FB78C" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+                '<rect x="286" y="80" width="50" height="7" rx="3" fill="#D9CFF0"/>' +
+                '<rect x="0" y="150" width="400" height="50" fill="#CDBEEA"/>' +
+                '<circle cx="90" cy="140" r="14" fill="#F4E2C8"/><circle cx="125" cy="140" r="14" fill="#F4E2C8"/><circle cx="160" cy="140" r="14" fill="#F4E2C8"/>' +
+                '<rect x="300" y="122" width="22" height="30" rx="4" fill="#7FA6D8"/><circle cx="311" cy="116" r="7" fill="#7FA6D8"/>'),
+            adhd: scene('adhd',
+                '<defs><linearGradient id="@" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#FCE7C8"/><stop offset="1" stop-color="#FFF6EA"/></linearGradient></defs>' +
+                '<rect width="400" height="200" fill="url(#@)"/>' +
+                '<circle cx="320" cy="58" r="30" fill="#FFFFFF" stroke="#8E66DE" stroke-width="5"/>' +
+                '<path d="M320 58 V40 M320 58 L334 66" stroke="#4A2E80" stroke-width="4" stroke-linecap="round"/>' +
+                '<rect x="40" y="30" width="44" height="40" rx="3" fill="#FFE08A" transform="rotate(-8 62 50)"/>' +
+                '<rect x="96" y="44" width="44" height="40" rx="3" fill="#C9E8B7" transform="rotate(6 118 64)"/>' +
+                '<rect x="150" y="24" width="44" height="40" rx="3" fill="#F7C4D2" transform="rotate(-4 172 44)"/>' +
+                '<rect x="206" y="52" width="44" height="40" rx="3" fill="#C7DBF5" transform="rotate(9 228 72)"/>' +
+                '<rect x="0" y="146" width="400" height="54" fill="#E8C9A0"/>' +
+                '<rect x="70" y="118" width="90" height="30" rx="4" fill="#8E66DE"/><rect x="78" y="112" width="74" height="8" rx="2" fill="#B7A4DE"/>' +
+                '<rect x="200" y="126" width="60" height="22" rx="3" fill="#FFFFFF"/>' +
+                '<path d="M285 140 q18 -24 36 0" stroke="#4A2E80" stroke-width="4" fill="none" stroke-linecap="round"/>'),
+            ptsd: scene('ptsd',
+                '<defs><linearGradient id="@" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0" stop-color="#3C3A6E"/><stop offset="1" stop-color="#8C7FC4"/></linearGradient></defs>' +
+                '<rect width="400" height="200" fill="url(#@)"/>' +
+                '<circle cx="300" cy="52" r="22" fill="#FFF3D1"/><circle cx="310" cy="46" r="20" fill="#4B477F"/>' +
+                '<circle cx="80" cy="40" r="2" fill="#FFFFFF"/><circle cx="150" cy="26" r="2" fill="#FFFFFF"/><circle cx="220" cy="60" r="2" fill="#FFFFFF"/><circle cx="360" cy="96" r="2" fill="#FFFFFF"/>' +
+                '<path d="M0 150 Q100 120 200 146 T400 138 L400 200 L0 200Z" fill="#5E5A9A"/>' +
+                '<path d="M0 172 Q140 152 260 176 T400 166 L400 200 L0 200Z" fill="#46427E"/>' +
+                '<rect x="96" y="112" width="40" height="44" rx="6" fill="#2F2C5E"/><circle cx="116" cy="102" r="13" fill="#2F2C5E"/>' +
+                '<circle cx="160" cy="146" r="10" fill="#FFE7A8" opacity=".9"/><circle cx="160" cy="146" r="22" fill="#FFE7A8" opacity=".25"/>')
         };
 
         const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" ' +
@@ -331,6 +381,63 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Do you feel you have no one to rely on?',
                     'Do you avoid social situations?',
                     'Do you wish you had closer relationships?'
+                ]
+            },
+            {
+                key: 'ocd',
+                label: 'OCD',
+                blurb: 'Repeated thoughts, checking, rituals',
+                noun: 'obsessive-compulsive patterns',
+                icon: '<polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>',
+                match: { higher: 'dilna', lower: 'ansha' },
+                questions: [
+                    'Do you feel anxious when things are not clean or organised?',
+                    'Do you feel the need to check things repeatedly?',
+                    'Do you wash your hands or clean things more than necessary?',
+                    'Do you repeat certain actions until they feel right?',
+                    'Do you spend a lot of time trying to get rid of unwanted thoughts?',
+                    'Do you worry that something bad will happen if you do not perform certain actions?',
+                    'Do these thoughts or repetitive behaviours interfere with your daily life?'
+                ]
+            },
+            {
+                key: 'adhd',
+                label: 'ADHD',
+                blurb: 'Focus, restlessness, forgetting',
+                noun: 'attention and focus difficulties',
+                icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>',
+                match: { higher: 'dilna', lower: 'ashlin' },
+                questions: [
+                    'Do you find it difficult to pay attention to details?',
+                    'Do you find it hard to concentrate on tasks for a long time?',
+                    'Do you get distracted easily by things around you?',
+                    'Do you often forget appointments or daily responsibilities?',
+                    'Do you struggle to organise your tasks and activities?',
+                    'Do you often leave tasks unfinished?',
+                    'Do you frequently lose things you need, such as keys, books, or a phone?',
+                    'Do you feel restless when you have to sit still?',
+                    'Do you find it difficult to wait for your turn?',
+                    'Do you interrupt others or act before thinking?'
+                ]
+            },
+            {
+                key: 'ptsd',
+                label: 'PTSD',
+                blurb: 'Memories, fear, staying on guard',
+                noun: 'trauma-related stress',
+                icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>',
+                match: { higher: 'christine', lower: 'dilna' },
+                questions: [
+                    'Do unwanted memories of a frightening or traumatic experience come back to you?',
+                    'Do you have nightmares related to a traumatic experience?',
+                    'Do you feel as though a traumatic event is happening again?',
+                    'Do you avoid people, places, or situations that remind you of the experience?',
+                    'Do you try to avoid thinking or talking about the experience?',
+                    'Do you feel constantly alert or on guard?',
+                    'Do you get startled easily by sudden sounds or movements?',
+                    'Do you have difficulty sleeping because of fear or disturbing memories?',
+                    'Do you feel emotionally distant or disconnected from others?',
+                    'Do you experience strong feelings of fear, guilt, shame, or distress related to the experience?'
                 ]
             },
             {
@@ -457,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       'width="400" height="225">'
                     : '';
                 return '<button type="button" class="category-tile" data-key="' + cat.key + '">' +
-                    '<span class="category-media">' + SCENES[cat.key] + photo +
+                    '<span class="category-media">' + (SCENES[cat.key] || '') + photo +
                         '<span class="category-badge">' + icon(cat.icon, 'category-svg') + '</span>' +
                     '</span>' +
                     '<span class="category-body">' +
@@ -582,9 +689,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 0);
         }
 
+        /** Highest possible score for the current check (4 per question). */
+        function maxScore() {
+            return SCALE[SCALE.length - 1].value * current.questions.length;
+        }
+
         function bandFor(score) {
+            // Bands are written for ten questions (0 to 40); scale a shorter check so it lands in the same band.
+            const scaled = score * MAX_SCORE / maxScore();
             for (let i = 0; i < BANDS.length; i++) {
-                if (score <= BANDS[i].max) return BANDS[i];
+                if (scaled <= BANDS[i].max) return BANDS[i];
             }
             return BANDS[BANDS.length - 1];
         }
@@ -594,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const band = bandFor(score);
             const isHigher = band.key === 'moderate' || band.key === 'high';
             const therapist = THERAPISTS[isHigher ? current.match.higher : current.match.lower];
-            const pct = Math.round((score / MAX_SCORE) * 100);
+            const pct = Math.round((score / maxScore()) * 100);
 
             const needsCrisisNote = typeof current.crisisIndex === 'number' &&
                 answers[current.crisisIndex] >= 2;
@@ -614,7 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     '<div class="result-ring" style="background: conic-gradient(var(--accent-color) ' + pct + '%, rgba(142, 102, 222, 0.16) ' + pct + '%)">' +
                         '<div class="result-ring-inner">' +
                             '<span class="result-score">' + score + '</span>' +
-                            '<span class="result-total">of ' + MAX_SCORE + '</span>' +
+                            '<span class="result-total">of ' + maxScore() + '</span>' +
                         '</div>' +
                     '</div>' +
                     '<div class="result-summary">' +

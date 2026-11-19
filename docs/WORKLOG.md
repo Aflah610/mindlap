@@ -3,6 +3,17 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-19 · Claude Code · Self-check: OCD, ADHD and PTSD
+
+- index.js CATEGORIES gets ocd (7 questions), adhd (10) and ptsd (10) from Aflah's text, before "Something else".
+  Matches: OCD Dilna/Ansha (Ansha added to THERAPISTS with assets/ansha.webp), ADHD Dilna/Ashlin, PTSD Christine/Dilna.
+- Scoring now works for any length: bands stay written for 0 to 40 and a shorter check is scaled; the ring shows
+  "of <4 x questions>".
+- Fix: a category without a drawn scene printed "undefined" behind its photo (SCENES[key] || '').
+- Pictures: the three have drawn SVG stand-ins (SCENES ocd/adhd/ptsd). OPEN: Aflah generates matching
+  illustrations (same anime style as check-*.webp); save as assets/check-ocd.webp, check-adhd.webp, check-ptsd.webp
+  (900x600 or 400x225 webp) and add `image:` to each category. index.js v53.
+
 ## 2026-11-17 · Claude Code · Worker replies never cached
 
 - Aflah reported cancelled sessions' times not coming back. Main fix is in the booking app (copied Google busy times
