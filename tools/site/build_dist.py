@@ -46,6 +46,8 @@ REDIRECTS = f"""/index.html  /  301
 /theresa.html  /#therapists  301
 /fathima  /#therapists  301
 /fathima.html  /#therapists  301
+/jasmin  /#therapists  301
+/jasmin.html  /#therapists  301
 /elizabeth  /#therapists  301
 /elizabeth.html  /#therapists  301
 /adminpanelofmindlap  {WAKY_ADMIN}/  302

@@ -116,54 +116,6 @@
     "fee": "₹1,000"
   },
   {
-    "slug": "jasmin",
-    "name": "Jasmin",
-    "role": "Consultant Psychologist",
-    "education": "MSc Applied Psychology, Pondicherry University",
-    "methods": [
-      "CBT",
-      "MBCT"
-    ],
-    "photo": "assets/jasmin.webp",
-    "focus": [
-      [
-        "Behavioral Change",
-        "Supporting positive behavior change through evidence-based psychological strategies."
-      ],
-      [
-        "Stress & Anxiety",
-        "Helping individuals manage stress and anxiety, and build effective coping skills for a calmer, healthier life."
-      ],
-      [
-        "Emotional Regulation",
-        "Developing skills to understand and manage emotions, and respond effectively to life’s challenges."
-      ]
-    ],
-    "approach": [
-      [
-        "Empathetic & Supportive",
-        "Providing a safe, non-judgmental space where you can feel heard and supported."
-      ],
-      [
-        "Evidence-Based",
-        "Using scientifically supported therapeutic approaches tailored to your individual needs."
-      ],
-      [
-        "Person-Centred",
-        "Respecting your unique experiences and empowering you to build meaningful and positive change."
-      ]
-    ],
-    "qualifications": [
-      "MSc Applied Psychology, Pondicherry University.",
-      "Specialisation: Counselling for Older Adults.",
-      "Research: Dark Personality Traits and Perpetration of Cyber Dating Violence Among Young Adults in India: Mediating Role of Emotional Dependence."
-    ],
-    "languages": [
-      "Malayalam"
-    ],
-    "fee": "₹1,000"
-  },
-  {
     "slug": "ansha",
     "name": "Ansha",
     "role": "Psychologist",

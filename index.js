@@ -114,12 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 focus: 'Relationship & Marital Concerns, Anxiety & Stress, PTSD & Trauma Recovery',
                 img: 'assets/christine_bg.jpeg?v=4'
             },
-            jasmin: {
-                name: 'Jasmin',
-                role: 'Consultant Psychologist',
-                focus: 'Behavioral Change, Stress & Anxiety, Emotional Regulation',
-                img: 'assets/jasmin_bg.jpeg'
-            },
             ansha: {
                 name: 'Ansha',
                 role: 'Psychologist',
@@ -348,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'stress',
                 image: 'assets/check-stress.webp',
                 icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>',
-                match: { higher: 'jasmin', lower: 'christine' },
+                match: { higher: 'ashlin', lower: 'christine' },
                 questions: [
                     'Do you feel overwhelmed easily?',
                     'Do you feel under pressure?',
@@ -369,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 noun: 'loneliness',
                 image: 'assets/check-loneliness.webp',
                 icon: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
-                match: { higher: 'christine', lower: 'jasmin' },
+                match: { higher: 'christine', lower: 'rashin' },
                 questions: [
                     'Do you feel lonely often?',
                     'Do you feel alone even with others?',
@@ -1260,7 +1254,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('hashchange', tidyHash);
 });
 
-// Old links like /jasmin.html or /index.html: show the clean address (/jasmin, /).
+// Old links like /rashin.html or /index.html: show the clean address (/rashin, /).
 (function () {
     const path = window.location.pathname;
     let clean = null;

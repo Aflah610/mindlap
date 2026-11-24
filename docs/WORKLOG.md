@@ -3,6 +3,13 @@
 Newest first. One entry per finished piece of work: date, agent, what changed, what is live, what is open.
 This repo is the website; booking app work is logged in the booking-app repo's `docs/WORKLOG.md`.
 
+## 2026-11-24 · Claude Code · Jasmin removed from the website
+
+- Aflah: remove Jasmin. Card, profile (jasmin.html), therapists.json entry, index.js THERAPISTS, book.js maps removed;
+  /jasmin and /jasmin.html redirect to /#therapists. Self-check: stress now Ashlin/Christine, loneliness
+  Christine/Rashin. Sitemap, clean_urls, AGENTS.md, README updated; home grid nesting checked (5 cards, all at the same
+  level). index.js and book.js versions bumped. Booking app staff record NOT changed (not asked).
+
 ## 2026-11-19 · Claude Code · Self-check: OCD, ADHD and PTSD
 
 - index.js CATEGORIES gets ocd (7 questions), adhd (10) and ptsd (10) from Aflah's text, before "Something else".
